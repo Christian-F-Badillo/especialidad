@@ -1,0 +1,8 @@
+---
+title: "Tarea 1"
+author: "Christian Francisco Badillo Hernández"
+format: pdf
+editor: source
+---
+
+## 
