@@ -1,1 +1,4 @@
-*/.Rdata
+*/**/*.RData
+*/**/*.rdb
+*/**/*.rdx
+*/**/__packages

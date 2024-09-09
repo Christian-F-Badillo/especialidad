@@ -1,8 +1,241 @@
 ---
 title: "Tarea 1"
 author: "Christian Francisco Badillo Hernández"
-format: pdf
+format:
+    pdf:
+        toc: true
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2cm, right=2cm, top=2cm, bottom=2cm"
+        lof: true
+        lot: true
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
 editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
 ---
 
-## 
+## Simulación de Intervalos de Confianza
+
+Cargamos las librerías necesarias para la simulación y visualizaciones.
+
+```{r}
+#| echo=T, show=T, eval=T, output=F
+library(ggplot2)
+library(knitr)
+```
+
+Importamos los datos.
+
+```{r}
+edad.data <- read.csv("edad.csv")
+
+set.seed(1)
+```
+
+Veamos las primeras observaciones.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+knitr::kable(head(edad.data), caption = "Datos.")
+```
+
+Vamos a definir una función que simule la estimación de la media y el intervalo de confianza a un nivel de confianza $100 * (1 - \alpha)$% especificado.
+
+```{r}
+#| echo=T, show=T, eval=T, output=F
+
+ic_estimation <- function(data = NULL, n=NULL, iter=1000, alpha = 0.05, seed = 1)
+    {
+        if(is.null(data))
+        {
+            stop("No se ha proporcionado un conjunto de datos.")
+        }
+
+        N <- nrow(data)
+        
+        if(is.null(n)){n <- N*0.1}
+        
+        mean.est <- numeric(iter)
+        var.est <- numeric(iter)
+        lower.ci <- numeric(iter)
+        upper.ci <- numeric(iter)
+        
+        set.seed(seed)
+        
+        for(i in 1:iter){
+          sample <- sample(data$edad, n)
+          mean.est[i] <- mean(sample)
+          var.est[i] <- (1 - n/N) * (var(sample)/n)
+          lower.ci[i] <- mean.est[i] - qnorm(1 - alpha/2) * sqrt(var.est[i])
+          upper.ci[i] <- mean.est[i] + qnorm(1 - alpha/2) * sqrt(var.est[i])
+        }
+        return(data.frame(mean.est, lower.ci, upper.ci))
+    }
+```
+
+También vamos a crear una función que gráfique los intervalos de confianza y el valor real de la media.
+
+```{r}
+plot_ic <- function(df=NULL, mean.est.col = "green", ci_color = "blue", real_col = "red")
+    {
+        if(is.null(data))
+            {
+                stop("No se ha proporcionado un conjunto de datos.")
+        }
+    
+        ggplot(df, aes(x = 1:iter, y = mean.est)) +
+          geom_point(colour = mean.est.col) +
+          geom_errorbar(aes(ymin = lower.ci, ymax = upper.ci), width = 0.1, 
+                        colour = ci_color) +
+          geom_hline(yintercept = mean(edad.data$edad), color = real_col) +
+          labs(title = "Intervalos de Confianza para la Media de la Edad",
+               x = "Iteración",
+               y = "Media") +
+          theme_minimal()
+    }
+```
+
+### Estimación de la Media de la Edad.
+
+Estimamos la media de la edad y su intervalo de confianza para distintos tamaños de muestra.
+
+#### Tamaño de Muestra 20.
+
+Simulamos 100 muestras de tamaño 20 y estimamos la media y el intervalo de confianza al 95%.
+
+```{r}
+N <- nrow(edad.data)
+n <- 20
+iter <- 100
+seed <- 1
+
+df <- ic_estimation(edad.data, n, iter, seed)
+```
+
+Gráficamos los intervalos de confianza y el valor real de la media.
+
+```{r}
+#| label: fig-ic_n20
+#| fig-cap: "IC al 95% para la media de la edad con tamaño de muestra 20."
+
+colors <- c("#1E1E1E", "#4D6291", "#9C0824")
+
+plot_ic(df, colors[1], colors[2], colors[3])
+```
+
+El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df$lower.ci < mean(edad.data$edad) & df$upper.ci > mean(edad.data$edad)) / iter * 100`%.
+
+#### Tamaño de Muestra 50.
+
+Simulamos 100 muestras de tamaño 50 y estimamos la media y el intervalo de confianza al 95%.
+
+```{r}
+n <- 50
+seed <- 2
+iter <- 100
+
+df2 <- ic_estimation(data = edad.data, n = n, iter = iter, seed = seed)
+```
+
+Gráficamos los intervalos de confianza y el valor real de la media.
+
+```{r}
+#| label: fig-ic_n50
+#| fig-cap: "IC al 95% para la media de la edad con tamaño de muestra 50."
+
+colors <- c("#1E1E1E", "#4D6291", "#9C0824")
+
+plot_ic(df2, colors[1], colors[2], colors[3])
+```
+
+El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df2$lower.ci < mean(edad.data$edad) & df2$upper.ci > mean(edad.data$edad)) / iter * 100`%.
+    
+#### Tamaño de Muestra 50, IC al 90%.
+
+Simulamos 100 muestras de tamaño 50 y estimamos la media y el intervalo de confianza al 90%.
+
+```{r}
+n <- 50
+seed <- 2
+iter <- 100
+alpha <- 0.1
+
+df3 <- ic_estimation(data = edad.data, n = n, iter = iter, alpha = alpha, seed = seed)
+```
+
+Gráficamos los intervalos de confianza y el valor real de la media.
+
+```{r}
+#| label: fig-ic_n50_IC90
+#| fig-cap: "IC al 90% para la media de la edad con tamaño de muestra 50."
+
+colors <- c("#1E1E1E", "#4D6291", "#9C0824")
+plot_ic(df3, colors[1], colors[2], colors[3])
+```
+
+El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df3$lower.ci < mean(edad.data$edad) & df3$upper.ci > mean(edad.data$edad)) / iter * 100`%.
+
+#### Tamaño de Muestra 50, IC al 99%.
+
+Simulamos 100 muestras de tamaño 50 y estimamos la media y el intervalo de confianza al 99%.
+
+```{r}
+n <- 50
+seed <- 2
+iter <- 100
+alpha <- 0.01
+
+df4 <- ic_estimation(data = edad.data, n = n, iter = iter, alpha = alpha, seed = seed)
+```
+
+Gráficamos los intervalos de confianza y el valor real de la media.
+
+```{r}
+#| label: fig-ic_n50_IC99
+#| fig-cap: "IC al 99% para la media de la edad con tamaño de muestra 50."
+
+colors <- c("#1E1E1E", "#4D6291", "#9C0824")
+plot_ic(df4, colors[1], colors[2], colors[3])
+```
+
+El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df4$lower.ci < mean(edad.data$edad) & df4$upper.ci > mean(edad.data$edad)) / iter * 100`%.
+
+#### Tamaño de Muestra 50, IC al 87%.
+
+Simulamos 100 muestras de tamaño 50 y estimamos la media y el intervalo de confianza al 87%.
+
+```{r}
+n <- 50
+seed <- 2
+iter <- 100
+alpha <- 0.13
+
+df5 <- ic_estimation(data = edad.data, n = n, iter = iter, alpha = alpha, seed = seed)
+```
+
+Gráficamos los intervalos de confianza y el valor real de la media.
+
+```{r}
+#| label: fig-ic_n50_IC87
+#| fig-cap: "IC al 87% para la media de la edad con tamaño de muestra 50."
+
+colors <- c("#1E1E1E", "#4D6291", "#9C0824")
+plot_ic(df5, colors[1], colors[2], colors[3])
+```
+
+El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df5$lower.ci < mean(edad.data$edad) & df5$upper.ci > mean(edad.data$edad)) / iter * 100`%.
+
+### Conclusiones.
+
+Los intervalos de confianza se pueden definir como el rango de valores en el que se espera que se encuentre el valor verdadero de un parámetro en un porcentaje de $(1 - \alpha)* 100 %$ veces de las que se repite la estimación del parámetro con muestras distintas de tamaño $n$. Como se observo en la @fig-ic_n20, los intervalos de confianza al 95% para la media de la edad con tamaño de muestra 20 son más amplios que con un tamaño de 50, esto se debe a que la varianza de la media estimada $\hat{V}(\hat{\bar{y}}_{\text{Edad}})$,  es mayor con un tamaño de muestra menor dado que conforme $n \to N$, $\hat{V}(\hat{\bar{y}}_{\text{Edad}}) \to 0$. 
+
+Al aumentar el tamaño de muestra, la varianza de la media estimada disminuye y por lo tanto el intervalo de confianza es menor lo que conlleva a una estimación más precisa, como lo muestra la @fig-ic_n50.
+
+Al variar el nivel de confianza, se observa que al disminuir el nivel de confianza, el intervalo de confianza es menor, como se observa en la @fig-ic_n50_IC90 y @fig-ic_n50_IC87. Por otro lado, al aumentar el nivel de confianza, el intervalo de confianza es mayor, como se observa en la @fig-ic_n50_IC99, dado que el cuantil de la distribución normal es mayor y por ende el intervalo de confianza es mayor a un nivel fijo de $n$.
