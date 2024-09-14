@@ -239,3 +239,46 @@ Los intervalos de confianza se pueden definir como el rango de valores en el que
 Al aumentar el tamaño de muestra, la varianza de la media estimada disminuye y por lo tanto el intervalo de confianza es menor lo que conlleva a una estimación más precisa, como lo muestra la @fig-ic_n50.
 
 Al variar el nivel de confianza, se observa que al disminuir el nivel de confianza, el intervalo de confianza es menor, como se observa en la @fig-ic_n50_IC90 y @fig-ic_n50_IC87. Por otro lado, al aumentar el nivel de confianza, el intervalo de confianza es mayor, como se observa en la @fig-ic_n50_IC99, dado que el cuantil de la distribución normal es mayor y por ende el intervalo de confianza es mayor a un nivel fijo de $n$.
+
+## Estimación de proporción.
+
+1. ***Problema:*** Se eligió una muestra aleatoria simple de 585 familias de un área de la ciudad conteniendo 29661 familias. A cada familia se le preguntó si tenían el uso exclusivo de un baño interior en su casa. Los resultados fueron los siguientes: 
+
+| | Sí | No | Total |
+|:------:|:------:|:------:|:------:|
+| Uso de un baño | 468 | 117 | 585 |
+
+: Uso exclusivo de baño interior en familias encuestadas. {.striped .hover}
+
+* A).  Se estima el porcentaje de familias que tienen el uso exclusivo de un baño interior en su casa.
+    
+```{r}
+#| echo=T, show=T, eval=T, output=F
+N <- 29661
+n <- 585
+
+datos.prop <- data.frame(toilet = c("Sí", "No"), frecuencia = c(468, 117))
+
+prop.est <- datos.prop$frecuencia[1] / sum(datos.prop$frecuencia)
+
+finitud <- (1 - n/N)
+var.prop.est <- (finitud * 1/n * N/(N-1)) * prop.est * (1 - prop.est)
+ci <- prop.est + c(-1, 1) * qnorm(1 - 0.05/2) * sqrt(var.prop.est)
+```
+
+La estimación del porcentaje de familias que tienen el uso exclusivo de un baño interior en su casa es del `r prop.est * 100`% con un intervalo de confianza al 95% de (`r round(ci[1] * 100, 2)`, `r round(ci[2] * 100, 2)`).
+
+* B). EL tamaño de muestra necesario para una prueba piloto con una precisión del 3% y un nivel de confianza del 95%, sabiendo que la proporción de familias que tienen el uso exclusivo de un baño interior en su casa es del 75% en el área de interés de la ciudad, estimamos el tamaño de muestra necesario.
+
+```{r}
+#| echo=T, show=T, eval=T, output=F
+p.est <- 0.75
+accuracy <- 0.03
+confidence <- qnorm(1 - 0.05/2)
+
+## Dado que la N se puede considerar como grande se usa n0
+n0 <- (confidence ^2 * p.est * (1 - p.est)) / accuracy ^ 2
+n0 <- ceiling(n0) # Función techo
+```
+
+Dado que el tamaño de la población es grande, se puede usar la fórmula para el tamaño de muestra sin corregir, por lo que el tamaño de muestra necesario es de `r n0`.
