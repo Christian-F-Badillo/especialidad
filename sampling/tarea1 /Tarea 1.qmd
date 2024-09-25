@@ -1,6 +1,6 @@
 ---
 title: "Tarea 1"
-author: "Christian Francisco Badillo Hernández"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
 format:
     pdf:
         toc: true
@@ -80,7 +80,7 @@ ic_estimation <- function(data = NULL, n=NULL, iter=1000, alpha = 0.05, seed = 1
     }
 ```
 
-También vamos a crear una función que gráfique los intervalos de confianza y el valor real de la media.
+También vamos a crear una función que grafique los intervalos de confianza y el valor real de la media.
 
 ```{r}
 plot_ic <- function(df=NULL, mean.est.col = "green", ci_color = "blue", real_col = "red")
@@ -116,7 +116,7 @@ n <- 20
 iter <- 100
 seed <- 1
 
-df <- ic_estimation(data = edad.data, n=n, iter=iter, seed=seed)
+df <- ic_estimation(data = edad.data, n = n, iter = iter, seed=seed)
 ```
 
 Gráficamos los intervalos de confianza y el valor real de la media.
@@ -144,7 +144,7 @@ iter <- 100
 df2 <- ic_estimation(data = edad.data, n = n, iter = iter, seed = seed)
 ```
 
-Gráficamos los intervalos de confianza y el valor real de la media.
+Graficamos los intervalos de confianza y el valor real de la media.
 
 ```{r}
 #| label: fig-ic_n50
@@ -156,7 +156,7 @@ plot_ic(df2, colors[1], colors[2], colors[3])
 ```
 
 El porcentaje de los intervalos de confianza que contienen el valor real de la media es: `{r} sum(df2$lower.ci < mean(edad.data$edad) & df2$upper.ci > mean(edad.data$edad)) / iter * 100`%.
-    
+
 #### Tamaño de Muestra 50, IC al 90%.
 
 Simulamos 100 muestras de tamaño 50 y estimamos la media y el intervalo de confianza al 90%.
@@ -170,7 +170,7 @@ alpha <- 0.1
 df3 <- ic_estimation(data = edad.data, n = n, iter = iter, alpha = alpha, seed = seed)
 ```
 
-Gráficamos los intervalos de confianza y el valor real de la media.
+Graficamos los intervalos de confianza y el valor real de la media.
 
 ```{r}
 #| label: fig-ic_n50_IC90
@@ -195,7 +195,7 @@ alpha <- 0.01
 df4 <- ic_estimation(data = edad.data, n = n, iter = iter, alpha = alpha, seed = seed)
 ```
 
-Gráficamos los intervalos de confianza y el valor real de la media.
+Graficamos los intervalos de confianza y el valor real de la media.
 
 ```{r}
 #| label: fig-ic_n50_IC99
@@ -234,100 +234,152 @@ El porcentaje de los intervalos de confianza que contienen el valor real de la m
 
 ### Conclusiones.
 
-Los intervalos de confianza se pueden definir como el rango de valores en el que se espera que se encuentre el valor verdadero de un parámetro en un porcentaje de $(1 - \alpha)* 100 %$ veces de las que se repite la estimación del parámetro con muestras distintas de tamaño $n$. Como se observo en la @fig-ic_n20, los intervalos de confianza al 95% para la media de la edad con tamaño de muestra 20 son más amplios que con un tamaño de 50, esto se debe a que la varianza de la media estimada $\hat{V}(\hat{\bar{y}}_{\text{Edad}})$,  es mayor con un tamaño de muestra menor dado que conforme $n \to N$, $\hat{V}(\hat{\bar{y}}_{\text{Edad}}) \to 0$. 
+Los intervalos de confianza se pueden definir como el rango de valores en el que se espera que se encuentre el valor verdadero de un parámetro en un porcentaje de $(1 - \alpha)* 100 %$ veces de las que se repite la estimación del parámetro con muestras distintas de tamaño $n$. Como se observó en la @fig-ic_n20, los intervalos de confianza al 95% para la media de la edad con tamaño de muestra 20 son más amplios que con un tamaño de 50, esto se debe a que la varianza de la media estimada $\hat{V}(\hat{\bar{y}}_{\text{Edad}})$, es mayor con un tamaño de muestra menor dado que conforme $n \to N$, $\hat{V}(\hat{\bar{y}}_{\text{Edad}}) \to 0$.
 
 Al aumentar el tamaño de muestra, la varianza de la media estimada disminuye y por lo tanto el intervalo de confianza es menor lo que conlleva a una estimación más precisa, como lo muestra la @fig-ic_n50.
 
 Al variar el nivel de confianza, se observa que al disminuir el nivel de confianza, el intervalo de confianza es menor, como se observa en la @fig-ic_n50_IC90 y @fig-ic_n50_IC87. Por otro lado, al aumentar el nivel de confianza, el intervalo de confianza es mayor, como se observa en la @fig-ic_n50_IC99, dado que el cuantil de la distribución normal es mayor y por ende el intervalo de confianza es mayor a un nivel fijo de $n$.
 
-## Estimación de proporción.
+\newpage
 
-1. ***Problema:*** Se eligió una muestra aleatoria simple de 585 familias de un área de la ciudad conteniendo 29661 familias. A cada familia se le preguntó si tenían el uso exclusivo de un baño interior en su casa. Los resultados fueron los siguientes: 
+|     | Semilla | Tamaño | \% de confianza | \# de intervalos  |
+|---------------|---------------|---------------|---------------|---------------|
+| 1   | 1       | 20     | 95%             | `{r} sum(df$lower.ci < mean(edad.data$edad) & df$upper.ci > mean(edad.data$edad))`    |
+| 2   | 2       | 50     | 95%             | `{r} sum(df2$lower.ci < mean(edad.data$edad) & df2$upper.ci > mean(edad.data$edad))`  |
+| 3   | 2       | 50     | 90%             | `{r} sum(df3$lower.ci < mean(edad.data$edad) & df3$upper.ci > mean(edad.data$edad))`  |
+| 4   | 2       | 50     | 99%             | `{r} sum(df4$lower.ci < mean(edad.data$edad) & df4$upper.ci > mean(edad.data$edad))` |
+| 5   | 2       | 50     | 87%             | `{r} sum(df5$lower.ci < mean(edad.data$edad) & df5$upper.ci > mean(edad.data$edad))`  |
 
-| | Sí | No | Total |
-|:------:|:------:|:------:|:------:|
-| Uso de un baño | 468 | 117 | 585 |
+### Estimación de la Proporción de Familias
 
-: Uso exclusivo de baño interior en familias encuestadas. {.striped .hover}
+Generamos los datos
 
-* A).  Se estima el porcentaje de familias que tienen el uso exclusivo de un baño interior en su casa.
-    
+```{r}
+familias.data <- cbind(c(rep(1, 468), rep(0, 117)))
+
+colnames(familias.data)[1]<- "Baño Interior"  #1 Sí; 0 No
+
+```
+
+Veamos las primeras observaciones
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+knitr::kable(head(familias.data), caption = "Datos")
+```
+
+1.  Con una muestra de 585 familias, de una población de 29,661, estimamos el porcentaje de familias que cuentan con un baño interior de uso exclusivo a un intervalo de confianza del 95%
+
 ```{r}
 #| echo=T, show=T, eval=T, output=F
+
 N <- 29661
-n <- 585
+n <- length(familias.data)
+alpha <- 0.05
 
-datos.prop <- data.frame(toilet = c("Sí", "No"), frecuencia = c(468, 117))
-
-prop.est <- datos.prop$frecuencia[1] / sum(datos.prop$frecuencia)
-
-finitud <- (1 - n/N)
-var.prop.est <- (finitud * 1/n * N/(N-1)) * prop.est * (1 - prop.est)
-ci <- prop.est + c(-1, 1) * qnorm(1 - 0.05/2) * sqrt(var.prop.est)
+p_mean.est <- mean(familias.data)
+p_var.est <- (1-n/N)*(p_mean.est*((1-p_mean.est))/(n-1))
+p_lower.ci <- p_mean.est - qnorm(1 - alpha/2) * sqrt(p_var.est)
+p_upper.ci <- p_mean.est + qnorm(1 - alpha/2) * sqrt(p_var.est)
 ```
 
-La estimación del porcentaje de familias que tienen el uso exclusivo de un baño interior en su casa es del `r prop.est * 100`% con un intervalo de confianza al 95% de (`r round(ci[1] * 100, 2)`, `r round(ci[2] * 100, 2)`).
+```{r}
+p_mean.est      
+p_lower.ci;p_upper.ci  
+```
 
-* B). EL tamaño de muestra necesario para una prueba piloto con una precisión del 3% y un nivel de confianza del 95%, sabiendo que la proporción de familias que tienen el uso exclusivo de un baño interior en su casa es del 75% en el área de interés de la ciudad, estimamos el tamaño de muestra necesario.
+La estimación puntual del porcentaje de familias en el área de la ciudad que tienen un baño interior en casa es del 80% y el intervalo de confianza al 95% es de \[76.788, 83.212\].
+
+#### Tamaño de Muestra
+
+2.  Estimamos el tamaño de muestra que necesitaríamos si obtuvimos una proporción de 0.75 en un estudio piloto, queremos una confianza al 95% y una precisión de 0.03
 
 ```{r}
 #| echo=T, show=T, eval=T, output=F
-p.est <- 0.75
-accuracy <- 0.03
-confidence <- qnorm(1 - 0.05/2)
 
-## Dado que la N se puede considerar como grande se usa n0
-n0 <- (confidence ^2 * p.est * (1 - p.est)) / accuracy ^ 2
-n0 <- ceiling(n0) # Función techo
+p_piloto <- 0.75
+alpha <- 0.05
+sigma_precision <- 0.03
+
+n0 <- (qnorm(1 - alpha/2)^2)*(p_piloto)*(1-p_piloto)/(sigma_precision^2)
+```
+```{r}
+n0
 ```
 
-Dado que el tamaño de la población es grande, se puede usar la fórmula para el tamaño de muestra sin corregir, por lo que el tamaño de muestra necesario es de `r n0`.
-
-## Estimación de un Total.
-
-2. ***Problema:*** Para reducir el trabajo de inventario de existencias en una bodega donde existen 226 estantes, se tomó una muestra aleatoria simple de 26 estantes en los cuales se hizo un conteo del valor ($) de los artículos en cada uno de los estantes. Los valores son:
+Ajustamos el tamaño de muestra al de la población:
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
-data.estante <- c(40, 42, 44, 45, 49, 51, 54, 53, 57, 58, 60, 61, 61, 
-                61, 62, 61, 63, 63, 66, 67, 68, 70, 74, 77, 84, 85)
+#| echo=T, show=T, eval=T, output=F
 
-knitr::kable(data.frame(estante = 1:26, valor = data.estante), 
-             caption = "Valores de los artículos en los estantes.")
+n_est <- n0/(1+ n0/N)
 ```
-
-* A). Se estima el total de valor de los artículos en la bodega y su intervalo de confianza al 95%.
 
 ```{r}
-
-N <- 226
-n <- 26
-
-total.est <- N * mean(data.estante)
-var.total.est <- N^2 * (1 - n/N) * var(data.estante) / n
-ci.total <- total.est + c(-1, 1) * qnorm(1 - 0.05/2) * sqrt(var.total.est)
+n_est
 ```
 
-El total de valor de los artículos en la bodega es de `$` `r format(total.est, scientific=F)` con un intervalo de confianza al 95% de (`r format(round(ci.total[1], 2), scientific=F)`, `r format(round(ci.total[2], 2), scientific=F)`).
+El tamaño de muestra estimado y ajustado es de aproximadamente 779. Notamos que es mayor al del inciso anterior(585), esto nos habla que este estudio tendrá un precisión mayor.
 
-* B). Si se deseara realizar un nuevo estudio ¿qué tamaño de muestra se
-utilizaría para estimar el valor total de la mercancía de la bodega con un nivel de confianza del 95%, una precisión de $\$750$ y se sabe de estudios previos que $S = \$10.35$?
+### Estimación del Total de Mercancía
+
+Para reducir el trabajo de inventario de existencias en una bodega donde existen 226 estantes, se tomó una muestra aleatoria simple de 26 estantes en los cuales se hizo un conteo del valor (\$) de los artículos en cada uno de los estantes.
+
+Generamos los datos
+
+```{r}
+df_estantes <- data.frame(valor = c(40, 42, 44, 45, 49, 51, 54, 53, 57, 58, 60, 61, 61, 61, 62, 61, 63, 63, 66, 67, 68, 70, 74, 77, 84, 85))
+```
+
+1.  Estimamos el valor total de la mercancía que se encuentra en la bodega y calculamos un intervalo de 95% de confianza.
 
 ```{r}
 #| echo=T, show=T, eval=T, output=T
 
 N <- 226
-confidence <- qnorm(1 - 0.05/2)
-accuracy <- 750
-S <- 10.35
+n <- length(df_estantes$valor)
+alpha <- 0.05
 
-n0 <- (confidence^2 * S^2 * N^2) / accuracy^2
-n0 <- ceiling(n0)
+t_mean.est <- (N)* mean(df_estantes$valor)
+
+t_var.est <- N^2*(1- n/N)*(var(df_estantes$valor)/n)
+t_lower.ci <- t_mean.est - qnorm(1 - alpha/2) * sqrt(t_var.est)
+t_upper.ci <- t_mean.est + qnorm(1 - alpha/2) * sqrt(t_var.est)
+
+t_mean.est
+t_lower.ci; t_upper.ci
+
 ```
 
-El tamaño de muestra necesario para estimar el valor total de la mercancía de la bodega con un nivel de confianza del 95% y una precisión de $\$750$ es de `r n0`.
+La estimación puntual del valor total de la mercancía en la bodega es de \$13,699.08 y el intervalo de 95% de confianza donde se encuantra el valor total de la bodega es \[\$12,738.22, \$14,659.93\].Podemos asegurar (con el 95%) que la bodega tiene un valor mínimo de \$12,000 aproximadamente  y un valor máximo aproximado de \$15,000. 
+
+#### Tamaño de Muestra
+
+Estimamos el tamaño de muestra que necesitaríamos si quisieramos estimar el valor total de la mercancía con un nivel de confianza del 95%, una precisión de \$750 y sabiendo que la S es aproximadamente \$10.35.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+alpha <- 0.05
+t_precision <- 750
+t_var.est <- 10.35
+
+n0 <- (qnorm(1 - alpha/2)^2) * N^2 * t_var.est^2 / t_precision^2
+
+n0
+```
+
+Ajustamos el tamaño de muestra al de la población:
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
 
 
+t_n <- n0/(1+ n0/N)
 
+t_n
+```
+
+El tamaño de muestra estimado y ajustado es de aproximadamente 32.Este tamaño de muestra nos daría con el 95% el valor total de la bodega, notemos que sería muy cercana al valor real debido a que al buscar una precision de \$750, comparada con la media estimada, es mínima la variación que buscamos; de ahí que la muestra sea mayor al inciso anterior.
 
 

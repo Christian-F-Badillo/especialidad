@@ -1,0 +1,581 @@
+---
+title: "Tarea 1 Multivariado"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: true
+        lot: true
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+\newpage
+
+# Exploración gráfica y datos faltantes
+
+En la @tbl-tab1 se muestran las variables junto a su escala de medición y el dato que se reporta en la página. Como se puede observar, a pesar de que la variable “Salud autorreportada” tiene una escala de medición de tipo ordinal, se reporta el promedio de los puntajes obtenidos por las personas, siendo más adecuado el reportaje de la mediana de los mismos.
+
+| Variable | Escala de medición | Dato reportado |
+|:----------:|:--------------------:|:----------------:|
+| Hogares con acceso a banda ancha | Razón | Del total de hogares, el porcentaje con acceso a banda ancha |
+| Contaminación del aire | Razón | Nivel de contaminación del aire en PM2.5 microgramos por metro cúbico |
+| Participación electoral | Razón | Porcentaje de personas con participación electoral del total de población adulta |
+| Esperanza de vida al nacer | Razón | Número de años vividos (por la generación estudiada) entre el tamaño de la generación estudiada |
+| Años promedio de escolaridad | Razón | Promedio. Suma del número acumulado de años estudiados por un conjunto de personas, entre el número de individuos que componen al estudio |
+| Salud autorreportada | Ordinal | Promedio de los resultados obtenidos con un instrumento tipo escala Likert con unidades desde 0 (totalmente insatisfecho) hasta 10 (totalmente satisfecho) |
+| Tasa de obesidad | Razón | Del total de población mayor de 20 años, el porcentaje de personas cuyo índice de masa corporal (IMC) fue mayor o igual a 30 |
+| Deserción escolar | Razón | Porcentaje de alumnos que abandonan la escuela de un nivel educativo, respecto a la matrícula de inicio de curso del mismo nivel |
+: Variables y escala de medición de algunos indicadores. {#tbl-tab1 tbl-colwidths="[20,15, 65]" .striped .hover .bordered}
+
+En la @tbl-tab2 se presentan los datos faltantes, a qué estado pertenecen y en cuál variable se encuentra el dato faltante. Hay un total de 15 datos faltantes, 15 estados tienen una observación faltante en alguna variable. En la @tbl-tab3 se puede observar que la variable que tiene más datos faltantes es “Porcentaje de la población en situación de pobreza extrema” y los estados a los que pertenecen son a Nuevo León y Puebla.
+\newpage
+
+| Estado | Variable | Obvs. Faltantes |
+|:----------:|:--------------------:|:----------------:|
+| Aguascalientes | Contaminación del aire | 1 |
+| Campeche | Tasa de incidencia delictiva | 1 |
+| Colima | Razón de mortalidad materna defunciones por cada 100 mil nacidos vivos | 1 |
+| Chiapas | Confianza en la policía | 1 |
+| Durango | Participación cívica y política | 1 |
+| Guanajuato | Porcentaje de viviendas con techos de materiales resistentes | 1 |
+| Jalisco | Salud autorreportada | 1 |
+| Michoacán de Ocampo | Calidad de la red social de soporte | 1 |
+| Nuevo León | Porcentaje de la población en situación de pobreza extrema | 1 |
+| Oaxaca | Niveles de educación | 1 |
+| Puebla | Porcentaje de la población en situación de pobreza extrema | 1 |
+| Sinaloa | Tasa de informalidad laboral | 1 |
+| Tamaulipas | Satisfacción con la vida | 1 |
+| Tlaxcala | Población ocupada trabajando más de 48 horas | 1 |
+| Zacatecas | Tasa de desocupación | 1 |
+: Estados con datos faltantes. {#tbl-tab2 tbl-colwidths="[20,60, 20]" .striped .hover .bordered}
+
+
+
+| Variable | Estado | Obvs. Faltantes |
+|:----------:|:--------------------:|:----------------:|
+| Contaminación del aire | Aguascalientes | 1 |
+| Tasa de incidencia delictiva | Campeche         | 1 |
+| Razón de mortalidad materna defunciones por cada 100 mil nacidos vivos | Colima | 1 |
+| Confianza en la policía | Chiapas | 1 |
+| Participación cívica y política | Durango | 1 |
+| Porcentaje de viviendas con techos de materiales resistentes | Guanajuato | 1 |
+| Salud autorreportada | Jalisco | 1 |
+| Calidad de la red social de soporte | Michoacán de Ocampo | 1 |
+| Porcentaje de la población en situación de pobreza extrema | Nuevo León / Puebla | 2 |
+| Niveles de educación | Oaxaca | 1 |
+| Tasa de informalidad laboral | Sinaloa | 1 |
+| Satisfacción con la vida
+Población ocupada trabajando más de 48 horas | Tamaulipas / Tlaxcala | 1 |
+| Tasa de desocupación | Zacatecas | 1 |
+: Valores faltantes en cada variable {#tbl-tab3 tbl-colwidths="[60, 30, 10]" .striped .hover .bordered}
+
+El porcentaje de estados que tienen valores faltantes, respecto al total, representa el 45.45%; por otra parte, respecto a las variables, los datos faltantes representan al 40% de todos los datos. El total de datos faltantes es de 1.29% respecto al total de datos.
+
+:::{#fig-razon_mort_mat layout-nrow=2}
+![](boxp_razon_mort_mat.jpeg)
+
+![](hist_razon_mort_mart.jpeg)
+
+![](ecdf_razon_mort_mat.jpeg)
+
+![](qqp_razon_mort_mat.jpeg)
+
+Descripción de la variable "razón de mortalidad materna".
+:::
+
+:::{#fig-satis_vida layout-nrow=2}
+![](boxp_satis_vida.jpeg)
+
+![](hist_satis_vida.jpeg)
+
+![](ecdf_satis_vida.jpeg)
+
+![](qqp_satis_vida.jpeg)
+
+Descripción de la variable "satisfacción con la vida".
+:::
+
+:::{#fig-serv_bas layout-nrow=2}
+![](boxp_serv_bas.jpeg)
+
+![](hist_serv_bas.jpeg)
+
+![](ecdf_serv_bas.jpeg)
+
+![](qqp_serv_bas.jpeg)
+
+Descripción de la variable "viviendas con acceso a servicios básicos".
+:::
+
+:::{#fig-mort_inf layout-nrow=2}
+![](boxp_tasa_mort_inf.jpeg)
+
+![](hist_tasa_mort_inf.jpeg)
+
+![](ecdf_mort_inf.jpeg)
+
+![](qqp_tasa_mort_inf.jpeg)
+
+Descripción de la variable "tasa de mortalidad infantil".
+:::
+
+:::{#fig-tasa_obe layout-nrow=2}
+![](boxp_tasa_obe.jpeg)
+
+![](hist_tasa_obe.jpeg)
+
+![](ecdf_tasa_obe.jpeg)
+
+![](qqp_tasa_ob.jpeg)
+
+Descripción de la variable "tasa de obesidad".
+:::
+
+# Matrices de Correlación y Covarianza.
+
+# Datos Faltantes
+
+# Algebra de Matrices
+
+\begin{tcolorbox}[colback=gray!5!white, %color del fondo
+		colframe=black!75!white, %color borde
+		title= Parte I]
+\begin{minipage}{15cm}
+			  Consideren la siguiente matriz. Para cada uno de los incisos,muestren las operaciones que realizaron para justificar su respuesta.
+\end{minipage}
+\end{tcolorbox}
+
+1. Obtengan los valores propios (calculando el polinomio característico) y los vectores asociados a cada uno de esos valores propios.
+
+\begin{equation*}
+	\mathbf{A} = 
+	\begin{pmatrix}
+		6 & 4 & 0\\
+		4 & 6 & 0\\
+		0 & 0 & 6
+	\end{pmatrix}
+\end{equation*}
+
+***Solución:***
+
+El polinomio característico de $\mathbf{A}$ estará determinado por:
+
+$$det(\mathbf{A}-\lambda\mathbf{I})=0$$
+\begin{equation*}
+	\begin{split}
+		(\mathbf{A}-\lambda\mathbf{I}) & =  
+		\begin{pmatrix}
+			6 & 4 & 0\\
+			4 & 6 & 0\\
+			0 & 0 & 6
+		\end{pmatrix} 
+		-  
+		\begin{pmatrix}
+			\lambda & 0 & 0\\
+			0 & \lambda & 0\\
+			0 & 0 & \lambda
+		\end{pmatrix}\\
+		& =
+		\begin{pmatrix}
+			6- \lambda & 4 & 0\\
+			4 & 6- \lambda & 0\\
+			0 & 0 & 6-\lambda
+		\end{pmatrix}
+	\end{split}
+\end{equation*}
+
+$$\Rightarrow det(\mathbf{A}-\lambda\mathbf{I})\;=\; 0$$
+\begin{equation*}
+	\begin{split}
+		\Leftrightarrow (6 -\lambda)[(6-\lambda)(6-\lambda)-0] - 4[4(6-\lambda)-0]+0[\dots] &= 0  \\
+		\Leftrightarrow (6-\lambda)^3 \;-\;16(6-\lambda) & = 0\\
+		\Leftrightarrow (6-\lambda) \left[(6-\lambda)^2\;-\;16\right] & =0 \\
+		& \Rightarrow \lambda_1= 6\\
+		o \\
+		& (6- \lambda)^2-16 = 0 \\
+		& 6- \lambda = \pm 4 \\
+		& \Rightarrow \lambda_2= 2\\
+		& \Rightarrow \lambda_3= 10
+	\end{split}
+\end{equation*}
+
+Por lo tanto los valores propios de la matriz $\mathbf{A}$ son: 
+$$
+\left\{ 
+	\begin{array}{l} 
+		\lambda_1 = 6 \\ 
+		\lambda_2 = 2 \\ 
+		\lambda_3 = 10 
+	\end{array}
+\right.
+$$
+
+Ahora supongamos que $\bar{v} \not= \bar{0}$ entonces $(\mathbf{A}-\lambda\mathbf{I})= \bar{0}$
+
+\begin{equation*}
+	\begin{split}
+		\therefore (\mathbf{A}-\lambda\mathbf{I}) \bar{v} &= \bar{0}\\
+		&= 
+		\begin{pmatrix}
+			6- \lambda & 4 & 0\\
+			4 & 6- \lambda & 0\\
+			0 & 0 & 6-\lambda
+		\end{pmatrix}
+		\begin{pmatrix}
+			x\\
+			y\\
+			z
+		\end{pmatrix}
+		=\bar{0}
+	\end{split}
+\end{equation*}
+
+Para $\lambda_1= 6$
+	
+\begin{equation*}
+	\begin{split}
+		\begin{pmatrix}
+			6- 6 & 4 & 0\\
+			4 & 6- 6 & 0\\
+			0 & 0 & 6-6
+		\end{pmatrix}
+		\begin{pmatrix}
+			x\\
+			y\\
+			z
+		\end{pmatrix}
+		& =\bar{0} \\
+		\Rightarrow
+		\begin{pmatrix}
+			4y\\
+			4x
+		\end{pmatrix}
+		& =\bar{0}\\
+		\therefore \bar{v} &= (0,0,0)
+	\end{split}
+\end{equation*}
+
+Para $\lambda_2= 2$
+	
+\begin{equation*}
+	\begin{split}
+		\begin{pmatrix}
+			6- 2 & 4 & 0\\
+			4 & 6- 2 & 0\\
+			0 & 0 & 6-4
+		\end{pmatrix}
+		\begin{pmatrix}
+			x\\
+			y\\
+			z
+		\end{pmatrix}
+		& =\bar{0} \\
+		\Rightarrow
+		\begin{pmatrix}
+			4x+4y\\
+			4x+4y\\
+			4z
+		\end{pmatrix}
+		& =\bar{0}\\
+		\Leftrightarrow
+		\begin{pmatrix}
+			x\\
+			y\\
+			z
+		\end{pmatrix} 
+		&=
+		\begin{pmatrix}
+			-y\\
+			-x\\
+			 0
+		\end{pmatrix}\\
+		\therefore \bar{v} &= (-y,y,0)
+	\end{split}
+\end{equation*}
+	
+Para $\lambda_3= 10$
+		
+\begin{equation*}
+	\begin{split}
+		\begin{pmatrix}
+			6- 10 & 4 & 0\\
+			4 & 6- 10 & 0\\
+			0 & 0 & 6-10
+		\end{pmatrix}
+		\begin{pmatrix}
+			x\\
+			y\\
+			z
+		\end{pmatrix}
+		& =\bar{0} \\
+		\Rightarrow
+		\begin{pmatrix}
+			-4x+4y\\
+			4x-4y\\
+			-4z
+		\end{pmatrix}
+		& =\bar{0}\\
+			\Leftrightarrow
+	\begin{pmatrix}
+		x\\
+		y\\
+		z
+	\end{pmatrix} 
+	&=
+	\begin{pmatrix}
+		y\\
+		x\\
+		0
+	\end{pmatrix}\\
+	\therefore \bar{v} &= (y, y, 0)
+	\end{split}
+\end{equation*}
+
+Por lo tanto, los vectores propios asociados a los valores propios de la matriz $\mathbf{A}$ son:
+
+$$
+\left\{ 
+	\begin{array}{l} 
+		\bar{v}_1 = (0,0,0) \\ 
+		\bar{v}_2 = (-y,y,0) \\ 
+		\bar{v}_3 = (y,y,0) 
+	\end{array}
+\right.
+$$
+
+2. ¿Es  $\mathbf{A}$ una matriz idempotente?
+
+Una manera fácil de saberlo es si cumple:
+		$$\mathbf{A}^2= \mathbf{A}$$
+Veamos:
+\begin{equation*}
+	\begin{split}
+		\mathbf{A}^2 &= 
+		\begin{pmatrix}
+			6 & 4 & 0\\
+			4 & 6 & 0\\
+			0 & 0 & 6
+		\end{pmatrix} 
+		\cdot
+	\begin{pmatrix}
+			6 & 4 & 0\\
+			4 & 6 & 0\\
+			0 & 0 & 6
+		\end{pmatrix} \\
+		&= 	
+		\begin{pmatrix}
+			36 + 16  & 24 + 24 & 0\\
+			24+24 & 16+36 & 0\\
+			0 & 0 & 36
+		\end{pmatrix} \\
+		& \not = \mathbf{A}
+	\end{split}
+\end{equation*}
+No lo es !!
+
+3. ¿Es  $\mathbf{A}$ una matriz no singular?
+
+Eso lo sabremos si $\mathbf{A}$ es invertible. Para ello el determinante debe ser distinto de cero.
+
+\begin{equation*}
+	\begin{split}
+		det(\mathbf{A}) &= 6[36-0]-4[24-0]+0[0]\\
+						&= 216 - 96\\
+						&= 120 \not= 0
+	\end{split}
+\end{equation*}
+Dado que el determinante de $\mathbf{A}$ es distinto de $0$, entonces es no singular.
+
+4. ¿Cuánto vale la traza de la matriz $\mathbf{A}$?
+\begin{equation*}
+	\begin{split}
+		tr(\mathbf{A}) &= a_{11}+a_{22}+a_{33}\\
+		               &= 6 + 6 + 6 \\
+		               & = 18
+	\end{split}
+\end{equation*}
+
+5. ¿Cuánto vale el rango de la matriz $\mathbf{A}$?
+
+Nos podemos apoyar del inciso 3 donde calculamos el determinante, que resultó distinto de cero, por lo tanto la matriz es de rango máximo,es decir \textbf{rango 3}.
+
+6. ¿Es  $\mathbf{A}$ una matriz simétrica?
+
+Deberá cumplir que:
+    $$\mathbf{A}^T= \mathbf{A}$$
+Veamos:
+\begin{equation*}
+	\begin{split}
+		\mathbf{A}^T &= 
+		\begin{pmatrix}
+		\color{red}{6} & \color{red}{4}  & \color{red}{0}  \\
+		\color{blue}{4} & \color{blue}{6}  & \color{blue}{0}  \\
+		\color{violet}{0} & \color{violet}{0}  & \color{violet}{6}  \\
+		\end{pmatrix}^T \\
+		&= 	
+		\begin{pmatrix}
+		\color{red}{6} & \color{blue}{4}  & \color{violet}{0}  \\
+		\color{red}{4} & \color{blue}{6}  & \color{violet}{0}  \\
+		\color{red}{0} & \color{blue}{0}  & \color{violet}{6}  \\
+	\end{pmatrix} \\
+		& = \mathbf{A}
+	\end{split}
+\end{equation*}
+Si lo es!!
+
+7. Determinen si esta matriz es una matriz definida positiva, semidefinida positiva o si no lo es.
+
+Es definida positiva si cumple alguna de las siguientes condiciones:
+
+\begin{enumerate}
+	\item Tiene eigenvalores positivos
+	\item $\bar{x}^t \mathbf{A}\bar{x}>0 \; \; \forall \bar{x}$
+	\item Los determinates de las submatrices principales de $\mathbf{A}$ son positivos
+\end{enumerate} 
+	
+Como vimos en el inciso 1, todos los eigenvalores son positivos por lo tanto si es \textbf{DEFINIDA POSITIVA}.
+
+\newpage
+\begin{tcolorbox}[colback=gray!5!white, %color del fondo
+	colframe=black!75!white, %color borde
+	title= Parte II]
+	\begin{minipage}{15cm}
+		 Rotar $30^o$ los vectores $\mathbf{v_1}= (2,3)$ y $\mathbf{v_2}=(5,2)$ y triplicar su tamaño.
+	\end{minipage}
+\end{tcolorbox}
+
+1. Mostrar los vectores de manera gráfica antes y después de hacer la transformación.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{vectores.pdf}	
+\end{figure}
+
+2. Obtener las dos matrices necesarias para esta transformación.
+
+Como hablamos de una rotación en el plano euclídiano, usaremos la matriz:
+$$
+R(\theta)=
+\begin{pmatrix}
+	cos \theta & -sin \theta \\
+	sin \theta & cos \theta
+\end{pmatrix}
+$$
+Por otro lado el tamaño solo es multiplicarlo por un escalar $c$, en este caso $c= 3$, así la operación que debemos hacer para cada vector a transformar  es:
+$$\bar{\mathbf{v'}}= c  \mathbf{R}\bar{\mathbf{v}}$$
+
+* Para el vector $\mathbf{v_1}=(2,3)$
+\begin{equation*}
+    \begin{split}
+    	\mathbf{v_{1}'} &= 3 
+    	\begin{pmatrix}
+    		cos(30) & -sin(30) \\
+    		sin (30) & cos(30)
+    	\end{pmatrix}
+    	\begin{pmatrix}
+    		2 \\
+    		3
+    	\end{pmatrix} \\
+    	&= 
+    	\begin{pmatrix}
+    		\frac{\sqrt{3}}{2} & - \frac{1}{2} \\
+    		\frac{1}{2} & \frac{\sqrt{3}}{2}
+    	\end{pmatrix}
+    	\begin{pmatrix}
+    		6 \\
+    		9
+    	\end{pmatrix} \\
+    	&=
+    		\begin{pmatrix}
+    		\frac{6\sqrt{3} \; -\; 9}{2} \\
+    		\frac{6\;+\;9\sqrt{3}}{2}
+    	\end{pmatrix}\\
+    	&\approx
+    	\begin{pmatrix}
+    		0.7 \\
+    		10.8
+    	\end{pmatrix}
+    \end{split}
+\end{equation*}
+
+* Para el vector $\mathbf{v_2}=(5,2)$
+\begin{equation*}
+	\begin{split}
+		\mathbf{v_{2}'} &= 3 \cdot
+		\begin{pmatrix}
+			cos(30) & -sin(30) \\
+			sin (30) & cos(30)
+		\end{pmatrix}
+		\begin{pmatrix}
+			5 \\
+			2
+		\end{pmatrix} \\
+		&= 
+		\begin{pmatrix}
+			\frac{\sqrt{3}}{2} & - \frac{1}{2} \\
+			\frac{1}{2} & \frac{\sqrt{3}}{2}
+		\end{pmatrix}
+		\begin{pmatrix}
+			15 \\
+			6
+		\end{pmatrix} \\
+		&=
+	\begin{pmatrix}
+		\frac{15\sqrt{3} \;-\; 6}{2} \\
+		\frac{15 \;+\; 6\sqrt{3}}{2}
+	\end{pmatrix}\\ 	
+		&\approx
+		\begin{pmatrix}
+			10 \\
+			12.7
+		\end{pmatrix}
+	\end{split}
+\end{equation*}
+
+3. Encuentra el producto punto de $\mathbf{v_1}$ y $\mathbf{v_2}$.
+\begin{equation*}
+	\begin{split}
+		\mathbf{v_1}\cdot\mathbf{v_2} &= (2,3)\cdot(5,2)\\
+				&= 2(5) \;+\; 3(2)\\
+				&= 16
+	\end{split}
+\end{equation*}
+
+4. Encuentra la magnitud de $\mathbf{v_1}$ y $\mathbf{v_1}$ transformado.
+* Para $\mathbf{v_1}$
+\begin{equation*}
+	\begin{split}
+		\lVert \mathbf{v_1} \rVert &= \sqrt{x^2 + y^2}\\
+									&= \sqrt{2^2 + 3^2}\\
+									&= \sqrt{4 + 9}\\
+									&= \sqrt{13}	
+	\end{split}
+\end{equation*}
+
+
+* Para $\mathbf{v_1'}$ 
+\begin{equation*}
+	\begin{split}
+		\lVert \mathbf{v_1'} \rVert &= \sqrt{\left(\frac{6\sqrt{3} \; -\; 9}{2}\right)^2 + \left(\frac{6\;+\;9\sqrt{3}}{2}\right)^2}\\
+		&= \sqrt{\left(\frac{3}{2}\right)^2\left[ \left(2\sqrt{3} \; -\; 3\right)^2 + \left(2\;+\;3\sqrt{3}\right)^2\right]} \\
+		&= \left(\frac{3}{2}\right) \sqrt{4(3)\;-\;12\sqrt{3}\;+\;9\;+\;4\;+12\sqrt{3}\;+\;9(3)}\\
+		&= \frac{3}{2} \sqrt{52}\\ 
+		&= \frac{3}{2} \sqrt{4(13)}	\\
+		&= 3\sqrt{13}
+	\end{split}
+\end{equation*}
