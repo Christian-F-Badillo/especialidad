@@ -87,6 +87,26 @@ Población ocupada trabajando más de 48 horas | Tamaulipas / Tlaxcala | 1 |
 
 El porcentaje de estados que tienen valores faltantes, respecto al total, representa el 45.45%; por otra parte, respecto a las variables, los datos faltantes representan al 40% de todos los datos. El total de datos faltantes es de 1.29% respecto al total de datos.
 
+| # de Renglones | Cantidad de NA | % |
+|:----------:|:--------------------:|:----------------:|
+| 15 | 1 | 45.45 |
+| 18 | 0 | 54.55 |
+: Porcentaje de valores faltantes, por renglón {#tbl-tab4 tbl-colwidths="[33, 33, 33]" .striped .hover .bordered}
+
+| # de Columnas | Cantidad de NA | % |
+|:----------:|:--------------------:|:----------------:|
+| 1 | 2 | 2.85 |
+| 13 | 1 | 37.15 |
+| 21 | 0 | 60 |
+: Porcentaje de valores faltantes, por columna {#tbl-tab5 tbl-colwidths="[33, 33, 33]" .striped .hover .bordered}
+
+|  | Cantidad | % |
+|:----------:|:--------------------:|:----------------:|
+| Datos con NA | 15 | 1.3 |
+| Datos sin NA | 1140 | 98.7 |
+: Porcentaje de valores faltantes, total {#tbl-tab6 tbl-colwidths="[33, 33, 33]" .striped .hover .bordered}
+
+
 :::{#fig-razon_mort_mat layout-nrow=2}
 ![](boxp_razon_mort_mat.jpeg)
 
@@ -147,10 +167,133 @@ Descripción de la variable "tasa de mortalidad infantil".
 Descripción de la variable "tasa de obesidad".
 :::
 
+## Gráficas multivariadas.
+
+![Curvas de Andrews. Cada Curva corresponde a un estado.](andrews_estados.jpg)
+
+![Caritas de Chernoff para los distintos estados.](caritas_chernoff_estados.png)
+
+![Gráfico de paralelas para los distintos estados](paralelas_estados.jpg)
+
+
+\newpage
 # Matrices de Correlación y Covarianza.
 
-# Datos Faltantes
+Se muestra el código para obtener las matrices de covarianza y correlación.
 
+En este bloque código cargamos las paqueterias al igual que los datos y creamos un subconjunto de los datos con las variables solicitadas.
+```{r}
+#| show=T, eval=T, output=F
+library(ggplot2)
+library(tidyverse)
+
+data.raw <- read.csv("imputacion_completa.csv", header = TRUE)
+columns <- names(data.raw)
+
+subset.columns <- c(
+          "Niveles.de.educacion", "Desercion.escolar", 
+          "Anios.promedio.de.escolaridad",
+          "Satisfaccion.con.tiempo.para.ocio",
+          "Poblacion.ocupada.trabajando.mas.de.48.horas",
+          "Gini.del.ingreso.disponible.de.los.hogares.per.capita")
+
+data <- data.raw %>%
+    select(subset.columns)
+```
+Se imprime la matriz de correlación.
+```{r}
+# Podemos obtener la matrix de correlación como:
+mat.corr.data <- matrix(cor(data, metho="pearson"), 6, 6)
+
+knitr::kable(mat.corr.data)
+```
+
+Podemos usar operaciones con matrices para obtener el mismo resultado.
+```{r}
+# O podemos obtener la matriz centradora.
+n <- nrow(data)
+J <- diag(n) - 1/n * matrix(rep(1, n), n, n)
+
+# Ahora premultiplicamos esto por los datos.
+centered.data.mat <- matrix(J, n, n) %*% as.matrix(data, 33, 6)
+
+# La varianza de cada variable se obtiene como:
+cov.data <- t(as.matrix(centered.data.mat, 33, 6)) %*% 
+  as.matrix(centered.data.mat, 33, 6)
+cov.data <- as.matrix(cov.data, 6, 6) * 1/n
+
+## Se puede verificar que da la misma entrada que:
+# cov(data) * (n-1)/n
+
+# Ahora obtenemos la varianza de cada variable
+var.data <- diag(cov.data)
+
+# Ahora calculamos su desviación estandar
+sd.data <- sqrt(var.data)
+sd.data <- as.matrix(sd.data, 1, 6)
+
+# Creamos una matrix cuyas diagonales sea la sd de cada variable
+D <- matrix(rep(0, 36), 6, 6)
+for (i in 1:6) {
+  for (j in 1:6) {
+    if (i == j) {
+      D[i, j] <- sd.data[i]
+    }
+  }
+}
+
+# Encontramos su inversa
+D.inv <- solve(D)
+
+# Ahora obtnemos R
+R <- t(D.inv)%*%cov.data%*%D.inv
+
+# Veamos si R es igual a mat.corr.data con una tolerancia de 1.5e-8
+all.equal(mat.corr.data, R)
+```
+\newpage
+Podemos imprimir esta nueva matriz de correlación y como se puede observar al comparar ambas matrices, son iguales.
+
+```{r}
+knitr::kable(R)
+```
+
+Para estimar el vector de medias, podemos usar la función ```apply()``` de R para mejor eficiencia.
+
+```{r}
+# Vector de medias, esto se puede hacer con
+mean.vector <- apply(data, 2, mean)
+mean.vector
+```
+
+Estimamos el coeficiente de variación CV para cada variable.
+
+```{r}
+# Usamos el vector de medias y el de desviación estandar para estimar el CV.
+sd.variables <- apply(data, 2, sd)
+sd.variables
+c.v <- sd.variables/mean.vector
+c.v
+```
+
+\newpage
+# Datos Faltantes
+\scriptsize
+\begin{tabular}{|m{2cm}|m{6cm}|m{7cm}|}
+\hline
+Tratamiento de datos faltantes & ¿En qué consiste? & ¿En qué casos se recomienda usarlo? (datos perdidos tipo MCAR MAR//MNAR) \\ \hline
+Omisión Total & Consiste en eliminar todos los casos con uno o más datos faltantes. & Se recomienda para casos en los que el mecanismo de pérdida es completamente al azar (MCAR) y cuando haya pocos datos faltantes (Pigott, 2001), ya que produce estimaciones insesgadas de las medias y varianzas (Buuren, 2018). En los demás mecanismos no se recomienda, debido a que puede producir estimaciones sesgadas de las medias, coeficientes de regresión y/o de correlación (Buuren, 2018). \\ \hline
+Omisión Parcial & Consiste en hacer análisis, por variable, solo de los casos que están completos, omitiendo los faltantes. También llamada eliminación por pares. & Bajo MCAR produce estimaciones consistentes de la media y se recomienda solo si los datos se distribuyen como una normal multivariada o si hay bajas correlaciones entre las variables (Buuren, 2018). En el caso de matrices de covarianzas, puede producir correlaciones que estén fuera de rango, debido a que no haya el mismo número de variables (Pigott, 2001). Puede producir sesgos si el mecanismo de pérdida no es MCAR (Buuren, 2018). \\ \hline
+Imputación con la Media & Se trata de reemplazar el valor faltante con la media de los demás valores de esa variable.
+O usar la moda en caso de que el tipo de variable sea categórica.  & Cuando el mecanismo de pérdida no es MCAR, subestima la varianza (la reduce artificialmente) (Buuren, 2018), altera la relación entre posibles variables y sesga casi cualquier estimación, incluida la media (Kleinke, 2020). \\ \hline
+Imputación Hot Deck & Consiste en reemplazar un dato faltante con uno que se tiene de una base de datos alterna y que tenga puntajes similares en las demás variables.  & por rellenar. \\ \hline
+Imputación usando Regresión & Consiste en hacer uso de información disponible en otras variables con el fin de producir imputaciones que sean más aproximadas a los valores faltantes. De construir un modelo basado en la información disponible y rellenar los datos faltantes con las predicciones de dicho modelo. & Bajo MCAR produce estimaciones insesgadas de la media. Puede ser útil para MAR solo si los factores para la pérdida de información son atrapados por el modelo de regresión usado (Buuren, 2018). Sin embargo, aumenta de manera artificial las correlaciones y disminuye la varianza al subestimar la variabilidad que pueda ser inherente a los datos. Lo que puede aumentar la probabilidad de observar relaciones espurias (Buuren, 2018), aunque esto se podría controlar agregando errores aleatorios al valor imputado (Newman, 2014). \\ \hline
+Imputación usando Algoritmo EM & Se trata de un proceso iterativo de dos pasos, uno de estimación de la esperanza (o algún parámetro) con los datos dados para poder aproximar el valor de los datos que se imputarán para que se cumpla la estimación. Y otro de maximización para reestimar el parámetro ya con los datos imputados. Después se repite el proceso y se reajustan los datos imputados hasta que haya coincidencia con las nuevas estimaciones, asume que los datos se distribuyen como una normal multivariada. & Puede generar estimaciones insesgadas bajo el mecanismo de pérdida MCAR y MAR; y mejora cuando aumenta la cantidad de variables usadas en el modelo (Newman, 2014). \\ \hline
+Imputación múltiple & Consiste en crear múltiples versiones de los datos, cada uno con una estimación plausible de los datos no observados (por medio de algún método de imputación). Se calcula el parámetro de interés en los m conjuntos de datos creados, se promedian y se utiliza como el valor de la estimación. & Genera estimaciones insesgadas bajo el mecanismo MCAR y MAR (Newman, 2014). \\ \hline
+\end{tabular}
+
+\normalsize
+\newpage
 # Algebra de Matrices
 
 \begin{tcolorbox}[colback=gray!5!white, %color del fondo
@@ -579,3 +722,15 @@ $$\bar{\mathbf{v'}}= c  \mathbf{R}\bar{\mathbf{v}}$$
 		&= 3\sqrt{13}
 	\end{split}
 \end{equation*}
+
+\newpage
+# Referencias
+
+* Buuren, S. (2018). *Flexible imputation of missing data*.  CRC Press, Boca Raton,
+Florida.
+
+* Kleinke, K. (2020) *Applied multiple imputation:   advantages, pitfalls, new developments and applications in R*.  Cham:   Springer. [https://doi.org/10.1007/978-3-030-38164-6](https://doi.org/10.1007/978-3-030-38164-6)
+
+* Newman, D. A. (2014). Missing data: Five practical guidelines. *Organizational research methods, 17(4),* 372-411. [https://doi.org/10.1177/1094428114548590](https://doi.org/10.1177/1094428114548590)
+
+* Pigott, T. D. (2001). A review of methods for missing data. *Educational research and evaluation, 7(4),* 353-383. [https://doi.org/10.1076/edre.7.4.353.8937](https://doi.org/10.1076/edre.7.4.353.8937)
