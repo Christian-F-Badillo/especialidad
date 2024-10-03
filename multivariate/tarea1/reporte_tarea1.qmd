@@ -1,5 +1,6 @@
 ---
-title: "Tarea 1 Multivariado"
+title: "Tarea 1"
+subtitle: "Análisis de datos Multivariados"
 author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
 format:
     pdf:
@@ -11,8 +12,8 @@ format:
         fontfamily: times
         fontsize: 12pt
         geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
-        lof: true
-        lot: true
+        lof: false
+        lot: false
         code-block-bg: true
         code-block-border-left: "#31BAE9"
         pdf-engine: pdflatex
@@ -29,6 +30,8 @@ execute:
 
 # Exploración gráfica y datos faltantes
 
+## Escalas de Medición
+
 En la @tbl-tab1 se muestran las variables junto a su escala de medición y el dato que se reporta en la página. Como se puede observar, a pesar de que la variable “Salud autorreportada” tiene una escala de medición de tipo ordinal, se reporta el promedio de los puntajes obtenidos por las personas, siendo más adecuado el reportaje de la mediana de los mismos.
 
 | Variable | Escala de medición | Dato reportado |
@@ -42,6 +45,8 @@ En la @tbl-tab1 se muestran las variables junto a su escala de medición y el da
 | Tasa de obesidad | Razón | Del total de población mayor de 20 años, el porcentaje de personas cuyo índice de masa corporal (IMC) fue mayor o igual a 30 |
 | Deserción escolar | Razón | Porcentaje de alumnos que abandonan la escuela de un nivel educativo, respecto a la matrícula de inicio de curso del mismo nivel |
 : Variables y escala de medición de algunos indicadores. {#tbl-tab1 tbl-colwidths="[20,15, 65]" .striped .hover .bordered}
+
+## Valores Faltantes
 
 En la @tbl-tab2 se presentan los datos faltantes, a qué estado pertenecen y en cuál variable se encuentra el dato faltante. Hay un total de 15 datos faltantes, 15 estados tienen una observación faltante en alguna variable. En la @tbl-tab3 se puede observar que la variable que tiene más datos faltantes es “Porcentaje de la población en situación de pobreza extrema” y los estados a los que pertenecen son a Nuevo León y Puebla.
 \newpage
@@ -80,7 +85,7 @@ En la @tbl-tab2 se presentan los datos faltantes, a qué estado pertenecen y en 
 | Porcentaje de la población en situación de pobreza extrema | Nuevo León / Puebla | 2 |
 | Niveles de educación | Oaxaca | 1 |
 | Tasa de informalidad laboral | Sinaloa | 1 |
-| Satisfacción con la vida
+| Satisfacción con la vida | Tamaulipas | 1 |
 Población ocupada trabajando más de 48 horas | Tamaulipas / Tlaxcala | 1 |
 | Tasa de desocupación | Zacatecas | 1 |
 : Valores faltantes en cada variable {#tbl-tab3 tbl-colwidths="[60, 30, 10]" .striped .hover .bordered}
@@ -106,6 +111,16 @@ El porcentaje de estados que tienen valores faltantes, respecto al total, repres
 | Datos sin NA | 1140 | 98.7 |
 : Porcentaje de valores faltantes, total {#tbl-tab6 tbl-colwidths="[33, 33, 33]" .striped .hover .bordered}
 
+## Tratamiento de Datos Faltantes
+
+Dado que tenemos pocos datos faltantes, se hizo uso de la libreria ```mice``` de R para imputar los datos faltantes usando el método de regresión base de la función ```mice()```, con semilla ```seed=20``` para garantizar su reproducibilidad en el código.
+
+En cuanto a la clasificación de datos faltantes, podemos creer que existen de dos tipos en la base de datos: CAR y MNAR. Los casos de  MNAR sería viable pensarlos en casos como en Oaxaca donde hace falta información con respecto a los niveles de educación, caso similar a Chiapas donde no hay registros sobre la confianza en la policía, lo cual es estraño en un lugar con muchos conflictos en temas de seguridad; otro estado con datos faltantes sospechosos es Campeche donde la tasa de incidencia delictiva no es reportada, Puebla también puede ser un valor faltante del tipo MNAR dado que no se reporta el porcentaje de la población en situación de pobreza extrema. Dada la naturaleza de estas variables mencionadas, creemos que es plausible que su falta no sea debida al azar. 
+
+Los valores faltantes restantes consideramos que pueden ser del tipo CAR ya que no vemos razones por la cual su información se haya modificado.
+
+## Función empírica de distribución, Boxplot, Normal QQ-Plot e Histograma
+
 
 :::{#fig-razon_mort_mat layout-nrow=2}
 ![](boxp_razon_mort_mat.jpeg)
@@ -116,7 +131,7 @@ El porcentaje de estados que tienen valores faltantes, respecto al total, repres
 
 ![](qqp_razon_mort_mat.jpeg)
 
-Descripción de la variable "razón de mortalidad materna".
+Diagrama de caja, histograma, función de distribución acumulada empírica y QQ-plot para la variable "razón de mortalidad materna". Para la variable Razón de mortalidad materna, nuevamente se tiene una distribución cercana a la normal ya que la QQ-plot se acerca demasiado a la línea de referencia y tiene una mayor variabilidad en los valores de los datos.
 :::
 
 :::{#fig-satis_vida layout-nrow=2}
@@ -128,7 +143,7 @@ Descripción de la variable "razón de mortalidad materna".
 
 ![](qqp_satis_vida.jpeg)
 
-Descripción de la variable "satisfacción con la vida".
+Diagrama de caja, histograma, función de distribución acumulada empírica y QQ-plot para la variable "satisfacción con la vida". En el caso de la variable Satisfacción con la vida, se tiene un sesgo positivo, ya que en el histograma se presenta una cola pronunciada a la derecha, además en la boxplot, se puede observar el bigote superior más largo, confirmando el sesgo positivo.
 :::
 
 :::{#fig-serv_bas layout-nrow=2}
@@ -140,7 +155,7 @@ Descripción de la variable "satisfacción con la vida".
 
 ![](qqp_serv_bas.jpeg)
 
-Descripción de la variable "viviendas con acceso a servicios básicos".
+Diagrama de caja, histograma, función de distribución acumulada empírica y QQ-plot para la variable "viviendas con acceso a servicios básicos". En el histograma se observa una distribución con sesgo negativo ya que tiene una cola pronunciada a la izquierda. En la QQ-plot se observa que tiene valores por debajo de la normal, pero serían los referentes a los outliers vistos en la boxplot, por lo que no sería correcto definir el sesgo guiados por esa gráfica, ya que para tener un sesgo negativo, deberían ir ligeramente de la línea de referencia, como lo hacen después de los valores a la izquierda. Aunado a lo anterior, al analizar la boxplot, para cumplir con un sesgo negativo, el bigote inferior debería ser más largo, sin embargo, no se observa ese comportamiento, pero, los outliers generan ese tipo de sesgo ya que están muy por debajo del límite del bigote.
 :::
 
 :::{#fig-mort_inf layout-nrow=2}
@@ -152,7 +167,7 @@ Descripción de la variable "viviendas con acceso a servicios básicos".
 
 ![](qqp_tasa_mort_inf.jpeg)
 
-Descripción de la variable "tasa de mortalidad infantil".
+Diagrama de caja, histograma, función de distribución acumulada empírica y QQ-plot para la variable "tasa de mortalidad infantil". En esta variable se presenta algo parecido al caso anterior pero con una dispersión más temprana de los datos. En este caso no se presentan outliers, sin embargo, la boxplot presenta bigotes más alargados haciendo referencia a que la variabilidad es mayor.
 :::
 
 :::{#fig-tasa_obe layout-nrow=2}
@@ -164,22 +179,80 @@ Descripción de la variable "tasa de mortalidad infantil".
 
 ![](qqp_tasa_ob.jpeg)
 
-Descripción de la variable "tasa de obesidad".
+Diagrama de caja, histograma, función de distribución acumulada empírica y QQ-plot para la variable "Tasa de Obesidad". La variable Tasa de Obesidad presenta una distribución un poco normal ya que en la gráfica QQ-plot se puede observar como los puntos de la variable se acercan a la línea que representa la normal, sin embargo, las orillas se dispersan, además de presentar outliers (ver boxplot) que pueden aumentar dicha dispersión.
 :::
+\newpage
+
+## Conclusión
+
+Cada gráfica muestra la información de los datos de diferente manera, pero ambos muestran la distribución de los datos: lo ecdf’s muestran el rango de manera continua y acumulada, mientras que los boxplot’s muestran la distribución de una manera más compacta. Por otro lado en ambos casos podemos visualizar la mediana: en el caso de las ecdf’s es el valor correspondiente al 0.5% de probabilidad, mientras que en los boxplot se puede encontrar de una manera más sencilla al visualizar la línea que se encuentra entre el primer y tercer cuartil. 
+
+Este tipo de gráficos permiten visualizar variables con algún tipo de sesgo, recordando que una distribución sesgada negativamente es aquella con una cola pronunciada a la izquierda, por lo que en este caso la variable “Viviendas con acceso a servicios básicos” tiene un sesgo negativo lo que implica que la media es menor que la mediana en esta variable.  Para determinar si una variable es sesgada positivamente, se debe observar si se tiene una cola pronunciada a la derecha, un ejemplo de ello es la variable “Satisfacción con la vida” cuya distribución observada en el histograma muestra un sesgo positivo y por tanto, indica que su media es mayor que la mediana, además de que hay valores altos que extienden la distribución a la derecha.
+
+Y por último, usando estas visualizaciones podemos inspeccionar aquellas variables con una distribución aproximadamente normal como lo serían: la “Tasa de mortalidad infantil”, la “Razón de mortalidad materna” y la “Tasa de obesidad”, siendo esta última aquella con una aproximación mayor por lo descrito en su análisis.
 
 ## Gráficas multivariadas.
 
-![Curvas de Andrews. Cada Curva corresponde a un estado.](andrews_estados.jpg)
+Variables seleccionadas:
 
-![Caritas de Chernoff para los distintos estados.](caritas_chernoff_estados.png)
+ 1. Vivienda: Porcentaje.de.viviendas.con.techos.de.materiales.resistentes
+ 2. Ingresos: Gini.del.ingreso.disponible.de.los.hogares.per.capita
+ 3. Empleo: Tasa.de.condiciones.criticas.de.ocupacion
+ 4. Accesibilidad a servicios: Viviendas.con.acceso.a.servicios.basicos
+ 5. Seguridad: Tasa.de.homicidio
+ 6. Educación: Niveles.de.educacion
+ 7. Medio ambiente: Contaminacion.del.aire
+ 8. Compromiso cívico y gobernanza: Participacion.electoral
+ 9. Salud: Esperanza.de.vida.al.nacer
+ 10. Satisfacción con la vida: Satisfaccion.con.la.vida
+ 11. Balance vida-trabajo: Satisfaccion.con.tiempo.para.ocio
+ 12. Relaciones sociales en la comunidad: Calidad.de.la.red.social.de.soporte
+ 
+ 
+ Empezando con las curvas de Andrew recordemos que si las curvas se encuentran muy cerca entre si, relativamente en las dimensiones superiores también lo estarán, es decir, si los estados muestrán valores similares para cada una de las variables, entonces la proyección a estas curvas será observar curvas paralelas o bien muy parecidas.
+ 
+A continuación se muestran las curvas de Andrews para las 12 variables seleccionadas, en primera instancia vemos que es muy poco distinguible el paralelismo entre entidades federales e incluso distinguir una de otra. 
 
-![Gráfico de paralelas para los distintos estados](paralelas_estados.jpg)
+![Curvas de Andrews. Cada Curva corresponde a un estado.](andrews_estados.jpg){height="350px"}
 
+Para las caras de Chernoff sabemos que las variables son asociadas a rasgos del rostro, por decisión fijamos la sonrisa (nula) y así podremos distinguir las otras variaciones, estas son:
+
+| # Var| modified item   |  Var  | 
+|:----------:|:--------------------:|:----------------:|
+|1| "height of face" | "%VTR"|                                        
+|2| "width of face" | "GIDH"|                                        
+|3| "structure of face"| "TCCO"|                                        
+|4| "height of mouth"| "VASB"|                                        
+|5| "width of mouth"| "TH"|                                          
+|6| "height of eyes"| "NE"|                                          
+|7| "width of eyes"| "CAire"|                                       
+|8| "height of hair"| "PElec"|                                       
+|9| "width of hair"|"EspVN"|                                       
+|10| "style of hair"|  "SV"|                                          
+|11| "height of nose" | "STO"|                                         
+|12| "width of nose " | "CalRed"|                                      
+|1|"width of ear"|  "%VTR"|                                        
+|2| "height of ear " | "GIDH"|
+
+
+Notamos que es un poco más simple ver la variación y relación, por ejemplo si ponemos atención en la variable 10: Satisfacción con la vida "SV" que corresponde al estilo del cabello, veremos que estados como: "COL", "COA", "NL", "NAY", "SIN"; tienen el mismo estilo de cabello por lo que ese índice es muy similar entre ellos (3.7 aprox). 
+
+También podemos ver un claro contraste entre "Gto" y "NL" donde las caracteristicas del rostro son contrarias, mientras uno tiene orejas anchas ("%VTR") y nariz ancha ("CalRed"), el otro no; eso implica que los valores de las variables en uno son de las más altas mientras que en "Gto" no es así.
+
+![Caritas de Chernoff para los distintos estados.](caritas_chernoff_estados.png){height="350px"}
+
+Finalmente en el gráfico de paralelas, recordamos que tendremos 12 rectas verticales, además este grafico nos muestra claramente como cada variable tiene una unidad distinta. Los valores en cada variables se pueden apreciar de recta en recta, la correlación entre variables se vería como rectas paralelas entre los ejes, relaciones inversas como rectas cruzandose.
+
+![Gráfico de paralelas para los distintos estados](paralelas_estados.jpg){height="350px"}
+
+Estas gráficas nos permieten comparar las entidades federales, de mejor manera, como hemos visto cada una de ellas nos da una visión diferente de los datos,las que se parecen menos son como vimos en el grafico de rostros son "Gto" y "NL". Una forma de agrupar las entidades federales sería por caracteisticas similares en los rostros de Chernoff
 
 \newpage
 # Matrices de Correlación y Covarianza.
 
 Se muestra el código para obtener las matrices de covarianza y correlación.
+
+## Correlación
 
 En este bloque código cargamos las paqueterias al igual que los datos y creamos un subconjunto de los datos con las variables solicitadas.
 ```{r}
@@ -200,12 +273,28 @@ subset.columns <- c(
 data <- data.raw %>%
     select(subset.columns)
 ```
-Se imprime la matriz de correlación.
+
 ```{r}
 # Podemos obtener la matrix de correlación como:
-mat.corr.data <- matrix(cor(data, metho="pearson"), 6, 6)
+mat.corr.data <- as.matrix(cor(data, metho="pearson"), 6, 6)
+```
 
-knitr::kable(mat.corr.data)
+
+```{r}
+#| echo=F
+corr.mat.data <- data.frame(mat.corr.data)
+rownames(mat.corr.data) <- NULL
+colnames(mat.corr.data) <- NULL
+rownames(corr.mat.data) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+colnames(corr.mat.data) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+
+knitr::kable(corr.mat.data, digits=3, caption = "Matriz de Correlación por medio de la función base de R")
 ```
 
 Podemos usar operaciones con matrices para obtener el mismo resultado.
@@ -249,14 +338,48 @@ D.inv <- solve(D)
 R <- t(D.inv)%*%cov.data%*%D.inv
 
 # Veamos si R es igual a mat.corr.data con una tolerancia de 1.5e-8
-all.equal(mat.corr.data, R)
+all.equal(R, mat.corr.data, check.attributes =F)
 ```
 \newpage
-Podemos imprimir esta nueva matriz de correlación y como se puede observar al comparar ambas matrices, son iguales.
+Como se puede observar al comparar ambas matrices, son iguales.
 
 ```{r}
-knitr::kable(R)
+#| echo=F
+R.mat <- data.frame(R)
+rownames(R.mat) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+colnames(R.mat) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+knitr::kable(R.mat, digits=3, caption="Matriz de Correlación por medio de operaciones matriciales.")
 ```
+
+Las variables con mayor relación lineal son el nivel educativo y los años promedio de estudio, lo cual es lógico dado que entre mayor sea el nivel de estudios más años se habrán invertido en actividades académicas. El coeficiente gini del ingreso disponible de los hogares *per capita* no parece estar asociado con las variables de este subconjunto de los datos, caso similar con la deserción escolar. La satisfacción con el tiempo de ocio tiene una correlación negativa algo moderada con la población que trabaja más de 48 horas a la semana, lo cual oarece razonable dado que a más tiempo en trabajo, menos cantidad de tiempo disponible habrá para actividades de ocio.  
+
+## Covarianza
+
+Con el código anterior hemos obtenido la matriz de covarianza.
+
+```{r}
+#| echo=F
+cov.matrix <- data.frame(cov.data)
+rownames(cov.matrix) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+colnames(cov.matrix) <- c(
+            "n.edu", "des.esc", "anios.esc.pro", 
+            "satis.t.ocio", "trabajo>48h", 
+            "gini.hog.pcap")
+knitr::kable(cov.matrix, digits = 3, caption = "Matriz de Covarianza")
+```
+
+Podemos ver que variables como el coeficiente gini, la satisfación por el tiempo de ocio y los años promedio de escolaridad tienen una varianza pequeña a comparación de las otras variables. Lo cual puede ser causa de su escala de medición o que realmente exista poca variabilidad en los datos.
+
+## Vector de Medias.
 
 Para estimar el vector de medias, podemos usar la función ```apply()``` de R para mejor eficiencia.
 
@@ -265,6 +388,8 @@ Para estimar el vector de medias, podemos usar la función ```apply()``` de R pa
 mean.vector <- apply(data, 2, mean)
 mean.vector
 ```
+
+## Coeficiente de Variación.
 
 Estimamos el coeficiente de variación CV para cada variable.
 
@@ -276,17 +401,20 @@ c.v <- sd.variables/mean.vector
 c.v
 ```
 
+Podemos observar que la variable con más variabilidad es la población que trabaja más de 48 horas a la semana, lo cual indicaría que existe un amplio rango de horas de trabajo en la población, lo que puede ser por necesidad económica o por falta de políticas que controlen el tiempo de trabajo, entre otros posibles factores. El nivel de educación también varia mucho así como la deserción escolar. Todas estas variables parecen reflejar bastante bien algunos de los problemas más importantes que enfrenta el país y que son áreas de oportunidad para el desarrollo de políticas públicas.
+
 \newpage
+
 # Datos Faltantes
 \scriptsize
-\begin{tabular}{|m{2cm}|m{6cm}|m{7cm}|}
+\begin{tabular}{|m{2cm}|m{6cm}|m{7.5cm}|}
 \hline
 Tratamiento de datos faltantes & ¿En qué consiste? & ¿En qué casos se recomienda usarlo? (datos perdidos tipo MCAR MAR//MNAR) \\ \hline
 Omisión Total & Consiste en eliminar todos los casos con uno o más datos faltantes. & Se recomienda para casos en los que el mecanismo de pérdida es completamente al azar (MCAR) y cuando haya pocos datos faltantes (Pigott, 2001), ya que produce estimaciones insesgadas de las medias y varianzas (Buuren, 2018). En los demás mecanismos no se recomienda, debido a que puede producir estimaciones sesgadas de las medias, coeficientes de regresión y/o de correlación (Buuren, 2018). \\ \hline
 Omisión Parcial & Consiste en hacer análisis, por variable, solo de los casos que están completos, omitiendo los faltantes. También llamada eliminación por pares. & Bajo MCAR produce estimaciones consistentes de la media y se recomienda solo si los datos se distribuyen como una normal multivariada o si hay bajas correlaciones entre las variables (Buuren, 2018). En el caso de matrices de covarianzas, puede producir correlaciones que estén fuera de rango, debido a que no haya el mismo número de variables (Pigott, 2001). Puede producir sesgos si el mecanismo de pérdida no es MCAR (Buuren, 2018). \\ \hline
 Imputación con la Media & Se trata de reemplazar el valor faltante con la media de los demás valores de esa variable.
 O usar la moda en caso de que el tipo de variable sea categórica.  & Cuando el mecanismo de pérdida no es MCAR, subestima la varianza (la reduce artificialmente) (Buuren, 2018), altera la relación entre posibles variables y sesga casi cualquier estimación, incluida la media (Kleinke, 2020). \\ \hline
-Imputación Hot Deck & Consiste en reemplazar un dato faltante con uno que se tiene de una base de datos alterna y que tenga puntajes similares en las demás variables.  & por rellenar. \\ \hline
+Imputación Hot Deck & Consiste en reemplazar un dato faltante con uno que se tiene de una base de datos alterna y que tenga puntajes similares en las demás variables. & Puede producir estimaciones de la media consistentes solo cuando el mecanismo de pérdida es MCAR y en casos limitados para MAR. Pero solo cuando la información del "donador" sea un buen reflejo de las variables observadas y de aquellas observadas que tengan buena correlación con las no observadas, además de que la muestra deba ser lo suficientemente grande para encontrar un buen donador y que los datos faltantes no sean muchos (Andridge \& Little, 2010). \\ \hline
 Imputación usando Regresión & Consiste en hacer uso de información disponible en otras variables con el fin de producir imputaciones que sean más aproximadas a los valores faltantes. De construir un modelo basado en la información disponible y rellenar los datos faltantes con las predicciones de dicho modelo. & Bajo MCAR produce estimaciones insesgadas de la media. Puede ser útil para MAR solo si los factores para la pérdida de información son atrapados por el modelo de regresión usado (Buuren, 2018). Sin embargo, aumenta de manera artificial las correlaciones y disminuye la varianza al subestimar la variabilidad que pueda ser inherente a los datos. Lo que puede aumentar la probabilidad de observar relaciones espurias (Buuren, 2018), aunque esto se podría controlar agregando errores aleatorios al valor imputado (Newman, 2014). \\ \hline
 Imputación usando Algoritmo EM & Se trata de un proceso iterativo de dos pasos, uno de estimación de la esperanza (o algún parámetro) con los datos dados para poder aproximar el valor de los datos que se imputarán para que se cumpla la estimación. Y otro de maximización para reestimar el parámetro ya con los datos imputados. Después se repite el proceso y se reajustan los datos imputados hasta que haya coincidencia con las nuevas estimaciones, asume que los datos se distribuyen como una normal multivariada. & Puede generar estimaciones insesgadas bajo el mecanismo de pérdida MCAR y MAR; y mejora cuando aumenta la cantidad de variables usadas en el modelo (Newman, 2014). \\ \hline
 Imputación múltiple & Consiste en crear múltiples versiones de los datos, cada uno con una estimación plausible de los datos no observados (por medio de algún método de imputación). Se calcula el parámetro de interés en los m conjuntos de datos creados, se promedian y se utiliza como el valor de la estimación. & Genera estimaciones insesgadas bajo el mecanismo MCAR y MAR (Newman, 2014). \\ \hline
@@ -725,6 +853,8 @@ $$\bar{\mathbf{v'}}= c  \mathbf{R}\bar{\mathbf{v}}$$
 
 \newpage
 # Referencias
+
+* Andridge, R., \& Little, R. (2010). A review of hot deck imputation for survey non response. *International statistical review, 78(1),* 40-64. [https://doi.org/10.1111/j.1751-5823.2010.00103.x](https://doi.org/10.1111/j.1751-5823.2010.00103.x)
 
 * Buuren, S. (2018). *Flexible imputation of missing data*.  CRC Press, Boca Raton,
 Florida.

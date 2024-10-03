@@ -1,0 +1,1212 @@
+---
+title: "Muestreo_tarea2"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+format: 
+      pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: true
+        lot: true
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+
+## Descripción de las variables
+
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Variable   | Descripción                                                                                                                | Rango                              |
++:==========:+:==========================================================================================================================:+:==================================:+
+| Ent_regis  | Entidad del registro                                                                                                       | \[01, 32\]                         |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Mun_regis  | Municipio del registro                                                                                                     | \[001, 570\]                       |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Loc_regis  | Localidad del registro                                                                                                     | \[0001, 9999\]                     |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Tam_loc_re | Categoría a la que pertenece la localidad de registro, de acuerdo a su número de habitantes                                | \[1, 17\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Dia_regis  | Día en que se realizó el matrimonio                                                                                        | \[1, 31\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Mes_regis  | Men en el que se realizó el matrimonio                                                                                     | \[1, 12\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Anio_regis | Año en el que se realizó el registro                                                                                       | \[2017\]                           |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Regimen_ma | Tipo de regimen del matrimonio (sociedad conyugal, separación de bienes, mixto o no especificado)                          | \[1, 3\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificado                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Genero     | Clasificación del tipo de matrimonio (hombre-mujer o del mismo sexo)                                                       | \[1, 2\]                           |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Sexo_con1  | Condición biológica de el o la primera contrayente (hombre, mujer)                                                         | \[1, 2\]                           |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Edad_con1  | Tiempo entre la fecha de nacimiento y la fecha del matrimonio                                                              | \[12, 98\]                         |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Naci_con1  | Nacionalidad del primer contrayente (mexicana o extranjera)                                                                | \[1,2\]                            |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Ocup_con1  | Ocupación del primer contribuyente                                                                                         | \[1, 11\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 97: No aplica a menores de 5 años  |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 98: Insuficientemente especificada |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificada                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Entrh_con1 | Entidad de residencia habitual del primer contribuyente                                                                    | \[01, 35\]                         |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificada                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Munrh_con1 | Municipio o delegación de residencia habitual del primer contrayente                                                       | \[001, 570\]                       |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 999: No especificado               |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Locrh_con1 | Localidad donde vive el o la contrayente al momento de contraer matrimonio                                                 | \[0001, 9999\]                     |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Tlorh_con1 | Categoría a la que pertenece la localidad de residencia habitual del primer contrayente de acuerdo al número de habitantes | \[1, 17\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Escol_con1 | Último grado de estudios aprobado por el o la contribuyente al momento del matrimonio                                      | \[1, 9\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 8: Otra                            |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Conactcon1 | Indica si el o la contribuyente trabaja al momento del matrimonio                                                          | \[1, 2\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Sitlabcon1 | Situación laboral del primer contribuyente al momento de contraer matrimonio y no trabajar                                 | \[1, 6\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 6: Otra                            |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Postracon1 | Posición en el trabajo del primer contribuyente                                                                            | \[1, 6\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificado                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Sexo_con2  | Condición biológica de el o la segunda contrayente (hombre, mujer)                                                         | \[1, 2\]                           |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Edad_con2  | Tiempo entre la fecha de nacimiento y la fecha del matrimonio                                                              | \[12, 98\]                         |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Naci_con2  | Nacionalidad del segundo contrayente (mexicana o extranjera)                                                               | \[1, 2\]                           |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Ocup_con2  | Ocupación del segundo contribuyente                                                                                        | \[1, 11\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 97: No aplica a menores de 5 años  |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 98: Insuficientemente especificada |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificada                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Entrh_con2 | Entidad de residencia habitual del segundo contribuyente                                                                   | \[01, 35\]                         |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificada                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Munrh_con2 | Municipio o delegación de residencia habitual del segundo contrayente                                                      | \[001, 570\]                       |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 999: No especificado               |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Locrh_con2 | Localidad donde vive el o la contrayente al momento de contraer matrimonio                                                 | \[0001, 9999\]                     |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Tlorh_con2 | Categoría a la que pertenece la localidad de residencia habitual del primer contrayente de acuerdo al número de habitantes | \[1, 17\]                          |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 99: No especificado                |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Escol_con2 | Último grado de estudios aprobado por el o la contribuyente al momento del matrimonio                                      | \[1, 9\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 8: Otra                            |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Conactcon2 | Indica si el o la contribuyente trabaja al momento del matrimonio                                                          | \[1, 2\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Sitlabcon2 | Situación laboral del segundo contribuyente al momento de contraer matrimonio y no trabajar                                | \[1, 6\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 6: Otra                            |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificada                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+| Postracon2 | Posición en el trabajo del segundo contribuyente                                                                           | \[1, 6\]                           |
+|            |                                                                                                                            |                                    |
+|            |                                                                                                                            | 9: No especificado                 |
++------------+----------------------------------------------------------------------------------------------------------------------------+------------------------------------+
+
+## Exploración de la base de datos
+
+
+```{r}
+#| echo=F, show=F, eval=T, output=F
+# Cargamos las librerías que se ocuparán:
+
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+```
+
+
+```{r}
+#| echo=F, show=F, eval=T, output=F
+# Cargamos los datos:
+
+datos17 <- read.csv("DATOS17.csv")
+```
+
+Verificamos que no haya edades = 99 para las variables EDAD_CON1 y EDAD_CON2 ya que ello representa situaciones donde la edad es "no especificada"; y si las hay las reemplazamos por NA, para después poder imputar esas edades faltantes.
+
+```{r}
+#| echo=F, show=F, eval=T, output=F
+
+datos17 <- datos17 %>%
+  mutate(
+    EDAD_CON1 = na_if(EDAD_CON1, 99),
+    EDAD_CON2 = na_if(EDAD_CON2, 99)
+  ) 
+  
+
+conteo_NA<- datos17 %>%
+  summarise(
+    Edades_con_NA = sum(is.na(EDAD_CON1)) + sum(is.na(EDAD_CON2)),
+    Edades_sin_NA = (nrow(datos17) * 2) - Edades_con_NA
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "Tipo_dato", values_to = "Cantidad") %>%
+  mutate(Porcentaje = (Cantidad / (nrow(datos17) * 2)) * 100)
+
+
+conteo_NA
+```
+
+De las 40,000 edades que hay en la base de datos, hay 31 casos en donde la edad es igual a 99; es decir, donde la edad de el o la contrayente no se especificó. Estos datos serán los que se imputarán por medio de la paquetería `mice`, utilizando el mecanismo de imputación múltiple.
+
+```{r}
+#| echo=F, show=T, eval=T, output=F
+
+library(mice)
+
+# Patrón de faltantes
+#md.pattern(datos17)
+
+# Se realiza la imputación múltiple, se crean 5 juegos de datos completos que toman de referencia a las demás variables para estimar el valor "más adecuado" para el dato faltante. De ahí se extrae una sola base de datos al promediar los posibles valores
+
+#Fijamos una semilla para que los valores imputados sean replicables
+
+imp <- mice(datos17, seed=5260, print= FALSE)
+
+
+
+#Esta es la base de datos completa, ya con los datos imputados, que se utilizará.
+
+imp_datos17 <- complete(imp)
+
+#Corroboramos que no contenga ningún NA
+
+sum(is.na(imp_datos17))
+
+#Removemos los datos anteriores del environment
+rm(datos17)
+
+```
+
+Vemos las primeras observaciones:
+
+```{r}
+#| echo=F, show=T, eval=T, output=T
+
+knitr::kable(t(head(imp_datos17)), caption = "Datos Imputados")
+
+```
+
+Vemos un resumen de cada una de las variables
+
+\tiny
+```{r}
+#| echo=F, show=T, eval=T, output=T
+
+knitr::kable(t(summary(imp_datos17)), caption = "Resumen de Datos Poblacionales")
+```
+\normalsize
+
+# Parámetros poblacionales
+
+## Total de matrimonios
+
+Como estamos suponiendo que la base de datos representa a la población entonces hay `r format(nrow(imp_datos17), big.mark = ",")` matrimonios
+
+### Por estado
+
+El estado con mayor cantidad de matrimonios es el estado de México (2,494), seguido de Jalisco (1,505).
+
+```{r}
+#| echo=F, show=T, eval=T, output=T
+
+estados <- c("Ags", "BC", "BCS", "Camp", "Coah", "Col", "Chis", 
+             "Chih", "CDMX", "Dgo", "Gto", "Gro", "Hgo", "Jal", "Mex", 
+             "Mich", "Mor", "Nay", "NL", "Oax", "Pue", "Qro", "QR",  "SLP", 
+             "Sin", "Son", "Tab", "Tamps", "Tlax", "Ver", "Yuc", "Zac")
+
+conteo_estados <- imp_datos17 %>%
+  mutate(estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado) %>%
+  summarise(cantidad = n(), .groups = "drop") %>%
+  arrange(ENT_REGIS, estado, cantidad)
+```
+
+| No. |       Estado        | No. de matrimonios |
+|:---:|:-------------------:|:------------------:|
+|  1  |   AGUASCALIENTES    |        268         |
+|  2  |   BAJA CALIFORNIA   |        633         |
+|  3  | BAJA CALIFORNIA SUR |         92         |
+|  4  |      CAMPECHE       |        169         |
+|  5  |      COAHUILA       |        604         |
+|  6  |       COLIMA        |        123         |
+|  7  |       CHIAPAS       |        876         |
+|  8  |      CHIHUAHUA      |        631         |
+|  9  |  CIUDAD DE MEXICO   |       1,133        |
+| 10  |       DURANGO       |        273         |
+| 11  |     GUANAJUATO      |       1,181        |
+| 12  |      GUERRERO       |        639         |
+| 13  |       HIDALGO       |        371         |
+| 14  |       JALISCO       |       1,505        |
+| 15  |       MEXICO        |       2,494        |
+| 16  |      MICHOACAN      |        869         |
+| 17  |       MORELOS       |        335         |
+| 18  |       NAYARIT       |        197         |
+| 19  |     NUEVO LEON      |       1,018        |
+| 20  |       OAXACA        |        608         |
+| 21  |       PUEBLA        |        686         |
+| 22  |      QUERETARO      |        349         |
+| 23  |    QUINTANA ROO     |        411         |
+| 24  |   SAN LUIS POTOSI   |        428         |
+| 25  |       SINALOA       |        576         |
+| 26  |       SONORA        |        571         |
+| 27  |       TABASCO       |        382         |
+| 28  |     TAMAULIPAS      |        531         |
+| 29  |      TLAXCALA       |        185         |
+| 30  |      VERACRUZ       |       1,178        |
+| 31  |       YUCATAN       |        364         |
+| 32  |      ZACATECAS      |        320         |
+: Cantidad de matrimonios por estado (poblacional).
+
+
+```{r}
+#| echo: false
+#| fig-cap: "Número de matrimonios por estado (poblacional)."
+
+ggplot(conteo_estados, aes(x = estado, y = cantidad)) + 
+  geom_bar(stat = "identity", fill = "forestgreen")+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  labs(
+       x = "Entidad Federativa", 
+       y = "Cantidad de Matrimonios")
+```
+
+
+### Por mes del año
+
+Los meses en los que las personas más se casaron fue Febrero (2,809), seguido de Diciembre (2,229).
+
+```{r}
+#| echo: false
+
+meses <- c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", 
+           "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+meses <- factor(meses, ordered = T, levels = unique(meses))
+
+conteo_meses <- imp_datos17 %>%
+  mutate(mes = meses[MES_REGIS]) %>%
+  group_by(MES_REGIS, mes) %>%
+  summarise(cantidad = n(), .groups = "drop") %>%
+  arrange(MES_REGIS, mes, cantidad)
+```
+
+| No. |    Mes     | No. Matrimonios |
+|:---:|:----------:|:---------------:|
+|  1  |   Enero    |      1,247      |
+|  2  |  Febrero   |      2,809      |
+|  3  |   Marzo    |      1,762      |
+|  4  |   Abril    |      1,429      |
+|  5  |    Mayo    |      1,601      |
+|  6  |   Junio    |      1,426      |
+|  7  |   Julio    |      1,498      |
+|  8  |   Agosto   |      1,502      |
+|  9  | Septiembre |      1,335      |
+| 10  |  Octubre   |      1,539      |
+| 11  | Noviembre  |      1,623      |
+| 12  | Diciembre  |      2,229      |
+: Cantidad de matrimonios por mes (poblacional).
+
+```{r}
+#| echo: false
+#| fig-cap: "Número de matrimonios por mes (poblacional)."
+
+ggplot(conteo_meses, aes(x = meses, y =cantidad)) +
+  geom_bar(stat = "identity", fill = "skyblue")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_x_discrete(meses) +
+  labs( 
+       x = "Mes", 
+       y = "Cantidad de Matrimonios")
+```
+
+### Por mes y estado
+
+```{r}
+#| echo: false
+
+matrimonios_me <- imp_datos17 %>% 
+    mutate(mes = meses[MES_REGIS]) %>%
+  mutate(estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado, MES_REGIS, mes) %>%
+  summarise(cantidad = n(), .groups = "drop") %>%
+  arrange(ENT_REGIS, MES_REGIS)
+
+knitr::kable(head(matrimonios_me), caption = "Matrimonios por Mes y Estado")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Total de matrimonios por mes y estado."
+#| fig-height: 12
+#| fig-width: 12
+
+ggplot(matrimonios_me, aes(x = estado, y = cantidad)) +
+  geom_bar(stat = "identity", fill = "skyblue",col = "black") +
+  facet_wrap(~ mes, nrow = 6, ncol = 2) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(
+       x = "Entidad Federativa", 
+       y = "Cantidad de Matrimonios")
+```
+
+## Tipo de matrimonio
+
+Filtramos y ordenamos a los casos donde el matrimonio es entre personas de sexos opuestos y mismos sexos hombre-hombre y mujer-mujer.
+
+El 99.5% de los matrimonios es entre sexos opuestos y el 0.5% entre personas del mismo sexo (hombre-hombre o mujer-mujer).
+
+```{r}
+#| echo: false
+
+conteo_tipo <- imp_datos17 %>%
+  mutate(tipo_matrimonio = case_when(
+    SEXO_CON1 == 1 & SEXO_CON2 == 2 ~ "Hombre-Mujer",
+    SEXO_CON1 == 2 & SEXO_CON2 == 1 ~ "Hombre-Mujer",
+    SEXO_CON1 == 1 & SEXO_CON2 == 1 ~ "Hombre-Hombre",
+    SEXO_CON1 == 2 & SEXO_CON2 == 2 ~ "Mujer-Mujer",
+    TRUE ~ "Otro"  )) %>%
+    group_by(tipo_matrimonio) %>%
+    summarise(cantidad = n()) %>%
+    mutate(proporcion = cantidad / sum(cantidad))
+
+knitr::kable(conteo_tipo, caption = "Tipo de matrimonios",
+             col.names = c("Tipo de Matrimonio", "Total", "Proporción")
+             )
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Proporción de matrimonios por tipo"
+
+ggplot(conteo_tipo, aes(x = factor(tipo_matrimonio, levels = unique(tipo_matrimonio)), y = proporcion, 
+                        fill = tipo_matrimonio )) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label=round(proporcion, 4)), vjust=-0.25) +
+  theme_minimal() +
+  labs(
+       x = "",
+       y = "Proporción",
+       fill = ""
+       ) + 
+    guides(fill="none")
+```
+
+### Tipo de matrimonio por estado
+
+#### Matrimonio **Hombre-Hombre**.
+
+El estado con mayor frecuencia de matrimonios entre contrayentes del mismo sexo, hombre-hombre, es CDMX (30), seguido de Jalisco (6)
+
+#### Matrimonio **Mujer-Mujer**.
+
+El estado con mayor frecuencia de matrimonios entre contrayentes del mismo sexo, mujer-mujer, es CDMX (28), seguido de Jalisco (13)
+
+Además, solo en siete estados ha habido matrimonio de tipo hombre-hombre, mientras que los matrimonios de tipo mujer-mujer se han reportado en 10 estados.
+
+```{r}
+#| echo: false
+
+entidad_ms <- imp_datos17 %>%
+  mutate(tipo_matrimonio = case_when(
+    SEXO_CON1 == 1 & SEXO_CON2 == 1 ~ "Hombre-Hombre",
+    SEXO_CON1 == 2 & SEXO_CON2 == 2 ~ "Mujer-Mujer",
+    TRUE ~ "Hombre-Mujer" 
+  ), estado = estados[ENT_REGIS]) %>%
+    
+    group_by(ENT_REGIS, estado, tipo_matrimonio) %>%
+    
+    summarise(cantidad = n(), .groups = "drop") %>%
+    mutate(proporcion = cantidad / sum(cantidad))
+
+knitr::kable(entidad_ms, caption = "Proporción del tipo de matrimonio con respecto al total nacional por estado", col.names = c(
+    "No. Entidad", "Estado", "Tipo de Matrimonio", "Total", "Proporción"), align = "ccccc"
+)
+```
+
+
+```{r}
+#| echo: false
+
+entidad_ms2 <- imp_datos17 %>%
+  mutate(tipo_matrimonio = case_when(
+    SEXO_CON1 == 1 & SEXO_CON2 == 1 ~ "Hombre-Hombre",
+    SEXO_CON1 == 2 & SEXO_CON2 == 2 ~ "Mujer-Mujer",
+    TRUE ~ "Hombre-Mujer"
+  ), estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado, tipo_matrimonio) %>%
+  summarise(cantidad = n(), .groups = "drop_last") %>%
+  mutate(proporcion = cantidad / sum(cantidad)) %>%
+  ungroup()
+
+knitr::kable(entidad_ms2, caption = "Proporción que representa cada tipo de matrimonio en cada estado", col.names = c(
+    "No. Entidad", "Estado", "Tipo de Matrimonio", "Total", "Proporción"), align = "ccccc")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Total de matrimonios por estado y tipo de matrimonio."
+#| fig-height: 8
+#| fig-width: 7
+
+ggplot(entidad_ms, aes(x = estado, y = cantidad)) +
+  geom_bar(stat = "identity", fill ="skyblue", color ="black") +
+  facet_wrap(~ tipo_matrimonio, nrow = 3, ncol = 1, scales = "free") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(
+       x = "Entidad Federativa", 
+       y = "Total")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Proporción de tipo de matrimonios por estado."
+#| fig-height: 8
+#| fig-width: 7
+
+ggplot(entidad_ms2, aes(x = estado, y = proporcion)) +
+  geom_bar(stat = "identity", fill ="skyblue", color ="black") +
+  facet_wrap(~ tipo_matrimonio, nrow = 3, ncol = 1, scales = "free") + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+  labs(
+       x = "Entidad Federativa", 
+       y = "Proporción")
+
+```
+
+## Matrimonios por nacionalidad
+
+Hacemos un prodecimiento similar para encontrar y filtrar los casos donde el matrimonio sea entre nacionalidad mexicana-mexicana, mexicana-extranjera y extranjera-extranjera.
+
+#### **Mexicana-Mexicana:**
+
+Aproximadamente, el 95% de los matrimonios son entre contrayentes de nacionalidad mexicana.
+
+#### **Mexicana-Extranjera:**
+
+Aproximadamente, el 3% de los matrimonios son entre contrayentes de nacionalidad mexicana y extranjera.
+
+#### **Extranjera-Extranjera:**
+
+Aproximadamente, el 1% de los matrimonios son entre contrayentes de nacionalidad extranjera.
+
+```{r}
+#| echo: false
+
+conteo_nacionalidad <- imp_datos17 %>%
+  mutate(nacionalidad = case_when(
+    NACI_CON1 == 1 & NACI_CON2 == 1 ~ "Mexicana-Mexicana",
+    NACI_CON1 == 2 & NACI_CON2 == 1 ~ "Mexicana-Extranjera",
+    NACI_CON1 == 1 & NACI_CON2 == 2 ~ "Mexicana-Extranjera",
+    NACI_CON1 == 2 & NACI_CON2 == 2 ~ "Extranjera-Extranjera",
+    TRUE ~ "Otro"  
+  )) %>%
+  group_by(nacionalidad) %>%
+  summarise(cantidad = n(), .groups = "drop") %>%
+  mutate(proporcion = cantidad / sum(cantidad))
+
+knitr::kable(conteo_nacionalidad, caption = "Matrimonios por Nacionalidad", col.names = c(
+    "Nacionalidad", "Total", "Proporción"), align = "lcc")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Proporción de matrimonios por nacionalidad."
+
+ggplot(conteo_nacionalidad, aes(x = nacionalidad, y = proporcion, fill = nacionalidad)) +
+  geom_bar(stat = "identity") +
+    geom_text(aes(label=round(proporcion, 4)), vjust=-0.25) +
+  theme_minimal() +
+  labs(
+       x = "",
+       y = "Proporción") +
+    guides(fill="none")
+```
+
+## Promedio de edad en matrimonios y por sexo
+
+### Hombres
+
+```{r}
+#| echo: false
+
+#Hombres
+
+conteo_sexoh <- imp_datos17 %>%
+  mutate(edad_h1 = case_when(
+    SEXO_CON1 == 1 ~ EDAD_CON1, 
+    TRUE ~ NA_real_
+  ), 
+  edad_h2 = case_when(
+    SEXO_CON2 == 1 ~ EDAD_CON2, 
+    TRUE ~ NA_real_
+  ))
+
+edad_hombres <- na.omit(c(conteo_sexoh$edad_h1, conteo_sexoh$edad_h2))
+```
+
+El promedio de edad en los hombres contrayentes es de `r format(mean(edad_hombres, na.rm = T), big.mark=",", digits=3)` años
+
+### Mujeres
+
+```{r}
+#| echo: false
+
+#Mujeres
+
+conteo_sexom <- imp_datos17 %>%
+  mutate(edad_m1 = case_when(
+    SEXO_CON1 == 2 ~ EDAD_CON1, 
+    TRUE ~ NA_real_
+  ), 
+  edad_m2 = case_when(
+    SEXO_CON2 == 2 ~ EDAD_CON2, 
+    TRUE ~ NA_real_
+  ))
+
+
+edad_mujeres <- na.omit(c(conteo_sexom$edad_m1, conteo_sexom$edad_m2))
+```
+
+El promedio de edad en las mujeres contrayentes es de `r format(mean(edad_mujeres, na.rm = T), big.mark=",", digits=3)` años
+
+## Promedio de edad por sexo y estado
+
+### Hombres
+
+El estado con el mayor promedio de edad para los contrayentes hombres es CDMX con 36 años. Y el estado con menor promedio de edad corresponde a Zacatecas con 28 años.
+
+```{r}
+#| echo: false
+
+conteo_sexoh <- conteo_sexoh %>%
+  pivot_longer( cols = c(edad_h1, edad_h2), 
+                values_to = "edad_hombre", 
+                values_drop_na = T)
+
+promedio_entidadh <- conteo_sexoh %>%
+  mutate(estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado) %>%
+  summarise(promedio_hombres = mean(edad_hombre, na.rm = T), 
+            desviacion_hombres = sd(edad_hombre, na.rm = T), .groups = "drop")
+
+
+knitr::kable(promedio_entidadh, caption = "Promedio de edad en hombres por estado", col.names = c(
+    "No. Entidad", "Estado", "Edad Promedio", "Desviación Estandar"), align = "clcc")  
+```
+
+**Gráfica.**
+
+Promedio de edad de los contrayentes hombres, por estado.
+
+```{r}
+#| echo: false
+#| fig-cap: "Edad promedio de hombres por estado."
+#| fig-width: 8
+
+ggplot(promedio_entidadh, aes(x= estado, y =promedio_hombres ))+
+  geom_bar(stat= "identity", fill = "yellowgreen")+
+  geom_errorbar(aes(ymin = promedio_hombres - desviacion_hombres, 
+                    ymax = promedio_hombres + desviacion_hombres), 
+                width= 0.2, color = "black")+
+  ylim(0,50)+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs( 
+       x = "", 
+       y= "Edad")
+```
+
+### Mujeres
+
+El estado con el mayor promedio de edad para las contrayentes mujeres es CDMX con 32 años. Y el estado con menor promedio de edad corresponde a Zacatecas, con 25 años.
+
+```{r}
+#| echo: false
+
+conteo_sexom <- conteo_sexom %>%
+  pivot_longer( cols = c(edad_m1, edad_m2), 
+                values_to = "edad_mujer", 
+                values_drop_na = T)
+
+promedio_entidadm <- conteo_sexom %>%
+  mutate(estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado) %>%
+  summarise(promedio_mujeres = mean(edad_mujer, na.rm = T), 
+            desviacion_mujeres = sd(edad_mujer, na.rm = T), .groups = "drop")
+
+knitr::kable(promedio_entidadm, caption = "Promedio de edad en mujeres por estado", col.names = c(
+    "No. Entidad", "Estado", "Edad Promedio", "Desviación Estandar"), align = "clcc")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Promedio de edad de las contrayentes mujeres por estado."
+#| fig-width: 8
+
+ggplot(promedio_entidadm, aes(x= estado, y =promedio_mujeres))+
+  geom_bar(stat= "identity", fill = "yellowgreen")+
+  geom_errorbar(aes(ymin = promedio_mujeres - desviacion_mujeres, 
+                    ymax = promedio_mujeres + desviacion_mujeres), 
+                width= 0.2, color = "black")+
+  ylim(0,50)+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs( 
+       x = "Estado", 
+       y= "Edad")
+```
+
+## Diferencia de edad entre contrayentes
+
+La diferencia de edad más frecuente (3,729 casos) es de un año. La diferencia de edad más grande entre los contrayentes es de 65 años, que es un caso que corresponde al estado de Michoacán donde las edades son de 83 años en el contrayente y 18 años para la contrayente.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+conteo_difedad <- imp_datos17 %>%
+  mutate(diferencia_edad = abs(EDAD_CON1- EDAD_CON2)) %>%
+  group_by(diferencia_edad) %>%
+  summarise(cantidad = n(), .groups = "drop")
+  
+  
+conteo_difedad
+```
+
+**Gráfica.**
+
+Diferencia de edad entre contrayentes
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+ggplot(conteo_difedad, aes(x =diferencia_edad, y = cantidad))+
+  geom_bar(stat = "identity", fill = "forestgreen", color = "black")+
+  theme_minimal()+
+  labs(title = "Diferencia de edad entre contrayentes", 
+       x = "Diferencia de edad", 
+       y= "Cantidad")
+  
+
+```
+
+### Por estado
+
+**Entre 0 y 9 años:**
+
+El estado donde la diferencia de edad de entre 0 a 9 es más frecuente correponde al estado de México (2,205), seguido de Jalisco (1,363).
+
+**Entre 10 y 19 años:**
+
+El estado donde la diferencia de edad de entre 10 a 19 es más frecuente correponde al estado de México (236), seguido de CDMX (165).
+
+**Entre 20 y 29 años:**
+
+El estado donde la diferencia de edad de entre 20 a 29 es más frecuente correponde al estado de México (43), seguido de Veracruz (31).
+
+**Entre 30 y 39 años:**
+
+El estado donde la diferencia de edad de entre 30 a 39 es más frecuente correponde al estado de Veracruz (9) seguido de Chiapas (6) y el estado de México (6).
+
+**Más de 40 años:**
+
+El estado donde la diferencia de edad de entre 30 a 39 es más frecuente correponde al estado de México (4) junto a Veracruz (4), seguidos de Sinaloa, Michoacán, Chiapas y CDMX (2)
+
+El estado de México tiene la mayor cantidad de matrimonios cuando las diferencias de edad son de entre 0 hasta 29 años.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+conteo_difedad <- imp_datos17 %>%
+  mutate(diferencia_edad = abs(EDAD_CON1- EDAD_CON2), 
+         estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado, diferencia_edad) %>%
+  summarise(cantidad = n(), .groups = "drop")
+
+
+conteo_difedad
+```
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+conteo_difedad <- imp_datos17 %>%
+  mutate(diferencia_edad = abs(EDAD_CON1 - EDAD_CON2), 
+         rango_diferencia = cut(diferencia_edad, 
+                                breaks = c(0, 9, 19, 29, 39, Inf), 
+                                labels = c("0-9", "10-19", "20-29", "30-39", "+40"), 
+                                include.lowest = T), 
+         estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado, rango_diferencia) %>%
+  summarise(cantidad =n(), .groups = "drop")
+
+
+conteo_difedad
+```
+
+**Gráficas.**
+
+Diferencia de edad entre contrayentes, por estado. En rangos de 0-9, 10-19, 20-29, 30-39 y más de 40 años de diferencia.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+
+
+crear_grafico <- function(rango) {
+  ggplot(conteo_difedad %>% filter(rango_diferencia == rango), aes(x = estado, y = cantidad)) +
+    geom_bar(stat = "identity", fill = "forestgreen") +
+    theme_minimal() +
+    #facet_wrap(~ rango_diferencia, nrow = 3, ncol = 3) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = paste("Diferencia de edad:", rango, "años"), 
+         x = "Estado", 
+         y = "Cantidad de casos")
+}
+
+# Lista de rangos
+rangos <- c("0-9", "10-19", "20-29", "30-39", "+40")
+
+# Crear gráficos para cada rango
+graficos <- lapply(rangos, crear_grafico)
+
+graficos
+
+```
+
+## Actividad laboral de los contrayentes
+
+La categoría más frecuente para la actividad laboral de los contrayentes es la insuficientemente especificada, con 12,851 casos, seguido de no trabaja con 10,627 casos.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+tipo_laboral <- c("Func/dir/jefes", "Prof/tecn", "Auxadmin", "Comer/agent", 
+                  "Serv/vig", "Agric", "Artesa", "indust/transp", "Elemen/apoyo", 
+                  "BuscaT", "NT", "NA<5", "InsEsp", "NE")
+
+mapa_abreviaturas <- c(
+  "Funcionarios, directores y jefes" = "Func/dir/jefes", 
+  "Profesionistas y técnicos" = "Prof/tecn", 
+  "Trabajadores auxiliares en actividades administrativas" = "Auxadmin", 
+  "Comerciantes, empleados en ventas y agentes de ventas" = "Comer/agent", 
+  "Trabajadores en servicios personales y vigilancia" = "Serv/vig", 
+  "Trabajadores en actividades agrícolas, ganaderas, forestales, caza y pesca" = "Agric", 
+  "Trabajadores artesanales" = "Artesa", 
+  "Operadores de maquinaria industrial, ensambladores, choferes y transporte" = "indust/transp", 
+  "Trabajadores en actividades elementales y de apoyo" = "Elemen/apoyo", 
+  "Busca trabajo" = "BuscaT", 
+  "No trabaja" = "NT", 
+  "No aplica a menores de 5 años" = "NA<5", 
+  "Insuficientemente especificada" = "InsEsp", 
+  "No especificada" = "NE")
+
+
+conteo_actlaboral<- imp_datos17 %>%
+  mutate(act_laboral1 = case_when(
+    OCUP_CON1 == 1 ~ "Funcionarios, directores y jefes", 
+    OCUP_CON1 == 2 ~ "Profesionistas y técnicos", 
+    OCUP_CON1 == 3 ~ "Trabajadores auxiliares en actividades administrativas", 
+    OCUP_CON1 == 4 ~ "Comerciantes, empleados en ventas y agentes de ventas", 
+    OCUP_CON1 == 5 ~ "Trabajadores en servicios personales y vigilancia", 
+    OCUP_CON1 == 6 ~ "Trabajadores en actividades agrícolas, ganaderas, forestales, caza y pesca", 
+    OCUP_CON1 == 7 ~ "Trabajadores artesanales", 
+    OCUP_CON1 == 8 ~ "Operadores de maquinaria industrial, ensambladores, choferes y transporte", 
+    OCUP_CON1 == 9 ~ "Trabajadores en actividades elementales y de apoyo", 
+    OCUP_CON1 == 10 ~ "Busca trabajo", 
+    OCUP_CON1 == 11 ~ "No trabaja", 
+    OCUP_CON1 == 97 ~ "No aplica a menores de 5 años",
+    OCUP_CON1 == 98 ~ "Insuficientemente especificada", 
+    OCUP_CON1 == 99 ~ "No especificada", 
+    TRUE ~ NA_character_
+  ), 
+  act_laboral2 = case_when(
+    OCUP_CON2 == 1 ~ "Funcionarios, directores y jefes", 
+    OCUP_CON2 == 2 ~ "Profesionistas y técnicos", 
+    OCUP_CON2 == 3 ~ "Trabajadores auxiliares en actividades administrativas", 
+    OCUP_CON2 == 4 ~ "Comerciantes, empleados en ventas y agentes de ventas", 
+    OCUP_CON2 == 5 ~ "Trabajadores en servicios personales y vigilancia", 
+    OCUP_CON2 == 6 ~ "Trabajadores en actividades agrícolas, ganaderas, forestales, caza y pesca", 
+    OCUP_CON2 == 7 ~ "Trabajadores artesanales", 
+    OCUP_CON2 == 8 ~ "Operadores de maquinaria industrial, ensambladores, choferes y transporte", 
+    OCUP_CON2 == 9 ~ "Trabajadores en actividades elementales y de apoyo", 
+    OCUP_CON2 == 10 ~ "Busca trabajo", 
+    OCUP_CON2 == 11 ~ "No trabaja", 
+    OCUP_CON2 == 97 ~ "No aplica a menores de 5 años",
+    OCUP_CON2 == 98 ~ "Insuficientemente especificada", 
+    OCUP_CON2 == 99 ~ "No especificada",
+    TRUE ~ NA_character_
+  ))
+
+activ_laboral <- conteo_actlaboral %>%
+  pivot_longer(cols = c(act_laboral1, act_laboral2), 
+               values_to = "actividad_laboral", 
+               values_drop_na = T) %>%
+  #Agregar la columna de abreviaturas
+  mutate(abreviatura = recode(actividad_laboral, !!!mapa_abreviaturas)) %>%
+  group_by(abreviatura, actividad_laboral ) %>%
+  summarise(cantidad = n(), .groups = "drop") 
+  
+
+
+activ_laboral
+```
+
+**Gráfica.** Frecuencia de cada actividad laboral de los contrayentes
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+ggplot(activ_laboral, aes(x= abreviatura, y = cantidad))+
+  geom_bar(stat="identity", fill = "forestgreen", color = "black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(title = "Actividad laboral de contribuyentes", 
+       x = "Actividad", 
+       y= "Cantidad")
+
+```
+
+### Por estado
+
+El estado que tiene la mayor cantidad de actividad laboral de tipo "insuficientemente especificada" y "no trabaja" es el estado de México con 1,886 y 1,454 casos.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+
+activ_laboral <- conteo_actlaboral %>%
+  pivot_longer(cols = c(act_laboral1, act_laboral2), 
+               values_to = "actividad_laboral", 
+               values_drop_na = T) %>%
+  #Agregar la columna de abreviaturas
+  mutate(abreviatura = recode(actividad_laboral, !!!mapa_abreviaturas), estado = estados[ENT_REGIS]) %>%
+  group_by(estado, ENT_REGIS, abreviatura) %>%
+  summarise(cantidad = n(), .groups = "drop")
+
+
+activ_laboral
+```
+
+**Gráfica.** Frecuencia de la actividad laboral de los contrayentes, por estado
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+ggplot(activ_laboral, aes(x = ENT_REGIS, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  facet_wrap(~ abreviatura, nrow = 4, ncol = 4) + 
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90, hjust= 1))+
+  labs(title = "Número de personas por actividad laboral y estado", 
+       x = "Estado",
+       y = "Cantidad de personas")
+  
+  
+
+
+```
+
+## Escolaridad de los contrayentes
+
+El último grado de estudios más reportado por los contrayentes es el de la secundaria, con 10,569 casos, seguido de la preparatoria con 10,288 casos.
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+escolaridad_abrv <- c("SinE", "1-3 Prim", "4-5 Prim", "Primaria", 
+                      "Sec", "Prepa", "Prof", "Otra", "NE")
+
+
+mapa_escolaridad <- c("Sin escolaridad" = "SinE", 
+                      "1 a 3 años de primaria" = "1-3 Prim",
+                      "4 a 5 años de primaria" = "4-5 Prim", 
+                      "Primaria completa" = "Primaria", 
+                      "Secundaria o equivalente" = "Sec", 
+                      "Preparatoria o equivalente" = "Prepa", 
+                      "Profesional" = "Prof", 
+                      "Otra"= "Otra", 
+                      "No especificada" = "NE")
+
+  
+conteo_escolaridad<- imp_datos17 %>%
+  mutate(escolaridad1 = case_when(
+    ESCOL_CON1 == 1 ~ "Sin escolaridad",
+    ESCOL_CON1 == 2 ~ "1 a 3 años de primaria",
+    ESCOL_CON1 == 3 ~ "4 a 5 años de primaria",
+    ESCOL_CON1 == 4  ~ "Primaria completa",
+    ESCOL_CON1 == 5 ~ "Secundaria o equivalente", 
+    ESCOL_CON1 == 6 ~ "Preparatoria o equivalente", 
+    ESCOL_CON1 == 7 ~ "Profesional", 
+    ESCOL_CON1 == 8 ~ "Otra", 
+    ESCOL_CON1 == 9 ~ "No especificada", 
+    TRUE ~ NA_character_  
+  ), escolaridad2 = case_when(
+    ESCOL_CON2 == 1 ~ "Sin escolaridad",
+    ESCOL_CON2 == 2 ~ "1 a 3 años de primaria",
+    ESCOL_CON2 == 3 ~ "4 a 5 años de primaria",
+    ESCOL_CON2 == 4  ~ "Primaria completa",
+    ESCOL_CON2 == 5 ~ "Secundaria o equivalente", 
+    ESCOL_CON2 == 6 ~ "Preparatoria o equivalente", 
+    ESCOL_CON2 == 7 ~ "Profesional", 
+    ESCOL_CON2 == 8 ~ "Otra", 
+    ESCOL_CON2 == 9 ~ "No especificada", 
+    TRUE ~ NA_character_  
+  ))
+
+  
+escolaridad <- conteo_escolaridad %>%
+  pivot_longer(cols = c(escolaridad1, escolaridad2), 
+               values_to = "escolaridad", 
+               values_drop_na = T) %>%
+  mutate(escolaridad_abrv = recode(escolaridad, !!!mapa_escolaridad)) %>%
+  group_by(escolaridad_abrv, escolaridad) %>%
+  summarise(cantidad = n(), .groups = "drop")
+
+
+escolaridad
+
+```
+
+**Gráfica.**
+
+Nivel de escolaridad de los contrayentes
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+ggplot(escolaridad, aes(x= escolaridad_abrv, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  #facet_wrap(~ abreviatura, nrow = 4, ncol = 4) + 
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas por escolaridad", 
+       x = "Escolaridad",
+       y = "Cantidad de personas")
+  
+
+```
+
+### Por estado
+
+**Sin escolaridad:**
+
+El estado con más casos donde los contrayentes no tienen escolaridad es Chiapas (90 casos), seguido de Veracruz (44 casos).
+
+**1ero a 3ro de primaria:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es primero o tercero de primaria es Veracruz (67), seguido de CDMX (56).
+
+**4to a 5to de primaria:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es cuarto o quinto de primaria es Chiapas (71), seguido de Veracruz (38)
+
+**Primaria completa:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es primaria completa corresponde al estado de México (453), seguido de Veracruz (323)
+
+**Secundaria:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es secundaria completa corresponde al estado de México (1,539), seguido de Jalisco (796).
+
+**Preparatoria:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es preparatoria completa corresponde al estado de México (1,618), seguido de Jalisco (859).
+
+**Profesional o similar:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es profesional o similar corresponde al estado de México (1,084), seguido de Jalisco (874).
+
+**Otro tipo:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes es de otro tipo corresponde al estado de Guerrero (167), seguido de Tabasco (36)
+
+**No especificado:**
+
+El estado con más casos donde el último grado de estudios de los contrayentes no fue especificado corresponde al estado de Nuevo León (633), seguido de Guanajuato (530)
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+escolaridad <- conteo_escolaridad %>%
+  pivot_longer(cols = c(escolaridad1, escolaridad2), 
+               values_to = "escolaridad", 
+               values_drop_na = T) %>%
+  mutate(escolaridad_abrv = recode(escolaridad, !!!mapa_escolaridad), 
+         estado = estados[ENT_REGIS]) %>%
+  group_by(ENT_REGIS, estado, escolaridad_abrv) %>%
+  summarise(cantidad = n(), .groups = "drop")
+
+
+escolaridad
+```
+
+**Gráfica.**
+
+Último nivel de estudios de los contrayentes, por estado
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+ggplot(escolaridad, aes(x= ENT_REGIS, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  facet_wrap(~ escolaridad_abrv, nrow = 4, ncol = 4) + 
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas por escolaridad y entidad", 
+       x = "Estado",
+       y = "Cantidad de personas")
+  
+  
+
+```
+
+**Gráfica.**
+
+Último nivel de estudios de los contrayentes, por estado (por separado)
+
+```{r}
+#| echo=T, show=T, eval=T, output=T
+
+
+#Sin escolaridad
+ggplot(escolaridad %>% filter(escolaridad_abrv == "SinE"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas sin escolaridad", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+
+#1ero a 3ro de primaria
+ggplot(escolaridad %>% filter(escolaridad_abrv == "1-3 Prim"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de 1ero a 3ro de primaria", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#4to a 5to de primaria
+ggplot(escolaridad %>% filter(escolaridad_abrv == "4-5 Prim"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de 4to a 5to de primaria", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Primaria completa
+ggplot(escolaridad %>% filter(escolaridad_abrv == "Primaria"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de primaria completa", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Secundaria o equivalente
+ggplot(escolaridad %>% filter(escolaridad_abrv == "Sec"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de secundaria", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Preparatoria o equivalente
+ggplot(escolaridad %>% filter(escolaridad_abrv == "Prepa"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de preparatoria", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Preparatoria o equivalente
+ggplot(escolaridad %>% filter(escolaridad_abrv == "Prof"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de profesional", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Otra
+ggplot(escolaridad %>% filter(escolaridad_abrv == "Otra"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar de otro tipo", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+#Otra
+ggplot(escolaridad %>% filter(escolaridad_abrv == "NE"), aes(x= estado, y = cantidad))+
+  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  labs(title = "Número de personas con último grado escolar no especificado", 
+       x = "Estado",
+       y = "Cantidad de personas")
+
+```

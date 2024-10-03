@@ -2,3 +2,4 @@
 */**/*.rdb
 */**/*.rdx
 */**/__packages
+.Rproj.user
