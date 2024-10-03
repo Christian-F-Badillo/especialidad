@@ -720,35 +720,31 @@ ggplot(promedio_entidadm, aes(x= estado, y =promedio_mujeres))+
 La diferencia de edad más frecuente (3,729 casos) es de un año. La diferencia de edad más grande entre los contrayentes es de 65 años, que es un caso que corresponde al estado de Michoacán donde las edades son de 83 años en el contrayente y 18 años para la contrayente.
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 conteo_difedad <- imp_datos17 %>%
   mutate(diferencia_edad = abs(EDAD_CON1- EDAD_CON2)) %>%
   group_by(diferencia_edad) %>%
   summarise(cantidad = n(), .groups = "drop")
-  
-  
-conteo_difedad
+
+knitr::kable(conteo_difedad, caption = "Diferencia de edad entre contrayentes.", col.names = c(
+    "Diferencia en Edad", "Total"), align = "cc")
 ```
 
-**Gráfica.**
-
-Diferencia de edad entre contrayentes
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+#| fig-cap: "Diferencia de edad entre contrayentes."
 
 ggplot(conteo_difedad, aes(x =diferencia_edad, y = cantidad))+
   geom_bar(stat = "identity", fill = "forestgreen", color = "black")+
   theme_minimal()+
-  labs(title = "Diferencia de edad entre contrayentes", 
-       x = "Diferencia de edad", 
-       y= "Cantidad")
-  
-
+  labs( 
+       x = "Diferencia de edad (años)", 
+       y= "Total") +
+  scale_x_continuous(breaks = seq(0, max(conteo_difedad$diferencia_edad), 5))
 ```
 
-### Por estado
+### Diferencia de edad en Matrimonios por estado.
 
 **Entre 0 y 9 años:**
 
@@ -773,7 +769,7 @@ El estado donde la diferencia de edad de entre 30 a 39 es más frecuente correpo
 El estado de México tiene la mayor cantidad de matrimonios cuando las diferencias de edad son de entre 0 hasta 29 años.
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 conteo_difedad <- imp_datos17 %>%
   mutate(diferencia_edad = abs(EDAD_CON1- EDAD_CON2), 
@@ -781,12 +777,12 @@ conteo_difedad <- imp_datos17 %>%
   group_by(ENT_REGIS, estado, diferencia_edad) %>%
   summarise(cantidad = n(), .groups = "drop")
 
-
-conteo_difedad
+knitr::kable(head(conteo_difedad, 10), caption="Diferencia de edad en contrayentes por estado (primeras obs.).",
+             col.names = c("No. Estado", "Estado", "Diferencia de Edad", "Total"), align = "clcc")
 ```
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 conteo_difedad <- imp_datos17 %>%
   mutate(diferencia_edad = abs(EDAD_CON1 - EDAD_CON2), 
@@ -798,46 +794,53 @@ conteo_difedad <- imp_datos17 %>%
   group_by(ENT_REGIS, estado, rango_diferencia) %>%
   summarise(cantidad =n(), .groups = "drop")
 
-
-conteo_difedad
+knitr::kable(head(conteo_difedad, 10), 
+             caption="Rango de diferencia en edad de contrayentes por estado (primeras obs.).",
+             col.names = c("No. Estado", "Estado", "Rango en Diferencia de Edad", "Total"), 
+             align = "clcc")
 ```
 
-**Gráficas.**
-
-Diferencia de edad entre contrayentes, por estado. En rangos de 0-9, 10-19, 20-29, 30-39 y más de 40 años de diferencia.
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
-
-
+#| echo: false
+#| label: fig-charts
+#| fig-cap: "Diferencia de edad entre contrayentes por estado."
+#| fig-subcap:
+#|   - "Diferencia de edad entre contrayentes por estado (0-9 años)."
+#|   - "Diferencia de edad entre contrayentes por estado (10-19 años)."
+#|   - "Diferencia de edad entre contrayentes por estado (20-29 años)."
+#|   - "Diferencia de edad entre contrayentes por estado (30-39 años)."
+#|   - "Diferencia de edad entre contrayentes por estado (>40 años)."
+#| layout: [[47, -6, 47], [47, -6, 47], [50]]
+#| layout-align: center
 
 crear_grafico <- function(rango) {
   ggplot(conteo_difedad %>% filter(rango_diferencia == rango), aes(x = estado, y = cantidad)) +
     geom_bar(stat = "identity", fill = "forestgreen") +
     theme_minimal() +
-    #facet_wrap(~ rango_diferencia, nrow = 3, ncol = 3) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(title = paste("Diferencia de edad:", rango, "años"), 
+    labs( 
          x = "Estado", 
-         y = "Cantidad de casos")
+         y = "Total de casos")
 }
 
 # Lista de rangos
 rangos <- c("0-9", "10-19", "20-29", "30-39", "+40")
 
 # Crear gráficos para cada rango
-graficos <- lapply(rangos, crear_grafico)
-
-graficos
-
+crear_grafico(rangos[1])
+crear_grafico(rangos[2])
+crear_grafico(rangos[3])
+crear_grafico(rangos[4])
+crear_grafico(rangos[5])
 ```
 
+\newpage
 ## Actividad laboral de los contrayentes
 
 La categoría más frecuente para la actividad laboral de los contrayentes es la insuficientemente especificada, con 12,851 casos, seguido de no trabaja con 10,627 casos.
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 tipo_laboral <- c("Func/dir/jefes", "Prof/tecn", "Auxadmin", "Comer/agent", 
                   "Serv/vig", "Agric", "Artesa", "indust/transp", "Elemen/apoyo", 
@@ -905,24 +908,23 @@ activ_laboral <- conteo_actlaboral %>%
   group_by(abreviatura, actividad_laboral ) %>%
   summarise(cantidad = n(), .groups = "drop") 
   
-
-
-activ_laboral
+knitr::kable(activ_laboral, 
+             caption="Actividad laboral de los contrayentes",
+             col.names = c("Abreviatura", "Actividad Laboral", "Total"), 
+             align = "clc")
 ```
 
-**Gráfica.** Frecuencia de cada actividad laboral de los contrayentes
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+#| fig-cap: "Frecuencia de cada actividad laboral de los contrayentes."
 
 ggplot(activ_laboral, aes(x= abreviatura, y = cantidad))+
   geom_bar(stat="identity", fill = "forestgreen", color = "black")+
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
-  labs(title = "Actividad laboral de contribuyentes", 
+  labs(
        x = "Actividad", 
        y= "Cantidad")
-
 ```
 
 ### Por estado
@@ -930,7 +932,7 @@ ggplot(activ_laboral, aes(x= abreviatura, y = cantidad))+
 El estado que tiene la mayor cantidad de actividad laboral de tipo "insuficientemente especificada" y "no trabaja" es el estado de México con 1,886 y 1,454 casos.
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 
 activ_laboral <- conteo_actlaboral %>%
@@ -942,27 +944,26 @@ activ_laboral <- conteo_actlaboral %>%
   group_by(estado, ENT_REGIS, abreviatura) %>%
   summarise(cantidad = n(), .groups = "drop")
 
-
-activ_laboral
+knitr::kable(head(activ_laboral, 12), 
+             caption="Actividad laboral de los contrayentes por estado (primeras obs.).",
+             col.names = c("Estado", "No. Estado", "Abreviatura", "Total"), 
+             align = "cclc")
 ```
 
-**Gráfica.** Frecuencia de la actividad laboral de los contrayentes, por estado
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+#| fig-cap: "Frecuencia de la actividad laboral de los contrayentes por estado."
+#| fig-width: 16
+#| fig-height: 16
 
-ggplot(activ_laboral, aes(x = ENT_REGIS, y = cantidad))+
+ggplot(activ_laboral, aes(x = factor(estado, levels = unique(estado)), y = cantidad))+
   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  facet_wrap(~ abreviatura, nrow = 4, ncol = 4) + 
+  facet_wrap(~ abreviatura, nrow = 4, ncol = 4, scales = "free") + 
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 90, hjust= 1))+
-  labs(title = "Número de personas por actividad laboral y estado", 
+  labs( 
        x = "Estado",
-       y = "Cantidad de personas")
-  
-  
-
-
+       y = "Total")
 ```
 
 ## Escolaridad de los contrayentes
@@ -970,7 +971,7 @@ ggplot(activ_laboral, aes(x = ENT_REGIS, y = cantidad))+
 El último grado de estudios más reportado por los contrayentes es el de la secundaria, con 10,569 casos, seguido de la preparatoria con 10,288 casos.
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 escolaridad_abrv <- c("SinE", "1-3 Prim", "4-5 Prim", "Primaria", 
                       "Sec", "Prepa", "Prof", "Otra", "NE")
@@ -1021,28 +1022,24 @@ escolaridad <- conteo_escolaridad %>%
   group_by(escolaridad_abrv, escolaridad) %>%
   summarise(cantidad = n(), .groups = "drop")
 
-
-escolaridad
-
+knitr::kable(escolaridad, 
+             caption = "Nivel de escolaridad de los contrayentes",
+             col.names = c("Abreviación", "Escolaridad", "Total"), 
+             align = "clc")
 ```
 
-**Gráfica.**
-
-Nivel de escolaridad de los contrayentes
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+#| fig-cap: "Nivel de escolaridad de los contrayentes."
 
 ggplot(escolaridad, aes(x= escolaridad_abrv, y = cantidad))+
   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
   #facet_wrap(~ abreviatura, nrow = 4, ncol = 4) + 
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas por escolaridad", 
+  labs( 
        x = "Escolaridad",
-       y = "Cantidad de personas")
-  
-
+       y = "Total")
 ```
 
 ### Por estado
@@ -1084,7 +1081,7 @@ El estado con más casos donde el último grado de estudios de los contrayentes 
 El estado con más casos donde el último grado de estudios de los contrayentes no fue especificado corresponde al estado de Nuevo León (633), seguido de Guanajuato (530)
 
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
 
 escolaridad <- conteo_escolaridad %>%
   pivot_longer(cols = c(escolaridad1, escolaridad2), 
@@ -1095,118 +1092,114 @@ escolaridad <- conteo_escolaridad %>%
   group_by(ENT_REGIS, estado, escolaridad_abrv) %>%
   summarise(cantidad = n(), .groups = "drop")
 
-
-escolaridad
+knitr::kable(head(escolaridad, 8), 
+             caption="Escolaridad de los contrayentes por estado (primeras obs.).",
+             col.names = c("No. Estado", "Estado", "Abreviatura", "Total"), 
+             align = "cclc")
 ```
 
-**Gráfica.**
-
-Último nivel de estudios de los contrayentes, por estado
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+#| fig-cap: "Último nivel de estudios de los contrayentes por estado."
+#| fig-width: 14
+#| fig-height: 14
 
-ggplot(escolaridad, aes(x= ENT_REGIS, y = cantidad))+
+ggplot(escolaridad, aes(x= factor(estado, levels = unique(estado)), y = cantidad))+
   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  facet_wrap(~ escolaridad_abrv, nrow = 4, ncol = 4) + 
+  facet_wrap(~ escolaridad_abrv, nrow = 4, ncol = 4, scales = "free_y") + 
   theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas por escolaridad y entidad", 
+  theme(axis.text.x = element_text(angle = 90, hjust= 1))+
+  labs(
        x = "Estado",
-       y = "Cantidad de personas")
-  
-  
-
+       y = "Total")
 ```
 
-**Gráfica.**
-
-Último nivel de estudios de los contrayentes, por estado (por separado)
-
 ```{r}
-#| echo=T, show=T, eval=T, output=T
+#| echo: false
+# **Gráfica.**
 
-
-#Sin escolaridad
-ggplot(escolaridad %>% filter(escolaridad_abrv == "SinE"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas sin escolaridad", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-
-#1ero a 3ro de primaria
-ggplot(escolaridad %>% filter(escolaridad_abrv == "1-3 Prim"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de 1ero a 3ro de primaria", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#4to a 5to de primaria
-ggplot(escolaridad %>% filter(escolaridad_abrv == "4-5 Prim"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de 4to a 5to de primaria", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Primaria completa
-ggplot(escolaridad %>% filter(escolaridad_abrv == "Primaria"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de primaria completa", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Secundaria o equivalente
-ggplot(escolaridad %>% filter(escolaridad_abrv == "Sec"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de secundaria", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Preparatoria o equivalente
-ggplot(escolaridad %>% filter(escolaridad_abrv == "Prepa"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de preparatoria", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Preparatoria o equivalente
-ggplot(escolaridad %>% filter(escolaridad_abrv == "Prof"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de profesional", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Otra
-ggplot(escolaridad %>% filter(escolaridad_abrv == "Otra"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar de otro tipo", 
-       x = "Estado",
-       y = "Cantidad de personas")
-
-#Otra
-ggplot(escolaridad %>% filter(escolaridad_abrv == "NE"), aes(x= estado, y = cantidad))+
-  geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-  labs(title = "Número de personas con último grado escolar no especificado", 
-       x = "Estado",
-       y = "Cantidad de personas")
+# Último nivel de estudios de los contrayentes, por estado (por separado)
+# 
+# #Sin escolaridad
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "SinE"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas sin escolaridad",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# 
+# #1ero a 3ro de primaria
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "1-3 Prim"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de 1ero a 3ro de primaria",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #4to a 5to de primaria
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "4-5 Prim"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de 4to a 5to de primaria",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Primaria completa
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "Primaria"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de primaria completa",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Secundaria o equivalente
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "Sec"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de secundaria",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Preparatoria o equivalente
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "Prepa"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de preparatoria",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Preparatoria o equivalente
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "Prof"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de profesional",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Otra
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "Otra"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar de otro tipo",
+#        x = "Estado",
+#        y = "Cantidad de personas")
+# 
+# #Otra
+# ggplot(escolaridad %>% filter(escolaridad_abrv == "NE"), aes(x= estado, y = cantidad))+
+#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
+#   theme_minimal()+
+#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+#   labs(title = "Número de personas con último grado escolar no especificado",
+#        x = "Estado",
+#        y = "Cantidad de personas")
 
 ```
