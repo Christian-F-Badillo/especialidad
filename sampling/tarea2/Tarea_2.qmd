@@ -1092,7 +1092,7 @@ escolaridad <- conteo_escolaridad %>%
   group_by(ENT_REGIS, estado, escolaridad_abrv) %>%
   summarise(cantidad = n(), .groups = "drop")
 
-knitr::kable(head(escolaridad, 8), 
+knitr::kable(head(escolaridad, 10), 
              caption="Escolaridad de los contrayentes por estado (primeras obs.).",
              col.names = c("No. Estado", "Estado", "Abreviatura", "Total"), 
              align = "cclc")

@@ -158,7 +158,7 @@ ggplot(data = resultados.total.Nac.Mat.Mex) +
 
 #- ---------------------------------------------------------------------------
 #- Edad Promedio de Contrayentes Mujeres
-Edad <- c(subset(muestra, SEXO_CON1 == 2)$EDAD_CON1, subset(muestra, SEXO_CON2 == 2)$EDAD_CON2)
+Edad <- c(subset(sample, SEXO_CON1 == 2)$EDAD_CON1, subset(sample, SEXO_CON2 == 2)$EDAD_CON2)
 data.con.MM <- cbind(Edad, N)
 data.con.MM <- as.data.frame(data.con.MM)
 
@@ -188,8 +188,8 @@ ggplot(data = resultados.mean.con.MM) +
 
 #- ---------------------------------------------------------------------------
 #- Edad Promedio de Contrayentes Mujeres por Entidad
-Edad.p.entidad <- subset(muestra, SEXO_CON1 == 2)[c("ENT_REGIS", "EDAD_CON1")]
-Edad.p <- subset(muestra, SEXO_CON2 == 2)[c("ENT_REGIS", "EDAD_CON2")]
+Edad.p.entidad <- subset(sample, SEXO_CON1 == 2)[c("ENT_REGIS", "EDAD_CON1")]
+Edad.p <- subset(sample, SEXO_CON2 == 2)[c("ENT_REGIS", "EDAD_CON2")]
 
 colnames(Edad.p.entidad) <- c("Entidad", "Edad")
 colnames(Edad.p) <- c("Entidad", "Edad")
@@ -337,9 +337,92 @@ total.esc.p.entidad <- svybys(~Escolaridad, bys = ~Entidad, design = disenio, FU
 
 df.total.escpent <- as.data.frame(total.esc.p.entidad)
 
-mean.edad.p.entidad.MM <- cbind(mean.edad.p.entidad.MM, cis)
-mean.edad.p.entidad.MM
-
 estados <- c("Ags", "BC", "BCS", "Camp",  "Coah", "Col", "Chis", "Chih", "CDMX",  "Dgo", "Gto", "Gro", 
              "Hgo", "Jal", "Mex", "Mich", "Mor", "Nay", "NL", "Oax", "Pue", "Qro", "QR", "SLP", "Sin", 
              "Son", "Tab", "Tamps", "Tlax", "Ver", "Yuc", "Zac")
+
+escolaridad_abrv <- c("SinE", "1-3 Prim", "4-5 Prim", "Primaria", 
+                      "Sec", "Prepa", "Prof", "Otra", "NE")
+
+mapa_escolaridad <- c("Sin escolaridad" = "SinE", 
+                      "1 a 3 años de primaria" = "1-3 Prim",
+                      "4 a 5 años de primaria" = "4-5 Prim", 
+                      "Primaria completa" = "Primaria", 
+                      "Secundaria o equivalente" = "Sec", 
+                      "Preparatoria o equivalente" = "Prepa", 
+                      "Profesional" = "Prof", 
+                      "Otra"= "Otra", 
+                      "No especificada" = "NE")
+
+Entidad <- rep(df.total.escpent$Entidad, 9)
+Esc.code <- rep(x = 1:9, each = 32)
+Escol.names <- vector(length = 9)
+se.Escol.names <- vector(length = 9)
+for (i in 1:9){
+    Escol.names[i] <- paste("Escolaridad", i, sep = "")
+    se.Escol.names[i] <- paste("se.Escolaridad", i, sep="")
+}
+Escolaridad <- as.numeric(unlist(df.total.escpent[Escol.names]))
+SE.Escolaridad <- as.numeric(unlist(df.total.escpent[se.Escol.names]))
+CI.L <- Escolaridad - z * SE.Escolaridad
+CI.U <- Escolaridad + z * SE.Escolaridad
+
+Esc.Total.by.Ent <- data.frame(
+    Entidad, Escolaridad = Esc.code, Total = Escolaridad, CI.L, CI.U
+)
+
+Esc.Total.by.Ent <- Esc.Total.by.Ent %>%
+    mutate(Escol.Name = case_when(
+        Escolaridad == 1 ~ "Sin escolaridad",
+        Escolaridad == 2 ~ "1 a 3 años de primaria",
+        Escolaridad == 3 ~ "4 a 5 años de primaria",
+        Escolaridad == 4  ~ "Primaria completa",
+        Escolaridad == 5 ~ "Secundaria o equivalente", 
+        Escolaridad == 6 ~ "Preparatoria o equivalente", 
+        Escolaridad == 7 ~ "Profesional", 
+        Escolaridad == 8 ~ "Otra", 
+        Escolaridad == 9 ~ "No especificada", 
+        TRUE ~ NA_character_ )) %>%
+    mutate(Abreviacion = recode(Escol.Name, !!!mapa_escolaridad)) %>%
+    mutate(Escol.Name = factor(Escol.Name, levels = c("1 a 3 años de primaria", "4 a 5 años de primaria",
+                                                      "No especificada","Otra", "Preparatoria o equivalente", 
+                                                      "Primaria completa", "Profesional", "Secundaria o equivalente", 
+                                                       "Sin escolaridad"), ordered = T))
+
+Reales <- c(4, 3, 1, 159, 30, 161, 177, 1, 14, 3, 375, 3, 207, 119, 245,
+            286, 14, 2, 49, 6, 81, 44, 2, 21, 4, 2, 13, 81, 25, 87, 102, 
+            3, 6, 143, 3, 321, 52, 337, 340, 6, 1, 2, 4, 1, 75, 22, 80, 
+            59, 2, 33, 71, 85, 2, 374, 337, 306, 454, 90, 7, 11, 197, 11, 
+            263, 127, 342, 300, 4, 56, 9, 19, 675, 68, 815, 621, 3, 3, 5, 
+            87, 7, 130, 38, 97, 176, 3, 25, 15, 530, 12, 431, 274, 324, 742, 
+            9, 24, 26, 88, 167, 272, 158, 205, 321, 17, 2, 4, 89, 152, 84, 207, 
+            192, 12, 27, 21, 113, 1, 859, 298, 874, 796, 21, 26, 22, 198, 17, 
+            1618, 453, 1084, 1539, 31, 12, 16, 327, 2, 367, 201, 350, 445, 18, 
+            6, 2, 44, 16, 166, 42, 217, 167, 10, 58, 63, 25, 150, 62, 36, 3, 1, 
+            633, 24, 326, 136, 476, 434, 3, 17, 6, 302, 247, 240, 380, 24, 22, 9, 
+            373, 180, 433, 328, 27, 4, 2, 6, 156, 60, 255, 207, 8, 3, 2, 129, 280,
+            47, 217, 141, 3, 8, 4, 79, 4, 233, 72, 196, 259, 1, 17, 16, 177, 316,
+            63, 384, 173, 6, 12, 22, 302, 106, 341, 356, 3, 9, 12, 3, 36, 283, 45,
+            173, 203, 10, 20, 248, 2, 244, 91, 196, 246, 5, 8, 2, 141, 22, 102, 93,
+            2, 67, 38, 67, 9, 756, 323, 546, 506, 44, 11, 5, 104, 156, 67, 166, 212,
+            7, 6, 4, 24, 1, 158, 62, 160, 208, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+Estado <- rep(estados, each = 9)
+
+Esc.Total.by.Ent <- Esc.Total.by.Ent %>%
+    arrange(Entidad, Escol.Name) %>%
+    mutate(Estado = Estado) %>%
+    mutate(Real.Val = Reales)
+
+ggplot(Esc.Total.by.Ent, aes(x= factor(Estado, levels = unique(Estado)), y = Real.Val, colour = "blue"))+
+    geom_point() +
+    geom_point(aes(x = Estado, y = Total, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = CI.L, ymax = CI.U, colour = "yellowgreen")) +
+    facet_wrap(~ Escol.Name, nrow = 9, ncol = 2, scales = "free_y") + 
+    labs(x = "Estado",
+         y = "Total",
+         title = "Escolaridad de los Contrayentes con IC del 95%") +
+    guides(colour = guide_legend(title = "")) +
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45))
