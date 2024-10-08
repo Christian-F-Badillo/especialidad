@@ -42,8 +42,8 @@ varianza_proporcion
 
 # Paso 5: Calcular los intervalos de confianza al 95% (Z = 1.96)
 z <- 1.96  # Valor crítico para un IC del 95%
-limite_inferior <- proporcion_mensual - z * sqrt(varianza_proporcion)
-limite_superior <- proporcion_mensual + z * sqrt(varianza_proporcion)
+limite_inferior <- proporcion_mensual - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- proporcion_mensual + z * sqrt(varianza_proporcion) + 1/(2*n)
 
 # Mostrar el resultado
 limite_inferior <- as.vector(round(limite_inferior * N))
@@ -53,6 +53,7 @@ real_total_mat <- c(1247, 2809, 1762, 1429, 1601, 1426, 1498, 1502, 1335, 1539, 
 
 
 resultados.total.mat <- data.frame(
+    mes = c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"),
     real = real_total_mat,
     total.est = proporcion_mensual,
     l.ci = limite_inferior,
@@ -88,8 +89,8 @@ varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.MM.mat * (1 - prop
 varianza_proporcion
 
 z <- 1.96  # Valor crítico para un IC del 95%
-limite_inferior <- propo.MM.mat - z * sqrt(varianza_proporcion)
-limite_superior <- propo.MM.mat + z * sqrt(varianza_proporcion)
+limite_inferior <- propo.MM.mat - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.MM.mat + z * sqrt(varianza_proporcion) + 1/(2*n)
 
 limite_inferior <- as.vector(round(limite_inferior * N))
 total.MM.mat <- as.vector(round(propo.MM.mat * N))
@@ -118,19 +119,16 @@ ggplot(data = resultados.total.MM.mat) +
 #- Matrimonios entre Mexicanos 
 
 Nac.Mat.Mex <- table(sample$NACI_CON1 == 1 & sample$NACI_CON2 ==1)
-Nac.Mat.Mex
 
 total_muestra <- sum(Nac.Mat.Mex)  # Total de la muestra (2000)
 propo.Nac.Mat.Mex <- Nac.Mat.Mex / total_muestra 
 propo.Nac.Mat.Mex <- propo.Nac.Mat.Mex[2]
-propo.Nac.Mat.Mex
 
 varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.Nac.Mat.Mex * (1 - propo.Nac.Mat.Mex) / total_muestra)
-varianza_proporcion
 
 z <- 1.96  # Valor crítico para un IC del 95%
-limite_inferior <- propo.Nac.Mat.Mex - z * sqrt(varianza_proporcion)
-limite_superior <- propo.Nac.Mat.Mex + z * sqrt(varianza_proporcion)
+limite_inferior <- propo.Nac.Mat.Mex - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.Nac.Mat.Mex + z * sqrt(varianza_proporcion) + 1/(2*n)
 
 limite_inferior <- as.vector(round(limite_inferior * N))
 total.Nac.Mat.Mex <- as.vector(round(propo.Nac.Mat.Mex * N))
@@ -139,7 +137,7 @@ real.total.MM <- 19096
 
 resultados.total.Nac.Mat.Mex <- data.frame(
     real = real.total.MM,
-    total.est = total.MM.mat,
+    total.est = total.Nac.Mat.Mex,
     pop.est = propo.MM.mat,
     l.ci = limite_inferior,
     u.ci = limite_superior
@@ -246,8 +244,8 @@ varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.act.lab.con * (1 -
 varianza_proporcion
 
 z <- 1.96  # Valor crítico para un IC del 95%
-limite_inferior <- propo.act.lab.con - z * sqrt(varianza_proporcion)
-limite_superior <- propo.act.lab.con + z * sqrt(varianza_proporcion)
+limite_inferior <- propo.act.lab.con - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.act.lab.con + z * sqrt(varianza_proporcion) + 1/(2*n)
 
 limite_inferior <- as.vector(round(limite_inferior * N))
 total.act.lab.con <- as.vector(round(propo.act.lab.con * N))

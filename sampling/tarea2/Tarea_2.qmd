@@ -163,10 +163,10 @@ execute:
 ```{r}
 #| echo=F, show=F, eval=T, output=F
 # Cargamos las librerías que se ocuparán:
-
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+library(survey)
 ```
 
 
@@ -1114,92 +1114,585 @@ ggplot(escolaridad, aes(x= factor(estado, levels = unique(estado)), y = cantidad
        y = "Total")
 ```
 
+\newpage
+# Estimaciones.
+
 ```{r}
 #| echo: false
-# **Gráfica.**
+#- Muestramos datos.
+n <- 2000
+N <- nrow(imp_datos17)
+peso <- rep(N/n,n)
+fpc <- rep(N,n)
+alpha <- 0.05
 
-# Último nivel de estudios de los contrayentes, por estado (por separado)
-# 
-# #Sin escolaridad
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "SinE"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas sin escolaridad",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# 
-# #1ero a 3ro de primaria
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "1-3 Prim"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de 1ero a 3ro de primaria",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #4to a 5to de primaria
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "4-5 Prim"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de 4to a 5to de primaria",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Primaria completa
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "Primaria"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de primaria completa",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Secundaria o equivalente
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "Sec"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de secundaria",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Preparatoria o equivalente
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "Prepa"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de preparatoria",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Preparatoria o equivalente
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "Prof"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de profesional",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Otra
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "Otra"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar de otro tipo",
-#        x = "Estado",
-#        y = "Cantidad de personas")
-# 
-# #Otra
-# ggplot(escolaridad %>% filter(escolaridad_abrv == "NE"), aes(x= estado, y = cantidad))+
-#   geom_bar(stat ="identity", fill = "forestgreen", col ="black")+
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 45, hjust= 1))+
-#   labs(title = "Número de personas con último grado escolar no especificado",
-#        x = "Estado",
-#        y = "Cantidad de personas")
+set.seed(314)
 
+sample <- imp_datos17 %>%
+    mutate(N = n()) %>%
+    slice_sample(n = n)
 ```
+
+## Total de matrimonios
+
+
+## Matrimonios por entidad
+
+
+## Matrimonios por mes
+
+Se estiman los matrimonios por mes para la muestra.
+
+```{r}
+#| echo: false
+
+# Paso 1: Agrupar los datos por mes de registro y contar el número de matrimonios por mes
+conteo_mensual <- table(sample$MES_REGIS)
+
+# Paso 2: Calcular la proporción muestral por mes
+total_muestra <- sum(conteo_mensual)  # Total de la muestra (2000)
+proporcion_mensual <- conteo_mensual / total_muestra
+
+# Paso 4: Calcular la varianza de la proporción con el factor de corrección finito
+varianza_proporcion <- (N - total_muestra) / (N - 1) * (proporcion_mensual * (1 - proporcion_mensual) / total_muestra)
+
+# Paso 5: Calcular los intervalos de confianza al 95% (Z = 1.96)
+z <- 1.96  # Valor crítico para un IC del 95%
+limite_inferior <- proporcion_mensual - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- proporcion_mensual + z * sqrt(varianza_proporcion) + 1/(2*n)
+
+# Mostrar el resultado
+limite_inferior <- as.vector(round(limite_inferior * N))
+proporcion_mensual <- as.vector(round(proporcion_mensual * N))
+limite_superior <- as.vector(round(limite_superior * N))
+real_total_mat <- c(1247, 2809, 1762, 1429, 1601, 1426, 1498, 1502, 1335, 1539, 1623, 2229)
+
+
+resultados.total.mat <- data.frame(
+    mes = c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"),
+    real = real_total_mat,
+    total.est = proporcion_mensual,
+    l.ci = limite_inferior,
+    u.ci = limite_superior
+)
+
+knitr::kable(resultados.total.mat, caption="Estimación del total de matrimonios por Mes",
+             col.names = c("Mes", "Valor Real", "Estimación Puntual", "IC Inferior", "IC Superior"), 
+             align = "ccccc")
+```
+
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación del total de matrimonios por Mes."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = resultados.total.mat) + 
+    geom_point(aes(x = 1:12, y = real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = 1:12, y = total.est, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = l.ci, ymax = u.ci, x = 1:12, colour = "yellowgreen")) + 
+    labs(x = "Mes", y = "Total de matrimonios", title = "Total de matrimonios por mes con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    scale_x_continuous(breaks = 1:12, labels = c("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", 
+                                                 "Ago", "Sep", "Oct", "Nov", "Dic")) + 
+    theme_minimal()
+```
+
+Podemos observar que a excepción del mes de diciembre, todos los intervalos de confianza contienen el valor real del total de matrimonios por mes, sin embargo, existe un alto grado de incertidumbre en las estimaciones, lo cual puede ser resultado del método de muestreo o que por azar no se obtuvieron suficientes datos para cada mes para mejorar la precisión de las estimaciones.
+
+## Matrimonios por mes por entidad federativa
+
+
+## Matrimonios con contrayentes de sexos opuestos
+
+
+## Matrimonios con contrayentes del mismo sexo (mujeres)
+
+Estimamos el total de matrimonios con contrayentes mujer-mujer.
+
+```{r}
+#| echo: false
+
+MM.mat <- table(sample$TIPO_CON == 3)
+
+total_muestra <- sum(MM.mat)  # Total de la muestra (2000)
+propo.MM.mat <- MM.mat / total_muestra 
+propo.MM.mat <- propo.MM.mat[2]
+
+varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.MM.mat * (1 - propo.MM.mat) / total_muestra)
+
+z <- 1.96  # Valor crítico para un IC del 95%
+limite_inferior <- propo.MM.mat - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.MM.mat + z * sqrt(varianza_proporcion) + 1/(2*n)
+
+limite_inferior <- as.vector(round(limite_inferior * N))
+total.MM.mat <- as.vector(round(propo.MM.mat * N))
+limite_superior <- as.vector(round(limite_superior * N))
+real.total.MM <- 65
+
+resultados.total.MM.mat <- data.frame(
+    real = real.total.MM,
+    total.est = total.MM.mat,
+    l.ci = limite_inferior,
+    u.ci = limite_superior
+)
+
+knitr::kable(resultados.total.MM.mat, caption="Estimación del total de matrimonios con contrayentes mujer-mujer.",
+             col.names = c("Valor Real", "Estimación Puntual", "IC Inferior", "IC Superior"), 
+             align = "cccc")
+```
+
+Existe una alta incertidumbre en la estimación debido a la poca cantidad de observaciones en la muestra usada (`r MM.mat[2]` observaciones).
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación del total de matrimonios con contrayentes mujer-mujer."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = resultados.total.MM.mat) + 
+    geom_point(aes(x = 1, y = real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = 1, y = total.est, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = l.ci, ymax = u.ci, x = 1, colour = "yellowgreen")) + 
+    labs(x = "", y = "Total de matrimonios", title = "Total de matrimonio mujer-mujer con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    scale_x_continuous(breaks = 1, labels = c("Matrimonios Mujer-Mujer")) + 
+    theme_minimal()
+```
+
+## Matrimonios con contrayentes del mismo sexo (hombres)
+
+
+## Proporción de matrimonios con contrayentes del mismo sexo por entidad federativa
+
+
+## Matrimonios entre mexicanos
+
+Estimamos el total de matrimonios con contrayentes que tienen ambos la nacionalidad mexicana.
+
+```{r}
+#| echo: false
+
+Nac.Mat.Mex <- table(sample$NACI_CON1 == 1 & sample$NACI_CON2 ==1)
+
+total_muestra <- sum(Nac.Mat.Mex)  # Total de la muestra (2000)
+propo.Nac.Mat.Mex <- Nac.Mat.Mex / total_muestra 
+propo.Nac.Mat.Mex <- propo.Nac.Mat.Mex[2]
+
+varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.Nac.Mat.Mex * (1 - propo.Nac.Mat.Mex) / total_muestra)
+
+z <- 1.96  # Valor crítico para un IC del 95%
+limite_inferior <- propo.Nac.Mat.Mex - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.Nac.Mat.Mex + z * sqrt(varianza_proporcion) + 1/(2*n)
+
+limite_inferior <- as.vector(round(limite_inferior * N))
+total.Nac.Mat.Mex <- as.vector(round(propo.Nac.Mat.Mex * N))
+limite_superior <- as.vector(round(limite_superior * N))
+real.total.MM <- 19096
+
+resultados.total.Nac.Mat.Mex <- data.frame(
+    real = real.total.MM,
+    total.est = total.Nac.Mat.Mex,
+    l.ci = limite_inferior,
+    u.ci = limite_superior
+)
+
+knitr::kable(resultados.total.Nac.Mat.Mex, 
+             caption="Estimación del total de matrimonios entre contrayentes mexicanos.",
+             col.names = c("Valor Real", "Estimación Puntual", "IC Inferior", "IC Superior"), 
+             align = "cccc")
+```
+
+Dado que una gran cantidad de matrimonios en la muestra son con contrayentes de nacionalidad mexicana (`r Nac.Mat.Mex[2]` observaciones), la incertidumbre de nuestra estimación es muy baja.
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación del total de matrimonios con ambos contrayentes mexicanos."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = resultados.total.Nac.Mat.Mex) + 
+    geom_point(aes(x = 1, y = real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = 1, y = total.est, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = l.ci, ymax = u.ci, x = 1, colour = "yellowgreen")) + 
+    labs(x = "", y = "Total de matrimonios", title = "Total de Matrimonios con Ambos Contrayentes Mexicanos con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    scale_x_continuous(breaks = 1, labels = c("Contrayentes Mexicanos")) + 
+    theme_minimal()
+```
+
+##  Matrimonios entre extranjeros
+
+
+##  Matrimonios de mexicanos con extranjeros
+
+
+##  Promedio de edad contrayentes mujeres
+
+Estimamos la edad promedio de las contrayentes mujeres.
+
+```{r}
+#| echo: false
+
+Edad <- c(subset(sample, SEXO_CON1 == 2)$EDAD_CON1, subset(sample, SEXO_CON2 == 2)$EDAD_CON2)
+data.con.MM <- cbind(Edad, N)
+data.con.MM <- as.data.frame(data.con.MM)
+
+disenio <- svydesign(id=~1, fpc=~N, data=data.con.MM)
+
+mean.MM.Edad <- svymean(~Edad, design = disenio)
+cis.MM.mean.Edad <- confint(mean.MM.Edad)
+
+real.mean.con.MM <- 29
+
+resultados.mean.con.MM <- data.frame(
+    real = real.mean.con.MM,
+    est = mean.MM.Edad[1],
+    l.ci = cis.MM.mean.Edad[1],
+    u.ci = cis.MM.mean.Edad[2]
+)
+
+knitr::kable(resultados.mean.con.MM, 
+             caption="Estimación de la edad promedio de las contrayentes mujeres.",
+             col.names = c("Valor Real", "Estimación Puntual", "IC Inferior", "IC Superior"), 
+             align = "cccc")
+```
+
+Dado que tenemos una gran cantidad de información de la edad de contrayentes mujeres (`r length(Edad)` observaciones) podemos tener un estimado bastante preciso de su edad promedio.
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación de la edad promedio de las contrayentes mujeres."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = resultados.mean.con.MM) + 
+    geom_point(aes(x = 1, y = real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = 1, y = est, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = l.ci, ymax = u.ci, x = 1, colour = "yellowgreen")) + 
+    labs(x = "", y = "Edad", title = "Edad Promedio de Mujeres Contrayentes con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    scale_x_continuous(breaks = 1, labels = c("Contrayente Mujer")) + 
+    theme_minimal()
+```
+
+##  Promedio de edad contrayentes hombre
+
+
+##  Promedio de edad contrayentes hombres por entidad federativa
+
+
+##  Promedio de edad contrayentes mujeres por entidad federativa
+
+```{r}
+#| echo: false
+
+Edad.p.entidad <- subset(sample, SEXO_CON1 == 2)[c("ENT_REGIS", "EDAD_CON1")]
+Edad.p <- subset(sample, SEXO_CON2 == 2)[c("ENT_REGIS", "EDAD_CON2")]
+
+colnames(Edad.p.entidad) <- c("Entidad", "Edad")
+colnames(Edad.p) <- c("Entidad", "Edad")
+
+Edad.p.entidad <- rbind(Edad.p, Edad.p.entidad)
+
+Edad.p.entidad <- cbind(Edad.p.entidad, N)
+Edad.p.entidad <- as.data.frame(Edad.p.entidad)
+
+disenio <- svydesign(id=~1, fpc=~N, data=Edad.p.entidad)
+mean.edad.p.entidad.MM <- svyby(~Edad, by= ~Entidad, design = disenio, FUN = svymean)
+
+cis <- confint(mean.edad.p.entidad.MM)
+
+mean.edad.p.entidad.MM <- cbind(mean.edad.p.entidad.MM, cis)
+
+estados <- c("Ags", "BC", "BCS", "Camp",  "Coah", "Col", "Chis", "Chih", "CDMX",  "Dgo", "Gto", "Gro", 
+  "Hgo", "Jal", "Mex", "Mich", "Mor", "Nay", "NL", "Oax", "Pue", "Qro", "QR", "SLP", "Sin", 
+  "Son", "Tab", "Tamps", "Tlax", "Ver", "Yuc", "Zac")
+
+val.real <- c(26.83209, 31.73776, 31.57609, 27.87647, 28.30413, 29.45669, 28.64310, 29.00789, 
+          32.91158, 28.23077, 26.03475, 26.43594, 30.83019, 27.55489, 29.71291, 27.28703,
+          30.35417, 31.06091, 28.58743, 27.24178, 29.69534, 29.79370, 30.13869, 28.15187,
+          29.51215, 31.32750, 27.97906, 30.24859, 28.90811, 30.14092, 27.30220, 25.84688)
+
+edad.p.entidad.MM <- mean.edad.p.entidad.MM %>%
+    mutate(Entidad = factor(estados, labels = unique(estados), ordered = T)) %>%
+    mutate(Val.Real = val.real)
+
+knitr::kable(edad.p.entidad.MM,
+             caption="Estimación de la edad promedio de las contrayentes mujeres por estado.",
+             col.names = c("Entidad", "Estimación Puntual", "Error", "IC Inferior", "IC Superior", "Valor Real"),
+             align = "cccccc")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación de la edad promedio de las contrayentes mujeres por estado."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = edad.p.entidad.MM) + 
+    geom_point(aes(x = Entidad, y = Val.Real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = Entidad, y = Edad, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = `2.5 %`, ymax = `97.5 %`, x = Entidad, colour = "yellowgreen")) + 
+    labs(x = "Entidad", y = "Edad", title = "Edad Promedio de Mujeres Contrayentes por Entidad con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(angle = 90)) 
+```
+
+Los intervalos de confianza al 95% de todos los estados a excepción de Chihuahua (Chih) contienen a los valores reales de la población. Existe heterogeneidad entre el rango de los intervalos de confianza para los estados, dado que nuestro muestreo fue aleatorio simple y no garanztiza una muestra de igual tamaño para los distintos estados del pais, por ello, se concluye que esta diferencia se debe a la cantidad de información obtenida de cada estado en la muestra. El caso más extremo de esto se ve en la estimación de Nayarit (Nay), Baja California Sur (BCS), Tlaxcala (Tlax), donde el intervalo es bastante amplio. Otra posible explicación de la incertidumbre en las estimaciones es la densidad poblacional, dado que la cantidad de matrimonios es proporcional al total de la población de cada estado.
+
+##  Diferencia de edad entre contrayentes
+
+
+##  Diferencia de edad entre contrayentes por entidad federativa
+
+
+##  Actividad laboral contrayentes
+
+\scriptsize
+```{r}
+#| echo: false
+#| warning: false
+
+Act.Lab <- c(sample$OCUP_CON1, sample$OCUP_CON2)
+
+act.lab.con <- table(Act.Lab)
+
+propo.act.lab.con <- act.lab.con / n 
+propo.act.lab.con <- as.vector(propo.act.lab.con)
+
+varianza_proporcion <- (N - total_muestra) / (N - 1) * (propo.act.lab.con * (1 - propo.act.lab.con) / n)
+
+z <- 1.96  # Valor crítico para un IC del 95%
+limite_inferior <- propo.act.lab.con - z * sqrt(varianza_proporcion) + 1/(2*n)
+limite_superior <- propo.act.lab.con + z * sqrt(varianza_proporcion) + 1/(2*n)
+
+limite_inferior <- as.vector(round(limite_inferior * N))
+total.act.lab.con <- as.vector(round(propo.act.lab.con * N))
+limite_superior <- as.vector(round(limite_superior * N))
+real.act.lab.con <- c(506, 5196, 663, 2013, 766, 1860, 2709, 849, 752, 10627, 12851, 1207)
+
+res.act.lab.con <- data.frame(
+    val.real = real.act.lab.con,
+    act.lab = sort(unique(Act.Lab)),
+    total.est = total.act.lab.con,
+    l.ci = limite_inferior,
+    u.ci = limite_superior
+)
+
+res.act.lab.con <- rbind(res.act.lab.con, c(1, 10, 0, 0, 0, 0))
+
+res.act.lab.con <- res.act.lab.con %>%
+    mutate(act_laboral = case_when(
+        act.lab == 1 ~ "Funcionarios, directores y jefes", 
+        act.lab == 2 ~ "Profesionistas y técnicos", 
+        act.lab == 3 ~ "Trabajadores auxiliares en actividades administrativas", 
+        act.lab == 4 ~ "Comerciantes, empleados en ventas y agentes de ventas", 
+        act.lab == 5 ~ "Trabajadores en servicios personales y vigilancia", 
+        act.lab == 6 ~ "Trabajadores en actividades agrícolas, ganaderas, forestales, caza y pesca", 
+        act.lab == 7 ~ "Trabajadores artesanales", 
+        act.lab == 8 ~ "Operadores de maquinaria industrial, ensambladores, choferes y transporte", 
+        act.lab == 9 ~ "Trabajadores en actividades elementales y de apoyo", 
+        act.lab == 10 ~ "Busca trabajo", 
+        act.lab == 11 ~ "No trabaja", 
+        act.lab == 97 ~ "No aplica a menores de 5 años",
+        act.lab == 98 ~ "Insuficientemente especificada", 
+        act.lab == 99 ~ "No especificada", 
+        TRUE ~ NA_character_
+    ))
+
+mapa_abreviaturas <- c(
+    "Funcionarios, directores y jefes" = "Func/dir/jefes", 
+    "Profesionistas y técnicos" = "Prof/tecn", 
+    "Trabajadores auxiliares en actividades administrativas" = "Auxadmin", 
+    "Comerciantes, empleados en ventas y agentes de ventas" = "Comer/agent", 
+    "Trabajadores en servicios personales y vigilancia" = "Serv/vig", 
+    "Trabajadores en actividades agrícolas, ganaderas, forestales, caza y pesca" = "Agric", 
+    "Trabajadores artesanales" = "Artesa", 
+    "Operadores de maquinaria industrial, ensambladores, choferes y transporte" = "indust/transp", 
+    "Trabajadores en actividades elementales y de apoyo" = "Elemen/apoyo", 
+    "Busca trabajo" = "BuscaT", 
+    "No trabaja" = "NT", 
+    "No aplica a menores de 5 años" = "NA<5", 
+    "Insuficientemente especificada" = "InsEsp", 
+    "No especificada" = "NE")
+
+res.act.lab.con <- res.act.lab.con %>%
+    mutate(abreviatura = recode(act_laboral, !!!mapa_abreviaturas))
+
+knitr::kable(res.act.lab.con,
+             caption="Estimación de la actividad laboral de los contrayentes.",
+             col.names = c("Valor Real", "Codificación de Act. Lab.", "Estimación Puntual", 
+                           "IC Inferior", "IC Superior", "Actividad Laboral", "Abreviación"),
+             align = "ccccclc")
+```
+\normalsize
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación de la actividad laboral de los contrayentes."
+#| fig-width: 8
+#| fig-height: 5
+
+ggplot(data = res.act.lab.con) + 
+    geom_point(aes(x = abreviatura, y = val.real, colour = "blue"), size = 2.25) + 
+    geom_point(aes(x = abreviatura, y = total.est, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = l.ci, ymax = u.ci, x = abreviatura, colour = "yellowgreen")) + 
+    labs(x = "Ocupación", 
+         y = "Total", 
+         title = "Ocupaciones de los contrayentes con IC del 95%") +
+    guides(colour = guide_legend(title = "")) + 
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(angle = 45))
+```
+
+A excepción de la estimación en "Insuficientemente Especificado" (InsEsp) y "Busca Trabajo" (BuscaT), las estimaciones son muy buenas y su intervalo de confianza contiene el valor real de la población.
+
+##  Actividad laboral contrayentes por entidad federativa
+
+
+##  Escolaridad contrayentes
+
+
+##  Escolaridad contrayentes por entidad federativa
+
+Estimamos la escolaridad de los contrayentes estratificado por entidad federativa.
+
+\tiny
+```{r}
+#| echo: false
+
+Esc.p.entidad <- sample[c("ENT_REGIS", "ESCOL_CON1")]
+Esc.p <- sample[c("ENT_REGIS", "ESCOL_CON2")]
+
+colnames(Esc.p.entidad) <- c("Entidad", "Escolaridad")
+colnames(Esc.p) <- c("Entidad", "Escolaridad")
+
+Esc.p.entidad <- rbind(Esc.p.entidad, Esc.p)
+
+Esc.p.entidad <- cbind(Esc.p.entidad, N)
+Esc.p.entidad <- as.data.frame(Esc.p.entidad)
+Esc.p.entidad$Escolaridad <- factor(Esc.p.entidad$Escolaridad, levels = unique(Esc.p.entidad$Escolaridad), ordered = T)
+
+View(Esc.p.entidad)
+
+disenio <- svydesign(id=~1, fpc=~N, data=Esc.p.entidad)
+total.esc.p.entidad <- svybys(~Escolaridad, bys = ~Entidad, design = disenio, FUN = svytotal)
+
+df.total.escpent <- as.data.frame(total.esc.p.entidad)
+
+estados <- c("Ags", "BC", "BCS", "Camp",  "Coah", "Col", "Chis", "Chih", "CDMX",  "Dgo", "Gto", "Gro", 
+             "Hgo", "Jal", "Mex", "Mich", "Mor", "Nay", "NL", "Oax", "Pue", "Qro", "QR", "SLP", "Sin", 
+             "Son", "Tab", "Tamps", "Tlax", "Ver", "Yuc", "Zac")
+
+escolaridad_abrv <- c("SinE", "1-3 Prim", "4-5 Prim", "Primaria", 
+                      "Sec", "Prepa", "Prof", "Otra", "NE")
+
+mapa_escolaridad <- c("Sin escolaridad" = "SinE", 
+                      "1 a 3 años de primaria" = "1-3 Prim",
+                      "4 a 5 años de primaria" = "4-5 Prim", 
+                      "Primaria completa" = "Primaria", 
+                      "Secundaria o equivalente" = "Sec", 
+                      "Preparatoria o equivalente" = "Prepa", 
+                      "Profesional" = "Prof", 
+                      "Otra"= "Otra", 
+                      "No especificada" = "NE")
+
+Entidad <- rep(df.total.escpent$Entidad, 9)
+Esc.code <- rep(x = 1:9, each = 32)
+Escol.names <- vector(length = 9)
+se.Escol.names <- vector(length = 9)
+for (i in 1:9){
+    Escol.names[i] <- paste("Escolaridad", i, sep = "")
+    se.Escol.names[i] <- paste("se.Escolaridad", i, sep="")
+}
+Escolaridad <- as.numeric(unlist(df.total.escpent[Escol.names]))
+SE.Escolaridad <- as.numeric(unlist(df.total.escpent[se.Escol.names]))
+CI.L <- Escolaridad - z * SE.Escolaridad
+CI.U <- Escolaridad + z * SE.Escolaridad
+
+Esc.Total.by.Ent <- data.frame(
+    Entidad, Escolaridad = Esc.code, Total = Escolaridad, CI.L, CI.U
+)
+
+Esc.Total.by.Ent <- Esc.Total.by.Ent %>%
+    mutate(Escol.Name = case_when(
+        Escolaridad == 1 ~ "Sin escolaridad",
+        Escolaridad == 2 ~ "1 a 3 años de primaria",
+        Escolaridad == 3 ~ "4 a 5 años de primaria",
+        Escolaridad == 4  ~ "Primaria completa",
+        Escolaridad == 5 ~ "Secundaria o equivalente", 
+        Escolaridad == 6 ~ "Preparatoria o equivalente", 
+        Escolaridad == 7 ~ "Profesional", 
+        Escolaridad == 8 ~ "Otra", 
+        Escolaridad == 9 ~ "No especificada", 
+        TRUE ~ NA_character_ )) %>%
+    mutate(Abreviacion = recode(Escol.Name, !!!mapa_escolaridad)) %>%
+    mutate(Escol.Name = factor(Escol.Name, levels = c("1 a 3 años de primaria", "4 a 5 años de primaria",
+                                                      "No especificada","Otra", "Preparatoria o equivalente", 
+                                                      "Primaria completa", "Profesional", "Secundaria o equivalente", 
+                                                       "Sin escolaridad"), ordered = T))
+
+Reales <- c(4, 3, 1, 159, 30, 161, 177, 1, 14, 3, 375, 3, 207, 119, 245,
+            286, 14, 2, 49, 6, 81, 44, 2, 21, 4, 2, 13, 81, 25, 87, 102, 
+            3, 6, 143, 3, 321, 52, 337, 340, 6, 1, 2, 4, 1, 75, 22, 80, 
+            59, 2, 33, 71, 85, 2, 374, 337, 306, 454, 90, 7, 11, 197, 11, 
+            263, 127, 342, 300, 4, 56, 9, 19, 675, 68, 815, 621, 3, 3, 5, 
+            87, 7, 130, 38, 97, 176, 3, 25, 15, 530, 12, 431, 274, 324, 742, 
+            9, 24, 26, 88, 167, 272, 158, 205, 321, 17, 2, 4, 89, 152, 84, 207, 
+            192, 12, 27, 21, 113, 1, 859, 298, 874, 796, 21, 26, 22, 198, 17, 
+            1618, 453, 1084, 1539, 31, 12, 16, 327, 2, 367, 201, 350, 445, 18, 
+            6, 2, 44, 16, 166, 42, 217, 167, 10, 58, 63, 25, 150, 62, 36, 3, 1, 
+            633, 24, 326, 136, 476, 434, 3, 17, 6, 302, 247, 240, 380, 24, 22, 9, 
+            373, 180, 433, 328, 27, 4, 2, 6, 156, 60, 255, 207, 8, 3, 2, 129, 280,
+            47, 217, 141, 3, 8, 4, 79, 4, 233, 72, 196, 259, 1, 17, 16, 177, 316,
+            63, 384, 173, 6, 12, 22, 302, 106, 341, 356, 3, 9, 12, 3, 36, 283, 45,
+            173, 203, 10, 20, 248, 2, 244, 91, 196, 246, 5, 8, 2, 141, 22, 102, 93,
+            2, 67, 38, 67, 9, 756, 323, 546, 506, 44, 11, 5, 104, 156, 67, 166, 212,
+            7, 6, 4, 24, 1, 158, 62, 160, 208, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+Estado <- rep(estados, each = 9)
+
+Esc.Total.by.Ent <- Esc.Total.by.Ent %>%
+    arrange(Entidad, Escol.Name) %>%
+    mutate(Estado = Estado) %>%
+    mutate(Real.Val = Reales)
+
+knitr::kable(head(Esc.Total.by.Ent, 15),
+             caption="Estimación de la escolaridad de los contrayentes por estado.",
+             col.names = c("No. Entidad", "Codificación de Escolaridad", "Estimación Puntual",
+                           "IC Inferior", "IC Superior", "Escolaridad","Abreviación", "Estado", "Valor Real"),
+             align = "lcccclccc")
+```
+\normalsize
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimación de la escolaridad de los contrayentes por estado."
+#| fig-width: 15
+#| fig-height: 14
+
+ggplot(Esc.Total.by.Ent, aes(x= factor(Estado, levels = unique(Estado)), y = Real.Val, colour = "blue"))+
+    geom_point() +
+    geom_point(aes(x = Estado, y = Total, colour = "yellowgreen"), size = 2.25) + 
+    geom_errorbar(aes(ymin = CI.L, ymax = CI.U, colour = "yellowgreen")) +
+    facet_wrap(~ Escol.Name, nrow = 9, ncol = 2, scales = "free") + 
+    labs(x = "Estado",
+         y = "Total",
+         title = "Escolaridad de los Contrayentes con IC del 95%") +
+    guides(colour = guide_legend(title = "")) +
+    scale_color_discrete(labels=c("Valor Real", "Valor Estimado")) +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90))
+```
+
+
+Existen problemas visibles en las estimaciones para los rangos que corresponden al nivel de primaria y sin escolaridad, lo cual es explicado a la falta de datos de estos niveles de la variable "Escolaridad" de nuestra muestra. Dado que tenemos 288 estratos (32 estados y 9 niveles de educación), en algunos de ellos no se cuentan con datos o son insuficientes para realizar estimaciones precisas, lo que se ve reflejado en muchos valores reales de la población que no están dentro del intervalo de confianza. 
