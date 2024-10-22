@@ -1,0 +1,155 @@
+---
+title: "Riesgo Atribuible"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, Sealtiel Pichardo & Liz"
+format: 
+      pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+
+
+# Estimación Puntual.
+
+El ***riesgo atribuible*** representa el exceso de riesgo atrbuible al factor de exposición para el desarrollo del evento de interés y se define como: 
+
+$$
+AR = \pi_1 - \pi_2.
+$$
+
+Donde $\pi_1$ representa la proporción de la población que fue expuesta y que desarrollo el evento de interés y $\pi_2$ la proporción de la población que no fue expuesta y que presenta el evento de interés.
+
+En el caso de un estudio de casos y controles se puede usar la tabla de contingencia de $2$x$2$.
+
++:------------:+:---------:+--------------:+:-------------:+
+|              |    Evento de Interés      |               |
++--------------+-----------+---------------+---------------+
+| Exposición   |     SI    |       NO      |     Total     |
++==============+===========+===============+===============+
+|     SI       |     a     |       b       |     a + b     |
++--------------+-----------+---------------+---------------+
+|     NO       |     c     |       d       |     c + d     |
++--------------+-----------+---------------+---------------+
+|    Total     |   a + c   |     b + d     |       n       |
++--------------+-----------+---------------+---------------+
+
+: Tabla de Contingencia 2x2.
+
+Entonces podemos realizar la estimación puntual del Riesgo Atribuible como:
+
+$$
+\hat{\pi}_1 = \frac{a}{a + b} = \frac{a}{n_{1 \bullet}} \ \ \ \ \ \text{y} \  \ \ \ \hat{\pi}_2 = \frac{c}{c+d} = \frac{a}{n_{2 \bullet}} \ \ \ \therefore
+$$
+$$
+\hat{AR} = \hat{\pi}_1 - \hat{\pi}_2
+$$
+
+# Estimación por Intervalos.
+
+Para obtener el intervalo de confianza al $100(1 - \alpha)\%$, se debe estimar la varianza de nuestro estimador de riesgo atribuible ($\hat{AR}$). Para ello se utilizará el método delta de primer orden para aproximar la varianza del estimador.
+
+$$
+\mathbb{V}(g(\hat{AR})) \approx \sigma^2 g'(\mu)^2.
+$$
+
+En este caso $g(\hat{AR}) = \hat{\pi}_1 - \hat{\pi}_2$ por tanto, la derivada parcial respecto a cada estimador es:
+\begin{equation*}
+\begin{split}
+\frac{\partial\hat{AR}}{\partial\hat{\pi}_1} &= 1 \\
+\frac{\partial\hat{AR}}{\partial\hat{\pi}_2} &= -1.
+\end{split}
+\end{equation*}
+
+La varianza de cada una de las proporciones estimadas es:
+\begin{equation*}
+\begin{split}
+\mathbb{V}(\hat{\pi}_1) &=  \frac{\hat{\pi}_1 (1 - \hat{\pi}_1)}{n_{1 \bullet}} \\
+\mathbb{V}(\hat{\pi}_2) &=  \frac{\hat{\pi}_2 (1 - \hat{\pi}_2)}{n_{2 \bullet}}.
+\end{split}
+\end{equation*}
+
+Entonces podemos aproximar la varianza del riesgo atribuible como:
+\begin{equation*}
+\begin{split}
+\mathbb{V}(\hat{AR}) &\approx (1)^2 \cdot \frac{\hat{\pi}_1 (1 - \hat{\pi}_1)}{n_{1 \bullet}} + (-1)^2 \cdot \frac{\hat{\pi}_2 (1 - \hat{\pi}_2)}{n_{2 \bullet}} \\ 
+&\approx \frac{\hat{\pi}_1 (1 - \hat{\pi}_1)}{n_{1 \bullet}} + \frac{\hat{\pi}_2 (1 - \hat{\pi}_2)}{n_{2 \bullet}}
+\end{split}
+\end{equation*}
+
+Sustituyendo $\hat{\pi}_1$ y $\hat{\pi}_2$.
+\begin{equation*}
+\begin{split}
+\mathbb{V}(\hat{AR}) &= \frac{\frac{a}{a + b} (1 - \frac{a}{a + b})}{a + b} + \frac{\frac{c}{c+d} (1 - \frac{c}{c+d})}{c+d} \\
+&= \frac{\frac{a}{a + b} (\frac{a + b}{a + b} - \frac{a}{a + b})}{a + b} + \frac{\frac{c}{c+d} (\frac{c + d}{c+d} - \frac{c}{c+d})}{c+d} \\
+&= \frac{\frac{a}{a + b} (\frac{b}{a + b})}{a + b} + \frac{\frac{c}{c+d} (\frac{d}{c+d})}{c+d} \\       
+&= \frac{a}{a + b} \frac{b}{a + b} \frac{1}{a + b} + \frac{c}{c+d} \frac{d}{c+d} \frac{1}{c+d} \\
+&= \frac{ab}{(a + b)^3} + \frac{cd}{(c+d)^3} \\
+&= \frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}. \ \ \hfill \ensuremath{\Box}
+\end{split} 
+\end{equation*}
+
+Entonces el intervalo de confianza se estima como:
+$$
+\left[ \hat{AR} - Z_{(1 - \frac{\alpha}{2})} \sqrt{\frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}}, \ \ \hat{AR} + Z_{(1 - \frac{\alpha}{2})} \sqrt{\frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}} \right].
+$$
+
+
+# Programación de las Estimaciones.
+
+Se define una función en el lenguaje de programación `R` para la estimación puntual y por intervalo del riesgo atribuible.
+
+\small
+```{r}
+# Se define una función
+ar_estimation <- function(df, alpha = 0.05){
+    if(!all(dim(df) == c(2, 2))) {
+        # Check the dim of the data
+        stop("The data must be a 2 x 2 data.frame")
+    }
+    
+    # Specify the values of the 2x2 table
+    a <- df[1, 1]; b <- df[1, 2]; c <- df[2, 1]; d <- df[2, 2]
+    
+    # Estimate the AR
+    ar_est <- a / (a + b) - c / (c + d)
+    
+    # Estimate the SE of the AR
+    se_ar <- sqrt(a*b/(a+b)^3 + c*d/(c+d)^3)
+    
+    # EStimate the Interval of Confidence for the AR.
+    ci_ar <- ar_est + c(-1, 1) * qnorm(1 - alpha) * se_ar
+    
+    # Return a list with the Estimations.
+    return(list(puntual.estimation = ar_est, SE = se_ar, CI = ci_ar))
+}
+```
+\normalsize
+
+Se pone a prueba con la tabla de Hulley y Cummings (1993).
+
+```{r}
+# Data
+hm_data <- data.frame(
+    infarto = c(40, 10),
+    no_infarto = c(460, 490),
+    row.names = c("Toma Café", "No Toma Café")
+)
+
+ar_estimation(hm_data)
+```
