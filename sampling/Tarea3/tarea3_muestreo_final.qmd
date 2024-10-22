@@ -1,0 +1,367 @@
+---
+title: "Tarea 3"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+format: 
+      pdf:
+        toc: true
+        documentclass:  article
+        number-sections: false
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+# Problema 1
+
+* Una compañía realiza un estudio entre sus 7500 empleados, se desea conocer la proporción de empleados que tienen automóvil. Se decide dividir a la población de empleados en 3 estratos. Estrato 1: Bajo ingreso (&lt;10000 pesos al mes); estrato 2: Ingreso medio (10001 a 20000 pesos al mes) y estrato 3: Alto ingreso (&gt;20000 pesos al mes). Los resultados de la encuesta se muestran a continuación:
+
+
+```{r}
+#| echo: false
+datos <- data.frame( Estrato = c("Estrato 1", "Estrato 2", "Estrato 3"),
+                  Nh = c(3500, 2000, 2000),
+                  nh = c(500, 300, 200),
+                  ph = c(0.13, 0.45, 0.50))
+
+knitr::kable(datos, format.args = list(big.mark = ",", scientific=F))
+```
+
+Donde:
+
+* ***Nh:*** es el número de empleados en el estrato h
+* ***nh:*** es el tamaño de muestra del estrato h
+* ***ph:*** es la proporción muestral de empleados con automóvil
+    
+### 1\) Obtenga $\hat{P}$ , la proporción de empleados en la compañía que tienen automóvil.
+
+La estimación total de la proporción de empleados se calcula como la suma de las proporciones en cada estrato multiplicadas por el peso que ocupa dicho estrato:
+
+$$
+\hat{P}= \sum_{h=1}^L W_h \hat{p_h} \;\;\;\; con:\\
+\hat{p_h}= \sum_{i=1}^{n_h}\frac{y_{h_i}}{n_h} \; \; \;\;\; y \;\;\;\;\;  W_h= \frac{N_h}{N}
+$$
+
+\footnotesize
+```{r}
+N <- sum(datos$Nh)
+Nh <- datos$Nh
+nh <- datos$nh
+ph <- datos$ph
+
+#Calcular la proporción total
+
+Wh <- c()
+suma <- c()
+
+for(i in 1:nrow(datos)){
+  Wh[i] <- Nh[i] / N
+  
+  suma[i] <- Wh[i] * ph[i]
+
+}
+
+#Proporción total estimada de personas en la compañía que tienen automóvil
+
+p_total <- sum(suma)
+```
+\normalsize
+
+La estimación de la proporción de los empleados que tienen automóvil es de $0.314$.
+
+### 2\) Construya el intervalo del 95% de confianza para $P$
+
+Para ello usamos el estimador de la varianza del estimador 
+
+$$
+\hat{V}(\hat{P})= \sum_{h=1}^{L} W_h^2 \left( 1 - \frac{n_h}{N_h} \right)\frac{\hat{p_h}(1-\hat{p_h})}{n_h -1}
+$$
+
+\footnotesize
+```{r}
+z <- 1.96
+var_est <- c()
+
+for(i in 1:nrow(datos)){
+  var_est[i] <- ((Wh[i])^2) * (1- (nh[i]/Nh[i]))* (ph[i] * (1-ph[i])/(nh[i]-1))
+}
+
+
+prec <- z * sqrt(sum(var_est))
+
+ls <- p_total + prec
+li <- p_total - prec
+```
+\normalsize
+
+El intervalo de confianza obtenido es: $\left[0.2882, 0.3397 \right]$, indicando que con un nivel del 95% de confianza, se estima que la proporción de empleados con automóvil en la companía se encuentra entre el $28.82\%$ y el $33.97\%$.
+
+
+### 3\) Considere que el criterio de estratificación fue adecuado? Explique el porqué de su respuesta.
+
+Dado que la población de una compañía está compuesta por empleados con funciones y salarios heterogéneos, es adecuado estratificar los salarios cuando se estudia la posesión de bienes materiales, como un automóvil, ya que cada estrato presenta condiciones socioeconómicas similares y, por ende, patrones de consumo más homogéneos. En este caso, se confirma que el salario fue un buen criterio de estratificación, pues se observó una relación directa entre el nivel de ingresos y la probabilidad de poseer un automóvil: a mayor ingreso, mayor proporción de empleados con automóvil. Esta estratificación, al reducir la variabilidad dentro de cada grupo, mejora la precisión de las estimaciones, lo que no sería posible si no se hubiera aplicado este criterio.
+
+
+
+
+
+# Problema 2.
+
+En la reserva de fauna de Tanzania, se tiene un lote de 100 elefantes, el director de la reserva desea estimar el total del peso del lote debido a que la sequía los obliga a trasladar en un bote por río a los elefantes hacia zonas en donde exista alimento. El año pasado se obtuvieron los siguientes resultados respecto al peso (en toneladas) de los elefantes:
+
+
+```{r}
+#| echo: false
+df <- data.frame("1" = c(60, 40),
+                 "2" = c(6, 4),
+                 "3" = c(4, 2.25),
+                 row.names = c("Macho", "Hembra")
+                 )
+colnames(df) <- c("Número", "Peso Medio", "Varianza")
+
+knitr::kable(df, format.args = list(big.mark = ",", scientific=F))
+```
+
+
+### 1\) Calcule la varianza poblacional para la variable “peso del elefante”.
+\small
+```{r}
+#Promedio ponderado
+media_pond <- sum(df$Número * df$Peso_Medio)/N
+
+##Distinguimos 
+N <- sum(df$Número)
+Nh <- df$Número
+Ymed_h <- df$`Peso Medio`
+S2_h <- df$Varianza
+
+media_pond <- sum(Nh * Ymed_h) / N
+#La varianza poblacional se calcula como la suma de la 
+# varianza dentro cada estrato más la varianza entre estratos, 
+# cada una multiplicada por su respectivo peso.
+#La varianza poblacional se calcula como la suma de la varianza dentro cada estrato más 
+# la varianza entre estratos, cada una multiplicada por su respectivo peso.
+Wh <- Nh/N
+varxestr <- Wh * S2_h
+var_entre_estr <- Wh *((Ymed_h-media_pond)^2)
+
+var_pob <- sum(var_entre_estr)+sum(varxestr)
+```
+\normalsize
+
+Se obtuvo una varianza poblacional de `r round(var_pob, 4)` y una desviación estándar de `r round(sqrt(var_pob), 3)` lo que indica que en promedio los pesos se desvían esa magnitud de la media poblacional. Esto ocurre por las diferencias de peso entre machos y hembras.
+
+### 2\) Si asumimos que el peso de los elefantes no ha cambiado significativamente de un año a otro, obtenga el estimador de la varianza del total de peso de lote, considere un m.a.s. de tamaño 10.
+
+```{r}
+#estimador de la varianza del total del lote, 
+# bajo m.a.s. sin estratos con n= 10: 
+# Necesitamos la varianza total poblacional (var_pob). 
+n <- 10
+
+var_mas <- (N^2)*(1- n/N)*(var_pob/n)
+```
+
+La varinza del estimador del total suponiendo un muestreo aleatorio simple es $\mathbb{V} \left( \hat{Y} \right) \approx$ `r round(var_mas, 3)`. Este valor tan elevado es debido a un tamaño de muestra pequeño (10) que apenas corresponde al 10% de la población incial (100). Al ser una muestra tan reducida, la incertidumbre en la estimación aumenta. Además, se genera una mayor variabilidad en el peso totalal no tomar en cuenta la diferencia de los pesos entre machos y hembras, y la diferencia en las varianzas del peso.
+
+### 3\) Considere un muestreo estratificado (distribución proporcional) de tamaño 10 y obtenga el estimador de la varianza del total del peso del lote.
+
+\scriptsize
+```{r}
+#Dada una muestra n = 10, calculamos el nh de manera proporcional a cada estrato
+nh <- c()
+
+var_estrat <- c()
+
+for(i in 1:nrow(df)){
+  #Cuánto de n=10 le toca a cada estrato:
+  nh[i] <- Wh[i] * n
+  
+# Calculo de la varianza
+# Se calcula como la suma del tamaño del estrato al cuadrado por el factor de corrección 
+# por finitud de cada estrato y la varianza de cada estrato entre el tamaño de muestra de cada estrato
+  
+  var_estrat[i] <- (df$Número[i]^2)*(1- nh[i]/df$Número[i])*(df$Varianza[i]/nh[i])
+}
+
+var_estrato <- sum(var_estrat)
+```
+\normalsize
+
+El resultado obtenido es de `r var_estrato`, lo que implica la variabilidad esperada en la estimación del peso total de la población de elefantes al utilizar un diseño de muestreo estratificado con el tamaño de muestra proporcional. 
+
+### 4\) Dé sus conclusiones.
+
+Al comparar el estimador del peso total bajo muestreo aleatorio simple (`r round(var_mas, 4)`) y el estimador con estratos (`r round(var_estrato, 4)`) se observa que la varianza en muestreo estratificado es menor, lo que indica que el muestreo estratificado es más preciso dado que toma en cuenta las diferencias entre machos y hembras, lo que explica mejor a la población.
+
+# Problema 3
+
+En el estado de Sonora los productores de trigo conformaron estratos de acuerdo a su tamaño y al número promedio de hectáreas de trigo sembradas por granja en cada estrato, con los siguientes resultados:
+```{r}
+#| echo: false
+
+df <- data.frame("1" = c(482, 590, 532, 479, 166),
+                 "2" = c(6.2, 11.7, 18.5, 26.3, 49.3),
+                 "3" = c(3.5, 4.8, 6.7, 8.1, 9.3),
+                 row.names = c("0-30", "31-60", "61-90", "91-120", ">120")
+                 )
+
+colnames(df) <- c("Número de Granjas", "Promedio de hectarias sembradas", "Desviación Estándar")
+
+knitr::kable(df, format.args = list(big.mark = ",", scientific=F))
+```
+
+Para una muestra de 150 granjas, distribuya la muestra en los 5 estratos utilizando:
+
+1) La distribución de Neyman.
+
+2) La distribución proporcional.
+
+3) Compare las precisiones de estos métodos con la del m.a.s.
+
+## Distribución de Neyman.
+
+Bajo la distribución de Neyman, el tamaño de muestra para el extracto $h$ es:
+
+$$
+n_h = n \frac{N_h S_h}{\sum_{h = 1}^{L} N_h S_h}
+$$
+```{r}
+n <- 150
+Nh <- df["Número de Granjas"]
+Sh <- df["Desviación Estándar"]
+nh <- n * (Nh*Sh) / sum(Nh*Sh)
+nh <- round(nh)
+```
+
+````{r}
+#| echo: false
+
+knitr::kable(nh, col.names = c("Tamaño de muestra $n_h$"))
+````
+
+
+## Distribución Proporcional.
+
+Bajo la distribución de Proporcional, el tamaño de muestra para el extracto $h$ es:
+
+$$
+n_h = n \frac{N_h}{N} = n W_h
+$$
+
+```{r}
+n <- 150
+N <- sum(df["Número de Granjas"])
+Nh <- df["Número de Granjas"]
+nh <- n * Nh / N
+nh <- round(nh)
+nh[3,] <- nh[3,] + 1
+```
+
+````{r}
+#| echo: false
+
+knitr::kable(nh, col.names = c("Tamaño de muestra $n_h$"))
+````
+
+
+## Comparación de Precisión.
+
+### Varianza del estimador de la media en la distribución de Neyman.
+
+La varianza para el estimador de la media con tamaño de muestra obtenido por la distribución de Neyman es:
+
+$$
+\mathbb{V} \left( \hat{\bar{Y}} \right) =  \frac{(\sum_{h = 1}^{L} W_h S_h)^2}{n} - \frac{\sum_{h = 1}^{L} W_h S_h^2}{N}
+$$
+\scriptsize
+```{r}
+N <- sum(df["Número de Granjas"])
+Nh <- df["Número de Granjas"]
+
+Wh <- Nh / N
+Sh2 <- df["Desviación Estándar"] ** 2
+
+var_ymean <- (sum(Wh * df["Desviación Estándar"]) ** 2) /n - sum(Wh * Sh2) / N
+```
+\normalsize
+
+La precisión para la distribución proporcional $\mathbb{V} \left( \hat{\bar{Y}} \right) \approx$ `r round(var_ymean, 4)`.
+
+
+
+### Varianza del estimador de la media en la distribución proporcional.
+
+Para estimar la varianza del estimador de la media bajo la distribución proporcional, se utiliza:
+
+$$
+\mathbb{V} \left( \hat{\bar{Y}} \right) =  \left( 1 - \frac{n}{N} \right) \left( \frac{\sum_{h = 1}^{L} W_h S_h^2}{n} \right)
+$$
+
+```{r}
+N <- sum(df["Número de Granjas"])
+Nh <- df["Número de Granjas"]
+
+Wh <- Nh / N
+Sh2 <- df["Desviación Estándar"] ** 2
+
+var_ymean2 <- (1 - n/N) * sum(Wh * Sh2) / n
+```
+
+La precisión para la distribución proporcional $\mathbb{V} \left( \hat{\bar{Y}} \right) \approx$ `r round(var_ymean2, 4)`.
+
+### Varianza del estimador de la media bajo muestro aleatorio simple.
+
+Para estimar la varianza del estimador de la media bajo muestreo aleatorio simple, seusa la siguiente expresión:
+
+$$
+\mathbb{V} \left( \hat{\bar{Y}} \right) =  \left( 1 - \frac{n}{N} \right) \frac{S^2}{n}
+$$
+
+Dado que tenemos estratos, para calcular $S^2$ se debe usar:
+
+$$
+S^2 = \sum_{h = 1}^{L} W_h S_h^2 + \sum_{h = 1}^{L} W_h \left( \bar{Y_h} - \bar{Y} \right) ^2
+$$
+\scriptsize
+```{r}
+N <- sum(df["Número de Granjas"])
+Nh <- df["Número de Granjas"]
+
+Wh <- Nh / N
+Sh2 <- df["Desviación Estándar"] ** 2
+Ybar <- sum(df$`Promedio de hectarias sembradas` * df$`Número de Granjas`) / sum(df$`Número de Granjas`)
+
+S2 <- sum(Wh * Sh2) + sum(Wh * (df$`Promedio de hectarias sembradas` - Ybar) ** 2)
+
+var_ymean3 <- (1 - n/N) * S2 / n
+```
+\normalsize
+
+La precisión para muestreo aleatorio simple $\mathbb{V} \left( \hat{\bar{Y}} \right) \approx$ `r round(var_ymean3, 4)`.
+
+### Comparación
+
+Podemos observar que se cumple la siguiente desigualdad:
+
+$$
+V_{opt} \left( \hat{\bar{Y}} \right) \leq V_{prop} \left( \hat{\bar{Y}} \right) \leq V_{m.a.s.} \left( \hat{\bar{Y}} \right)
+$$
+
+En este caso: 
+
+$$
+0.2228 \leq 0.2467 \leq 1.0387.
+$$

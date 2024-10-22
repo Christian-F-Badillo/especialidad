@@ -112,6 +112,8 @@ $$
 
 # Programación de las Estimaciones.
 
+## Aproximación Teórica.
+
 Se define una función en el lenguaje de programación `R` para la estimación puntual y por intervalo del riesgo atribuible.
 
 \small
@@ -151,5 +153,79 @@ hm_data <- data.frame(
     row.names = c("Toma Café", "No Toma Café")
 )
 
-ar_estimation(hm_data)
+ar.theo <- ar_estimation(hm_data)
+
+ar.theo$puntual.estimation
+
+ar.theo$SE
+
+ar.theo$CI
+```
+
+## Bootstrapping
+
+Se define una función en `R` para la estimación puntual y por intervalos por medio de bootstrapping.
+
+\scriptsize
+```{r}
+# Definimos una función para muestreo con bootstrapping
+ar_bootstrap <- function(data, sims_num = 1000, seed = 140801){
+    # Data
+    a <- data[1, 1]; b <- data[1, 2]; c <- data[2, 1]; d <- data[2, 2]
+    
+    # Sample Size
+    n <- a + b + c + d
+    
+    # Define where we consider a sample bootstrap be a, b, c and, d
+    define_a <- 1:a
+    define_b <- (a+1):(b + a)
+    define_c <- (b+a+1):(c + a + b)
+    define_d <- (a+b+a+c+1):(d + a + b + c)
+    
+    # Define the vector to store the estimations and its size
+    ar_est <- numeric(length = sims_num)
+    
+    #Set the seed
+    set.seed(seed)
+    
+    # Run the Bootstrap
+    for (i in 1:sims_num) {
+        
+        # Sample ID
+        idx_samples <- sample(1:n, replace = T, size = n)
+        
+        # How many a, b, c, d are in the sample?
+        sample_a <- sum(define_a[1] <= idx_samples & idx_samples <= tail(define_a, n=1))
+        sample_b <- sum(define_b[1] <= idx_samples & idx_samples <= tail(define_b, n=1))
+        sample_c <- sum(define_c[1] <= idx_samples & idx_samples <= tail(define_c, n=1))
+        sample_d <- sum(define_d[1] <= idx_samples & idx_samples <= tail(define_d, n=1))
+        
+        # Store the estimated AR of the i-th simulation.
+        ar_est[i] <- sample_a / (sample_a + sample_b) - sample_c / (sample_c + sample_d)
+    }
+    return(ar_est)
+}
+
+# Run Bootstrapping
+ar.boot <- ar_bootstrap(hm_data, 15000, seed = 123456789)
+```
+
+\normalsize
+
+La estimación puntual es:
+
+```{r}
+mean(ar.boot)
+```
+
+Y la estimación por intervalos es:
+
+```{r}
+quantile(ar.boot, c(0.025, 0.975))
+```
+
+La estimación puntual y por intervalos usando máxima verosimilitud es: 
+```{r}
+ar.theo$puntual.estimation
+ar.theo$CI
 ```
