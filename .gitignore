@@ -1,7 +1,11 @@
-*/**/*.RData
-*/**/*.rdb
-*/**/*.rdx
-*/**/__packages
+**/*.RData
+**/*.rdb
+**/*.rdx
+**/__packages
 .Rproj.user
-*/**/*.Rhistory
-
+**/*.Rhistory
+.RData
+**/.RData
+**/env/
+env/
+**/.Rhistory
