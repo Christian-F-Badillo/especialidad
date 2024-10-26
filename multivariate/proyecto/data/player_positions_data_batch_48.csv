@@ -1,0 +1,181 @@
+,player,positions
+0,Cesar Ibañez,['DFI']
+1,Thiago Vecino,['DC']
+2,Ezequiel Busquets,"['DFD', 'LD']"
+3,Juan Manuel Izquierdo,['DFC']
+4,Miguel Ángel Benítez,['DFI']
+5,Marcelo González,['MD']
+6,Ayrton Cougo,"['LI', 'DFI', 'MI']"
+7,Kwon Hyeok Kyu,"['MCD', 'MC', 'DFC']"
+8,Răzvan Onea,['DFD']
+9,Isak Jansson,"['DC', 'MI']"
+10,Aziz Ouattara,"['MCD', 'DFC', 'MC']"
+11,Edvard Sandvik Tagseth,"['DFI', 'MC', 'LI']"
+12,Tarık Çetin,['PO']
+13,Morgan Whittaker,"['MD', 'ED']"
+14,Ruslan Neshcheret,['PO']
+15,Kevin Pérez,['MCO']
+16,Nicola Pavan,"['MC', 'MCD', 'DFC']"
+17,Marcel Wędrychowski,['MD']
+18,Filip Szymczak,"['DC', 'MD']"
+19,Killian Sardella,"['DFD', 'DFI']"
+20,Amine Atouchi,['DFC']
+21,Zakaria Naidji,['DC']
+22,Ruben Roosken,['DFI']
+23,Thierry Lutonda,['DFI']
+24,Dani Fernández,"['DFD', 'MD']"
+25,Saúl Crespo,['MCD']
+26,Charles-Andreas Brym,"['DC', 'MD']"
+27,Anthony Matos,['DFC']
+28,Pape Ndiaga Yade,"['MI', 'EI', 'DC']"
+29,Juan David Cabal,"['DFC', 'DFI']"
+30,Abu Francis,['MC']
+31,Ramon Hendriks,"['DFC', 'DFI']"
+32,Ufuk Akyol,"['MCD', 'MC']"
+33,George Cîmpanu,"['MD', 'MCO']"
+34,Damián Fernández,"['DFC', 'MCD']"
+35,Jayson Papeau,"['EI', 'MCO', 'ED']"
+36,Manu Justo,"['DC', 'MD']"
+37,Carl Gustafsson,"['MC', 'MCD']"
+38,Patrick Koronkiewicz,"['LD', 'MD', 'DFD']"
+39,Nené,['MC']
+40,Ben Voll,['PO']
+41,Philippe Paulin Keny,"['DC', 'ED']"
+42,Jacob Shaffelburg,"['MI', 'DC']"
+43,Giuliano Cerato,['DFD']
+44,Maudo Lamine Jarjué,['DFC']
+45,Adam Randell,['MC']
+46,Thomas Keller,"['DFC', 'MCD']"
+47,Niclas Thiede,['PO']
+48,Blaž Kramer,['DC']
+49,Caín Fara,"['DFD', 'DFC']"
+50,Kristian Arnstad,['MC']
+51,Octavian Vâlceanu,['PO']
+52,Petr Schwarz,"['MC', 'MCD']"
+53,Cristian Costin,"['DFD', 'MD']"
+54,Pirulo,"['MD', 'MI']"
+55,Maxwell Gyamfi,['DFC']
+56,Oliver Bundgaard,['DFI']
+57,Alexander Nollenberger,"['EI', 'DC', 'ED']"
+58,Okan Erdoğan,"['DFC', 'MCD']"
+59,Saïd Bakari,"['DFD', 'MD']"
+60,Juriën Gaari,"['DFC', 'DFD']"
+61,Enzo Lombardo,['MI']
+62,Ryan Longman,"['EI', 'ED', 'DC']"
+63,Boris Cespedes,"['MCD', 'MC']"
+64,Erik Engelhardt,['DC']
+65,Nesta Guinness-Walker,"['DFI', 'LI']"
+66,Japhet Sery Larsen,['DFC']
+67,Yaw Ackah,"['MCD', 'MC']"
+68,Joris Chougrani,['DFC']
+69,Christian Conteh,"['ED', 'MD', 'DC']"
+70,Allan Tchaptchet,['DFC']
+71,James Hill,['DFC']
+72,Daniel Hanslik,"['MI', 'DC', 'MCO']"
+73,Thierno Ballo,"['MCO', 'MD', 'MC']"
+74,Valentin Antov,['DFC']
+75,Gabriel Slonina,['PO']
+76,Mateusz Praszelik,"['MP', 'MCO']"
+77,Alexi Pitu,"['EI', 'MCO']"
+78,Alexandru Mățan,"['MP', 'EI', 'DC']"
+79,Paul Iacob,['DFC']
+80,David Lazar,['PO']
+81,Filipe Nascimento,['MC']
+82,Laurențiu Popescu,['PO']
+83,Ștefan Vlădoiu,['DFD']
+84,Alec Van Hoorenbeeck,"['DFI', 'DFC', 'MI']"
+85,Mihai Căpățînă,"['MC', 'DFD']"
+86,Saúl Torres,"['DFD', 'LD']"
+87,Byron Nieto,['DFD']
+88,Josh Nisbet,"['MC', 'MD']"
+89,Lamine Ghezali,"['ED', 'DC', 'EI']"
+90,Iron Gomis,"['MC', 'ED', 'LI']"
+91,Gianni Stensness,"['DFC', 'MCD']"
+92,Hassani Dotson,"['MCD', 'MI', 'MCO']"
+93,Kyle Smith,"['DFD', 'DFI']"
+94,John Nelson,"['DFI', 'LI', 'MI']"
+95,Cemali Sertel,"['DFI', 'DFC']"
+96,Saeed Juma,['DFD']
+97,Anderson,"['DFC', 'MD', 'LD']"
+98,Orest Lebedenko,"['DFI', 'LI']"
+99,Ruan,"['DFD', 'MD']"
+100,Toichi Suzuki,"['DFI', 'MI']"
+101,Franco Quinteros,['DFI']
+102,Boubacar Fofana,"['MI', 'DC']"
+103,Maximiliano Centurión,['DFC']
+104,Eddy Sylvestre,"['MC', 'MD']"
+105,Till Cissokho,['DFC']
+106,Hugo Vallejo,"['MI', 'MD', 'DC']"
+107,Elías Rafn Ólafsson,['PO']
+108,Mattia Zennaro,"['MC', 'MCO', 'MCD']"
+109,Javi Mier,"['MC', 'DC', 'MCO']"
+110,Joël Zwarts,['DC']
+111,Giovanni Haag,"['MCD', 'DFC', 'MC']"
+112,John Björkengren,"['MCD', 'MC']"
+113,Sondre Flem Bjørshol,"['DFD', 'DFC']"
+114,Adi Nalić,"['MCO', 'ED', 'DC']"
+115,Kion Etete,['DC']
+116,Ilija Vukotić,"['MC', 'MCD']"
+117,Bledian Krasniqi,"['MC', 'MCO']"
+118,José Luis Sinisterra,"['MI', 'EI', 'DC']"
+119,Paul Will,"['MCD', 'MC']"
+120,Stephen Kelly,"['MC', 'MCD', 'EI']"
+121,Kristoffer Askildsen,['MC']
+122,Edison Vega,"['MCD', 'MC']"
+123,Jensen Weir,['MC']
+124,Andrés Perea,"['MCD', 'MC']"
+125,Jorge Mier,"['DFD', 'DFI']"
+126,Luis Del Pino Mago,"['DFC', 'DFI']"
+127,Borislav Tsonev,"['MC', 'MCO', 'DC']"
+128,Haissem Hassan,['MD']
+129,Mathias Ross,['DFC']
+130,Yann Kitala,['DC']
+131,Florian Carstens,['DFC']
+132,Charlis Ortiz,['DC']
+133,Gustav Henriksson,['DFC']
+134,Aloísio,['MC']
+135,Ahmet Gürleyen,['DFC']
+136,Manuel Insaurralde,"['MC', 'MCD', 'DFD']"
+137,Bruce Anderson,['DC']
+138,Matteo Di Gennaro,['DFC']
+139,Guy-Marcelin Kilama,['DFC']
+140,Nicholas Opoku,['DFC']
+141,Jonathan Barboza,"['MCD', 'MC']"
+142,Robbe Decostere,"['DFD', 'LD']"
+143,Josh Key,"['LD', 'DFC']"
+144,Gabriel Compagnucci,"['DFD', 'MD']"
+145,Pol Moreno,['DFC']
+146,Augusto Schott,"['DFD', 'LD', 'LI']"
+147,Steeve Beusnard,"['MC', 'MCD', 'MD']"
+148,Evert Linthorst,"['MC', 'MCD']"
+149,Vitalie Damascan,"['DC', 'MI']"
+150,Jasper Schendelaar,['PO']
+151,Ethan Erhahon,"['MC', 'MCD']"
+152,Michał Rakoczy,"['MP', 'MCO', 'MD']"
+153,Kylian Kaïboué,"['DFC', 'MCD', 'LI']"
+154,Jürgen Heil,"['MC', 'MCD', 'DFD']"
+155,Manuel Pfeifer,['DFI']
+156,Rubén Ramírez,['DFC']
+157,Adrian Fein,['MCD']
+158,Chris Forino,['DFC']
+159,Alexander Rossipal,"['LI', 'DFC', 'MCD']"
+160,Éric Vandenabeele,['DFC']
+161,Aygün Yıldırım,"['MD', 'DC', 'MI']"
+162,Patrick Schmidt,['DC']
+163,Jakub Łabojko,"['MCD', 'MC']"
+164,Basil Stillhart,"['DFC', 'MCO', 'DFD']"
+165,Mons Bassouamina,"['DC', 'MI']"
+166,James Igbekeme,"['MC', 'MI']"
+167,Luka Ilić,"['MCO', 'MC']"
+168,Park Soo Il,"['DFD', 'LD', 'LI']"
+169,Arbnor Mucolli,"['MI', 'MCO', 'MD']"
+170,Streli Mamba,"['DC', 'MI', 'MD']"
+171,Liam Kerrigan,"['MD', 'MC']"
+172,Borja Garcés,['DC']
+173,Benjamin Nygren,"['DC', 'ED']"
+174,Charles Abi,['DC']
+175,Peter Ouaneh,['DFC']
+176,Fernando Andrade,"['EI', 'MI', 'DC']"
+177,Jonathan Meier,['DFI']
+178,Jared Stroud,"['MI', 'MD']"
+179,Lisandro Semedo,['MD']
