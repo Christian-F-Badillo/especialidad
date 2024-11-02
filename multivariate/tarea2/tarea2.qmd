@@ -1,0 +1,77 @@
+---
+title: "Tarea 2"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+```{r}
+#| echo: false
+#| warning: false
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+# Parte 4
+
+Vemos los datos.
+```{r}
+#| echo: false
+data <- read.delim("ceramicas.txt", sep = " ", header = T)
+
+data %>%
+    head(10) %>%
+    kable(caption = "Primeras diez observaciones.", caption.short = "Datos.")
+```
+
+Dado que las escalas de los datos son distintas, se usará la distancia de Mahalanobis para calcular la distancia entre las observaciones.
+
+```{r}
+# Función Para Calcular la distancia de Mahalanobis.
+mah <- function(x, cx = NULL) {
+  if(is.null(cx)) cx <- cov(x)
+  out <- lapply(1:nrow(x), function(i) {
+    mahalanobis(x = x, 
+                center = do.call("c", x[i, ]),
+                cov = cx)
+  })
+  return(as.dist(do.call("rbind", out)))
+}
+ 
+dist.matrix <- as.matrix(mah(data), nrows = 45, ncols = 45)
+```
+
+\scriptsize
+```{r}
+#| echo: false
+colnames(dist.matrix) <- 1:45
+rownames(dist.matrix) <- 1:45
+
+dist.matrix[1:15, 1:15] %>%
+    round(2) %>%
+    kable(caption = "Matrix de Distancias", caption.short = "Datos.") %>%
+    footnote(general = "Primeras 15 Observaciones.", general_title = "Nota.")
+```

@@ -1,0 +1,48 @@
+---
+title: "EDA FIFA 24"
+author: "Christian Badillo"
+format: 
+    html:
+        code-fold: true
+        code-summary: "Código"
+        code-line-numbers: true
+        fig-align: center
+        fig-cap-location: bottom
+        tbl-cap-location: top
+        code-tools: true
+        table-of-contents: true
+        code-block-border-left: true
+        highlight-style: github
+        fontsize: "12"
+        lang: es
+        toc-title: "Tabla de Contenido."
+        smooth-scroll: true
+           
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+
+# EDA
+
+```{r}
+# Librerias
+library(tidyverse)
+library(MASS)
+library(ggplot2)
+```
+
+```{r}
+data <- read.csv("fifa_data_clean.csv")
+```
+
+## Escalamiento Multidimensional Paramétrico.
+```{r}
+
+d <- dist()
+```
+

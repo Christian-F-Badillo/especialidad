@@ -1,0 +1,98 @@
+---
+title: "Tarea 4"
+author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+
+\newpage
+## Ejercicio 4
+
+Con la información del ejercicio 3, estime la proporción de familias que cuentan con internet dentro de su casa. Calcule un intervalo del 95% de confianza para esta proporción.
+
+```{r}
+#| echo: false
+library(knitr)
+library(kableExtra)
+
+data <- data.frame(list(
+    "1" = c(25, 54, 76, 107, 110),
+    "2" = c(82, 138, 101, 173, 84),
+    "4" = c(0.38, 0.18, 0.26, 0.25, 0.30)))
+
+names(data) <- c("Id de Manzana ($i$)", "Número de Casas en la Manzana ($M_i$)",
+                 "Proporción familias con internet ($p_i$)")
+
+p_hat <- sum(data[2] * data[3]) / sum(data[2])
+
+data %>%
+    kable(align = "cccc", caption = "Datos.") 
+```
+
+Se observa que tenemos un caso de muestreo bietapico siendo el muestreo aleatorio simple el método de selección en ambas etapas. Por tanto nuestra proporción estimada es:
+
+$$
+\hat{P} = \frac{\sum_{i=1}^n M_i \hat{p}}{\sum_{i=1}^n M_i}
+$$
+
+Reemplazando, $\hat{P} =$ `r round(p_hat, 4)`. Es decir, el `r round(p_hat, 4) * 100`% de las familias de la ciudad cuentan con el servicio de conexión a Internet.
+
+
+```{r}
+#| echo: false
+N <- 118
+n <- 5
+m <- 4
+
+var_between <- data[2]^2 * (data[3] - p_hat) ^ 2 / (n-1)
+
+var_within <- data[2]^2  * (1 - m / data[2]) * (p_hat * (1 - p_hat) / (m - 1) )
+
+M_mean <- sum(data[2] / n)
+var_p  <- (1 - n/N) * (1/(n*M_mean^2)) * sum(var_between) + (1/(n*N*M_mean^2)) *  sum(var_within)
+
+IC <- p_hat + c(-1, 1) * qnorm(0.975, 0, 1) * sqrt(var_p)
+
+original_names <- names(data)
+
+data <- cbind(data, round(var_between, 4), round(var_within, 4))
+
+new_names <- c(original_names, "$\\frac{M_i^2 (p_i - \\hat{P})^2}{n-1}$", "$M_i^2 \\left(1 - \\frac{m_i}{M_i} \\right) \\left( \\frac{p_i (1 - p_i) }{m_i - 1} \\right)$")
+
+names(data) <- new_names
+
+data %>%
+    kable(align = "cccc", caption = "Varianzas", booktabs = TRUE)
+```
+
+La varianza de nuestro estimador puede ser calculada por la siguiente expresión:
+
+$$
+\hat{\mathbb{V}}(\hat{P}) = \left(1 - \frac{n}{N}\right) \frac{1}{n\hat{\bar{M}}^2} \frac{\sum_{i = 1}^n (\hat{p}_i - \hat{P} )^2}{n - 1} + \frac{1}{nN\hat{\bar{M}}^2} \sum_{i=1}^n M_i^2 \left(1 - \frac{m_i}{M_i}\right) \left( \frac{\hat{p}_i (1 - \hat{p}_i)}{m_i -1} \right)
+$$
+
+Donde: $\hat{\bar{M}} = \sum_{i=1}^n \frac{M_i}{n} =$ `r M_mean` , $n = 5$, $N = 118$, $m_i = 4, i = 1, \dots, 5$.
+
+Reemplazando se tiene que, $\hat{\mathbb{V}}(\hat{P}) =$ `r round(var_p, 8)`. Y por tanto, su intervalo de confianza al 95% es: $[`r round(IC, 4)`]$.
