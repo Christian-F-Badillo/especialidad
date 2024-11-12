@@ -1,6 +1,10 @@
 ---
 title: "Tarea 2"
-author: "Christian Badillo, Luis Nuñez,  Luz Maria Santana, & Sealtiel Pichardo"
+author: 
+    - name: "Christian Badillo"
+    - name: "Luis Nuñez"
+    - name: "Luz Maria Santana"
+    - name: "Sealtiel Pichardo"
 format:
     pdf:
         toc: true
@@ -33,6 +37,12 @@ library(ggplot2)
 library(tidyverse)
 library(knitr)
 library(kableExtra)
+library(reshape2)
+library(cluster)
+library(factoextra)
+library(MASS)
+library(klaR)
+library(pander)
 ```
 
 # Parte 4
@@ -47,31 +57,751 @@ data %>%
     kable(caption = "Primeras diez observaciones.", caption.short = "Datos.")
 ```
 
-Dado que las escalas de los datos son distintas, se usará la distancia de Mahalanobis para calcular la distancia entre las observaciones.
+Dado que las escalas de los datos son distintas, se normalizaron los datos con la función `scale` de `R` base, después se calculo la distancia euclidiana para las 45 observaciones.
 
 ```{r}
-# Función Para Calcular la distancia de Mahalanobis.
-mah <- function(x, cx = NULL) {
-  if(is.null(cx)) cx <- cov(x)
-  out <- lapply(1:nrow(x), function(i) {
-    mahalanobis(x = x, 
-                center = do.call("c", x[i, ]),
-                cov = cx)
-  })
-  return(as.dist(do.call("rbind", out)))
-}
- 
-dist.matrix <- as.matrix(mah(data), nrows = 45, ncols = 45)
+data.centered <- scale(data)
+dist.matrix <- as.matrix(dist(data.centered, 
+                              method = "euclidean"), 45, 45)
 ```
 
 \scriptsize
 ```{r}
 #| echo: false
+#| fig-cap: "Mapa de Calor de la Matrix de Distancias."
+#| out-height: "400"
+#| out-width: "800"
+#| fig-cap-location: top
+
 colnames(dist.matrix) <- 1:45
 rownames(dist.matrix) <- 1:45
 
-dist.matrix[1:15, 1:15] %>%
-    round(2) %>%
-    kable(caption = "Matrix de Distancias", caption.short = "Datos.") %>%
-    footnote(general = "Primeras 15 Observaciones.", general_title = "Nota.")
+data1 <- melt(dist.matrix)
+ 
+ggplot(data1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(high = "red", low = "white") +
+  scale_x_discrete(breaks = 1:45, limits = as.character(1:45)) + 
+  scale_y_discrete(breaks = 1:45, limits = as.character(1:45)) + 
+  labs(title = "",
+       x = "Observación",
+       y = "Observación",
+       fill = "Distancia") + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(face="bold", color="black", size=4),
+          axis.text.y = element_text(face="bold", color="black", size=4))
 ```
+\normalsize
+
+En el mapa de calor se puede visibilizar una estructura de 3 grupos marcada, por lo cual se espera que cualquier análisis que contemple la existencia de 3 grupos debería de ajustarse bien.
+
+## Análisis de Conglomerados.
+
+Se filtran los datos para solo tomar en cuenta la composición química de las vasijas y después se procede a realizar el análisis jerárquico de conglomerados usando liga sencilla, liga completa y el método de Ward.
+
+```{r}
+data.chem <- data.centered %>%
+    as.data.frame() %>%
+    select(!c(kiln))
+
+dist.chem <- data.chem %>%
+    dist() %>%
+    as.matrix(ncols =45, nrows = 45)
+
+link.complete <- agnes(x = dist.chem, diss = T, method = "complete")
+link.single <- agnes(x = dist.chem, diss = T, method = "single")
+cluster.ward <- agnes(x = dist.chem, diss = T, method = "ward")
+```
+
+Usando la hipótesis de que existen 3 grupos se predice que el mejor corte se vera reflejado con $k=3$ para los distintos métodos. Se visualizarán los grupos formados usando las primeras dos componentes principales con la ayuda del paquete `factoextra` de `R`.
+
+### Liga Sencilla.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 3, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust),geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Se puede observar que usando la liga sencilla, el mejor agrupamiendo se da para $k=3$ y $k=4$, dado que las demás tienden a crear una espacie de subgrupo dentro de otro, al menos en la proyección observada en el plano de la primera y segunda componente principal.
+
+### Liga Completa.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (liga completa)."
+clust <- cutree(link.complete, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (liga completa)."
+
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 3, border = 2:20)
+```
+
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (liga completa)."
+clust <- cutree(link.complete, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (liga completa)."
+clust <- cutree(link.complete, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (liga completa)."
+clust <- cutree(link.complete, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (liga completa)."
+clust <- cutree(link.complete, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (liga completa)."
+clust <- cutree(link.complete, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (liga completa)."
+clust <- cutree(link.complete, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", 
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Usando la liga completa parece que una buena selección para $k$ podría ser 3 o 7, dado que son el número de grupos que parece diferenciar mejor a las observaciones, al menos usando la liga completa.
+
+### Métdo de Ward.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 3, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+            xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+            geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+            geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+El método de Ward parece ser el método que crea de una mejor forma los grupos para nuestros datos, la mejor $k$ en este caso puede ser 3 o 4, ya que dividen de mejor forma las observaciones tanto en el dendograma como en la proyección.
+
+## K-Means.
+
+Realicemos primero un análisis para ver cuál $k$ minimiza de buena manera la función de costo WSS.
+
+```{r}
+#| echo: false
+#| fig-cap: "Gráfico de Codo para K-Means."
+
+
+set.seed(1234)
+wcss <- vector()
+for(i in 1:20){
+  wcss[i] <- sum(kmeans(data.centered, i)$withinss)
+}
+
+ggplot() + geom_point(aes(x = 1:20, y = wcss), color = 'blue') + 
+  geom_line(aes(x = 1:20, y = wcss), color = 'blue') + 
+  ggtitle("") + 
+  xlab('Cantidad de Centroides k') + 
+  ylab('WSS')
+```
+
+Podemos ver que la función tiene un salto abrupto entre $k = 3$ y $k=4$. Para otros $k$ mayores el cambio en la función de costo $WSS$ es menor, por lo cuál podemos suponer que un $k = 4$ debería ser apropiado, lo que va acorde a lo observado en el método de Ward anteriormente.
+
+### Comparación de K-Means.
+
+Se comparan las divisiones creadas por un K-Means de $k$ igual a 3, 4, 5 y 6.
+
+```{r}
+k3 <- kmeans(data.centered, 3, iter.max = 1000, nstart = 20)
+k4 <- kmeans(data.centered, 4, iter.max = 1000, nstart = 20)
+k5 <- kmeans(data.centered, 5, iter.max = 1000, nstart = 20)
+k6 <- kmeans(data.centered, 6, iter.max = 1000, nstart = 20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 3 grupos."
+fviz_cluster(k3, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 4 grupos."
+fviz_cluster(k4, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 5 grupos."
+fviz_cluster(k5, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 6 grupos."
+fviz_cluster(k6, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Como se puede observar, el K-means con 3 y 4 grupos son buenos para la creación de grupos siendo $k=4$ una muy buena estructura para la formación de los grupos.
+
+## Análsis de Discriminante.
+
+Dado que la principal diferencia entre el discriminante lineal y el cuadrático es la suposición de varianzas iguales, es indispensable el verificar como es la varianza entre las variables.
+
+\scriptsize
+```{r}
+#| echo: false
+cov.data <- data %>%
+    select(!c(kiln)) %>%
+    cov()
+
+data1 <- melt(cov.data)
+cov.data %>%
+    kable(caption = "Matrix de Covarianza de los Datos.")
+```
+\normalsize
+
+```{r}
+#| echo: false
+#| fig-cap: "Mapa de Calor de la Matrix de Covarianzas."
+#| out-height: "400"
+#| out-width: "800"
+#| fig-cap-location: top
+
+ggplot(data1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(high = "yellowgreen", low = "white") +
+  labs(title = "",
+       x = "",
+       y = "",
+       fill = "Covarianza") + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(face="bold", color="black", size=8),
+          axis.text.y = element_text(face="bold", color="black", size=8))
+```
+
+Lo que se puede observar es que la varianza es muy pequeña dada la escala de medición de los datos, sin embargo, no se nota una gran diferencia entre las variables a excepción de la concentración del Óxido de Hierro III ($Fe_2O_3$) y del Óxido de Aluminio ($Al_2O_3$). Por lo cual se espera que el discriminante lineal y el cuadrático no difieran demasiado entre si.
+
+### Discriminante Lineal.
+
+#### Predicción de Horno.
+
+```{r}
+#| echo: false
+data$kiln <- as.factor(as.character(data$kiln))
+disc.lineal <- lda(kiln ~ ., data=data, prior = rep(1/5, 5))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(kiln) ~ ., data=data,method="lda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+Existen 36 posibles combinaciones para visualizar las 4 reglas de decisión creadas por el discriminante lineal para clasificar el tipo de horno, see observa una tasa elevada de error en varias combinaciones.
+
+```{r}
+#| echo: false
+
+grupo <- predict(disc.lineal, method="plug-in")$class
+
+crossvalid<-table(grupo, data$kiln, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, lo cual indica que el modelo se desempeña bien para clasificar el horno usado para crear las vasijas.
+
+#### Predicción de Región.
+
+Primero se crean las regiones con base en el tipo de horno.
+
+```{r}
+region.data <- data %>%
+    mutate(region =
+               case_when(
+                   kiln == 1 ~ "1",
+                   kiln == 2 | kiln == 3 ~ "2",
+                   kiln == 4 | kiln == 5 ~ "3")) %>%
+    dplyr::select(!c(kiln))
+```
+
+Ajustamos el modelo de discriminante lineal.
+
+```{r}
+#| echo: false
+region.disc.lineal <- lda(region ~ ., data=region.data, prior = rep(1/3, 3))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(region) ~ ., data=region.data, method="lda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+La mayoría de los gráficos indican que la tasa de error es bastante baja para la predicción de la región.
+
+```{r}
+#| echo: false
+
+grupo <- predict(region.disc.lineal, method="plug-in")$class
+
+crossvalid<-table(grupo, region.data$region, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, es decir, el modelo es capaz de clasificar correctamente todas las vasijas en su región correspondiente.
+
+### Discriminante Cuadrático.
+
+#### Predicción de Horno.
+
+Dado que para la clase 3 de hornos (variable `kiln` en los datos), solo tiene 2 observaciones, la función `MASS::qda` no se puede correr debido a la pequeña cantidad de datos, por lo cual se omitirá su estimación.
+
+#### Predicción de Región.
+
+Ajustamos el modelo de discriminante cuadrático.
+
+```{r}
+#| echo: false
+region.disc.quac <- qda(region ~ ., data=region.data, prior = rep(1/3, 3))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(region) ~ ., data=region.data, method="qda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+La mayoría de los gráficos indican que la tasa de error es bastante baja para la predicción de la región.
+
+```{r}
+#| echo: false
+
+grupo <- predict(region.disc.quac, method="plug-in")$class
+
+crossvalid<-table(grupo, region.data$region, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, que es idéntico al discriminante lineal.
+
+## Conclusión.
+
+A través de los distintos análisis de conglomerados se pudo detectar que las vasijas se pueden agrupar en al menos 3 grupos distintivos lo cual no concuerda con el número de hornos pero si con el número de regiones de las cuales proviene, de hecho se logró un modelo perfecto en el discriminante lineal y cuadrático cuando se predice la región, por tanto se concluye que la composición química de las vasijas difiere por la región y no por el tipo de horno.

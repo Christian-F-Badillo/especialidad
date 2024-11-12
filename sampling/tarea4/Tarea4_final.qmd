@@ -1,0 +1,480 @@
+---
+title: "Tarea 4"
+author: 
+    - name: "Christian Badillo"
+    - name: "Luis Nuñez"
+    - name: "Luz Maria Santana"
+    - name: "Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+
+# Ejericicio 1
+
+Un investigador en bosques quiere estimar el promedio de altura de árboles en cierta región. La región se divide en parcelas de un cuarto de acre. Se selecciona una muestra aleatoria simple de 20 parcelas de las 386 que componen la región. Todos los árboles en las parcelas muestreadas se miden, los resultados se muestran en la siguiente tabla:
+
+```{r}
+#| echo: false
+#| message: false
+library(knitr)
+library(kableExtra)
+
+data_1 <- data.frame(list(
+    "1" = c(1:20),
+    "2" = c(42,51, 49, 55, 47, 58, 60, 52, 61, 49, 57, 63, 43, 59, 48, 41, 45, 46, 62, 58),
+    "3" = c(6.2, 5.8, 6.7, 4.9, 5.2, 6.9, 6.3, 6.7, 5.9, 6.1, 6.0, 4.9, 4.3, 5.2, 5.7, 6.1, 5.3, 6.7, 6.1, 7.0) 
+        ))
+
+names(data_1) <- c("Parcela (Cluster)", "Número de árboles ($M_i$)","Altura Promedio (en pies)")
+
+data_1 %>%
+    kable(align = "cccc", caption = "Datos Ejercicio 1.") 
+```
+
+Estime la altura promedio de los árboles en la región y dé un intervalo del 95% de
+confianza (El total para el cluster $i$ se encuentra multiplicando $M_i$ por el promedio
+del cluster).
+
+Dado que no conocemos el número de árboles totales $M$, usaremos un estimador de razón para estimar el promedio por elemento, el cuál se estima cómo:
+
+$$
+\hat{\bar{Y_e}} = \frac{\bar{Y}}{\hat{M}} = \frac{\sum_{i=1}^n M_i \bar{y_i}}{\sum_{i=1}^n M_i}
+$$
+
+```{r}
+#| echo: false
+
+# Número de árboles
+Mi <- as.vector(data_1[, 2])
+
+# Altura promedio (en pies)
+h <- as.vector(data_1[, 3])
+
+# Calculamos el número de parcelas por muestra:
+n <- length(Mi)
+
+#Total de parcelas que componen la región
+N <- 386
+
+# Primero debemos calcular la altura promedio ponderada al divididir el total de la altura entre el total de los árboles
+# Calculamos la suma ponderada de las alturas promedio
+total_h <- sum(Mi*h)
+
+#Total de árboles
+total_arboles <- sum(Mi)
+
+h_prom <- (total_h/total_arboles)
+
+# Ahora debemos calcular el promedio del número de árboles en las parcelas muestreadas
+M_prom <- total_arboles/n
+
+# También se debe estimar la varianza del estimador
+var_estimador <- ((1 - n / N) * 1/n) * (1/M_prom) ^2 * sum((Mi*h - h_prom * Mi)^2) / (n-1)
+```
+
+La altura promedio de los árboles en la región es de `r round(h_prom, 4)` pies. La varianza de nuestro estimador se estima como:
+
+$$
+\hat{\mathbb{V}}(\hat{\bar{Y_e}}) = \left(1 - \frac{n}{N}\right) \frac{1}{n \hat{\bar{M^2}}} \sum_{i=1}^n \frac{M_i^2(\bar{y_i}-\hat{\bar{Y_e}})^2}{n-1} 
+$$
+Donde: $\hat{\bar{M}} = \sum_{i=1}^n \frac{M_i}{n} =$ `r M_prom`, $n = 20$, y $N = 386$. Reemplazando se obtiene que la varianza del estimador $\hat{\mathbb{V}}(\hat{\bar{Y_e}})$ es `r round(var_estimador, 5)`. El intervalo de confianza al 95% para el promedio de altura de los árboles es $[$ `r  h_prom + c(-1, 1)*qnorm(0.975) * sqrt(var_estimador)` $]$.
+
+
+
+# Ejercicio 2
+Una empresa está considerando la revisión de sus políticas de retiro y sedea estimar la proporción de empleados que están a favor de una nueva política. La empresa tiene 87 plantas localizadas por todo el país. Ya que los resultados deben obtenerse rápidamente y con poco costo, se decidió usar muestreo de conglomerados con cada planta como conglomerado. Se seleccionó una m.a.s. de 15 plantas y se preguntó a todos los empleados de cada planta en muestra su opinión. Los datos son:
+
+```{r}
+#| echo: false
+#| message: false
+data_2 <- data.frame(list(
+    "1" = c(1:15),
+    "2" = c(51,62,49,73,101,48,65,49,73,61,58,52,65,49,55),
+    "3" = c(42,53,40,45,63,31,38,30,54,45,51,29,46,37,42)))
+
+names(data_2) <- c("Planta", "Número de empleados","Número de empleados a favor")
+
+data_2 %>%
+    kable(align = "cccc", caption = "Datos ejercicio 2") 
+```
+
+Estime la proporción de empleados a favor de la nueva política de retiro y dé un intervalo del 95% de confianza para esta proporción.
+
+Tenemos un muestreo de conglomerados donde cada planta es un conglomerado y fue seleccionado por medio de m.a.s, por lo tanto la proporción estimada será:
+
+$$
+\hat{P} = \frac{\sum_{i=1}^n y_i}{\sum_{i=1}^n M_i}
+$$
+
+```{r}
+#| echo: false
+n <- 15
+N <- 87
+
+y_i <- data_2[3]  #número total observado del conglomerado i
+M_i <- data_2[2]  #número de elementos en el conglomerado i
+
+P_hat <- sum(y_i) / sum (M_i)
+```
+\normalsize
+
+La proporción de empleados a favor de la nueva política es `r round(P_hat, 4)`, que representa el `r round(P_hat, 4) * 100`% de los empleados.
+
+Con varianza estimada:
+$$
+\hat{V}(\hat{P})= \left(1 - \frac{n}{N}\right) \frac{1}{n \hat{\bar{M}}^2}\sum_{i=1}^n \frac{(y_i\;-\; \hat{P}M_i)^2}{n-1}
+$$
+
+\footnotesize
+```{r}
+#| echo: false
+
+M_bar_hat <- sum(M_i/n)^2
+
+V_hat <- (1 - n/N) * (1/(n * M_bar_hat)) * sum((y_i - P_hat*M_i)^2 / (n - 1))
+```
+\normalsize
+
+Donde recordemos $\hat{\bar{M}}^2 = \left(\sum_{i=1}^n \frac{M_i}{n} \right)^2 =$ `r round(M_bar_hat, 4)`, es la estimación del tamaño promedio de los conglomerados, $n = 15$ el tamaño de muestra, y $N = 87$ el total de conglomerados. Reemplazando se obtiene que la varianza del estimador $\hat{\mathbb{V}}(\hat{P})$ es `r format(round(V_hat, 5), scientific = F)`. 
+
+```{r}
+#| echo: false
+
+IC_2 <-  P_hat + c(-1, 1) * qnorm(0.975, 0, 1) * sqrt(V_hat)
+```
+\normalsize
+
+Por lo tanto el intervalo del 95% de confianza para la proporción de empleados a favor de la nueva política de retiro es $\hat{P} \pm z_{1-\alpha/2} \sqrt{V(\hat{P})} = [$ `r round(IC_2, 4)` $]$.
+
+# Ejercicio 3
+
+Para una encuesta de los gastos de las familias en cierta ciudad, se utilizó un muestreo bietápico (para propósitos de este ejercicio se supone que en cada casa habita una sola familia). La ciudad tiene 118 manzanas, se seleccionaron por m.a.s. 5 de ellas. De cada manzana seleccionada se seleccionaron por m.a.s. 4 casas. Se preguntó a cada casa sobre aspectos financieros de la familia. Los datos son:
+
+```{r}
+#| echo: false
+#| message: false
+library(knitr)
+library(kableExtra)
+
+data_ej3 <- data.frame(list(
+    "1" = c(25, 54, 76, 107, 110),
+    "2" = c(82, 138, 101, 173, 84),
+    "3" = c(102, 132, 106, 110, 146)))
+
+names(data_ej3) <- c("Id de Manzana ($i$)", "Número de Casas en la Manzana ($M_i$)",
+                 "Gasto promedio en alimentos durante el mes anterior de las familias seleccionadas ($\\hat{y_i}$)")
+
+
+y_hat <- sum(data_ej3[2]*data_ej3[3])/ sum(data_ej3[2])
+
+
+data_ej3 %>%
+    kable(align = "cccc", caption = "Datos ejercicio 3") 
+```
+
+Estime el gasto promedio en alimentos durante el mes anterior de las familas en la ciudad. Obtenga un intervalo del 95% de confianza para este gasto promedio.
+
+En este caso, tenemos un muestreo bietápico de tipo m.a.s.-m.a.s. del cual no se conoce el valor de M el número total de casas en la población. Por ello la estimación de la media, usando razón, es:
+
+$$
+\hat{\bar{Y_e}} = \frac{\bar{Y}}{\hat{M}} = \frac{\sum_{i=1}^n M_i \bar{y_i}}{\sum_{i=1}^n M_i}
+$$
+
+Reemplazando, $\hat{\bar{Y_e}} =$ `r round(y_hat, 4)`. El gasto promedio estimado de alimentos del mes anterior en las familias de la ciudad es de \$`r round(y_hat, 2)`
+
+Para obtener el intervalo de confianza, el estimador de la varianza se calcula como:
+
+$$
+\hat{\mathbb{V}}(\hat{\bar{Y_e}}) = \left(1 - \frac{n}{N}\right) \frac{1}{n \hat{\bar{M^2}}} \sum_{i=1}^n \frac{M_i^2(\bar{y_i}-\hat{\bar{Y_e}})^2}{n-1} + \frac{1}{nN \hat{\bar{M^2}}}\sum_{i=1}^n M_i^2 \left(1 - \frac{m_i}{M_i} \right) \frac{\bar{S^2_{wi}}}{m_i}
+$$
+
+Dado que no tenemos el valor de cada elemento (el gasto en alimentos del mes anterior de cada familia seleccionada) y tampoco se dan los datos acerca de la varianza dentro de cada unidad secundaria de muestreo, entonces para el cálculo de la varianza se despreciará la parte de la variación dentro de las casas de una misma manzana con la justificación de que la mayor parte de la variana la abarca el cálculo de la variación entre unidades secundarias de muestreo. Quedando la varianza como:
+
+$$
+\hat{\mathbb{V}}(\hat{\bar{Y_e}}) = \left(1 - \frac{n}{N}\right) \frac{1}{n \hat{\bar{M^2}}} \sum_{i=1}^n \frac{M_i^2(\bar{y_i}-\hat{\bar{Y_e}})^2}{n-1} 
+$$
+
+```{r}
+#| echo: false
+
+n_ej3 <- 5
+N_ej3 <- 118
+m_ej3 <- 4
+
+M_hat <- sum(data_ej3[2])/n_ej3
+
+fact_cor <- (1- n_ej3/N_ej3)
+
+Var_mean <-fact_cor* (1/(n_ej3* M_hat^2))*
+  (sum(data_ej3[2]^2 *(data_ej3[3]-y_hat)^2) / (n_ej3-1))
+
+
+IC_ej3 <- M_hat + c(-1, 1) * qnorm(0.975, 0, 1) * sqrt(Var_mean)
+
+```
+
+Donde: $\hat{\bar{M}} = \sum_{i=1}^n \frac{M_i}{n} =$ , $n = 5$, $N = 118$, $m_i = 4, i = 1, \dots, 5$.
+
+```{r}
+#| echo: false
+
+var_between_ej3 <- (data_ej3[3] - y_hat) ^ 2 
+
+M2_x_var_between_ej3 <- data_ej3[2]^2 *var_between_ej3
+
+original_names_ej3 <- names(data_ej3)
+
+
+data_ej3 <- cbind(data_ej3, round(var_between_ej3, 4), round(M2_x_var_between_ej3, 4))
+
+new_names_ej3 <- c(original_names_ej3, "$(\\hat{y_i}- \\hat{\\bar{Y_e}})^2$",
+               "$M_i^2(\\hat{y_i}- \\hat{\\bar{Y_e}})^2$")
+               
+
+names(data_ej3) <- new_names_ej3
+
+data_ej3 %>%
+    kable(align = "cccc", caption = "Cálculos", booktabs = TRUE)
+```
+
+Reemplazando se tiene que, $\hat{\mathbb{V}}(\hat{Y_e}) =$ `r round(Var_mean, 8)`. Y por tanto, su intervalo de confianza al 95% es: $[`r round(IC_ej3, 4)`]$. Teniendo en cuenta que hay una subestimación del valor real debido a la despreciación de la varianza dentro de cada unidad secundaria de muestreo.
+
+\newpage
+
+# Ejercicio 4
+
+Con la información del ejercicio 3, estime la proporción de familias que cuentan con internet dentro de su casa. Calcule un intervalo del 95% de confianza para esta proporción.
+
+```{r}
+#| echo: false
+
+data <- data.frame(list(
+    "1" = c(25, 54, 76, 107, 110),
+    "2" = c(82, 138, 101, 173, 84),
+    "4" = c(0.38, 0.18, 0.26, 0.25, 0.30)))
+
+names(data) <- c("Id de Manzana ($i$)", "Número de Casas en la Manzana ($M_i$)",
+                 "Proporción familias con internet ($p_i$)")
+
+p_hat <- sum(data[2] * data[3]) / sum(data[2])
+
+data %>%
+    kable(align = "cccc", caption = "Datos.") 
+```
+
+Se observa que tenemos un caso de muestreo bietapico siendo el muestreo aleatorio simple el método de selección en ambas etapas. Por tanto nuestra proporción estimada es:
+
+$$
+\hat{P} = \frac{\sum_{i=1}^n M_i \hat{p}}{\sum_{i=1}^n M_i}
+$$
+
+Reemplazando, $\hat{P} =$ `r round(p_hat, 4)`. Es decir, el `r round(p_hat, 4) * 100`% de las familias de la ciudad cuentan con el servicio de conexión a Internet.
+
+```{r}
+#| echo: false
+N <- 118
+n <- 5
+m <- 4
+
+var_between <- data[2]^2 * (data[3] - p_hat) ^ 2 / (n-1)
+
+var_within <- data[2]^2  * (1 - m / data[2]) * (p_hat * (1 - p_hat) / (m - 1) )
+
+M_mean <- sum(data[2] / n)
+var_p  <- (1 - n/N) * (1/(n*M_mean^2)) * sum(var_between) + (1/(n*N*M_mean^2)) *  sum(var_within)
+
+IC <- p_hat + c(-1, 1) * qnorm(0.975, 0, 1) * sqrt(var_p)
+
+original_names <- names(data)
+
+data <- cbind(data, round(var_between, 4), round(var_within, 4))
+
+new_names <- c(original_names, "$\\frac{M_i^2 (p_i - \\hat{P})^2}{n-1}$", "$M_i^2 \\left(1 - \\frac{m_i}{M_i} \\right) \\left( \\frac{p_i (1 - p_i) }{m_i - 1} \\right)$")
+
+names(data) <- new_names
+
+data %>%
+    kable(align = "cccc", caption = "Varianzas", booktabs = TRUE)
+```
+
+La varianza de nuestro estimador puede ser calculada por la siguiente expresión:
+
+$$
+\hat{\mathbb{V}}(\hat{P}) = \left(1 - \frac{n}{N}\right) \frac{1}{n\hat{\bar{M}}^2} \frac{\sum_{i = 1}^n (\hat{p}_i - \hat{P} )^2}{n - 1} + \frac{1}{nN\hat{\bar{M}}^2} \sum_{i=1}^n M_i^2 \left(1 - \frac{m_i}{M_i}\right) \left( \frac{\hat{p}_i (1 - \hat{p}_i)}{m_i -1} \right)
+$$
+
+Donde: $\hat{\bar{M}} = \sum_{i=1}^n \frac{M_i}{n} =$ `r M_mean` , $n = 5$, $N = 118$, $m_i = 4, i = 1, \dots, 5$.
+
+Reemplazando se tiene que, $\hat{\mathbb{V}}(\hat{P}) =$ `r round(var_p, 8)`. Y por tanto, su intervalo de confianza al 95% es: $[`r round(IC, 4)`]$.
+
+# Ejercicio 5
+
+La tabla siguiente muestra gastos de consumo personal en el país para una selección de bienes y servicios (en miles de millones de pesos). Seleccione una muestra de 3 categorías con probabilidades proporcionales a los gastos de 2023:
+
+1. Utilizando el algoritmo con reemplazo.
+2. Utilizando el algoritmo ppt sistemático.
+3. Con las categorías en muestra de incisos 1 y 2 estime el gasto total en 2024 (suponiendo que no lo conoce). Obtenga un intervalo del 95% de confianza par este gasto total.
+
+```{r}
+#| echo: false
+
+data <- data.frame(list(
+    "1" = c( "Vehículos automotores", "Muebles y enseres domésticos", 
+             "Alimentos", "Ropa", "Gasolina y aceite", "Combustible y carbón",
+             "Vivienda", "Funcionamiento de la vivienda", "Transporte"),
+    "2" = c(116.8, 107.3 ,432.3, 132.6, 108.8, 23.8, 347.3, 147.7, 75.3),
+    "3" = c(26.4, 107.5, 456.4, 136.9, 105.2, 23.0, 384.2, 165.9, 78.7)
+))
+
+names(data) <- c("Categoría", "2023", "2024")
+
+data %>%
+    kable(align = "lcc", caption = "Datos Ejercicio 5.", booktabs = TRUE)
+```
+
+Para realizar el muestro de probabilidad proporcional al tamaño, se usará la librería `pps` de `R`.
+
+```{r}
+library(pps)
+# La probabilidad de extracción es de:
+prob_ex <- data[2] / sum(data[2])
+prob_ex
+```
+
+```{r}
+# La "probabilidad" de inclusión es:
+n <- 3
+prob_in <- n*prob_ex
+prob_in
+```
+
+Dado que ninguna tiene una "probabilidad" de inclusión mayor o igual que 1, no se tendrán categorías autorepresentadas.
+
+```{r}
+# Se añaden estos datos a los originales.
+data["prob.ext"] <- prob_ex
+data["prob.inc"] <- prob_in
+data
+```
+
+## PPT no sistemático.
+
+Para el muestro de probabilidad proporcional al tamaño no sistemático se usa la función `ppswr()` de `R`.
+
+```{r}
+ # Semilla para garantizar reproducibilidad.
+set.seed(14082001)
+ # indices de los registros.
+idx_ns <- ppswr(data$`2023`, n)
+idx_ns
+```
+
+Entonces nuestra muestra es:
+
+```{r}
+#| echo: false
+library(tidyverse, warn.conflicts = F)
+
+muestra <- data[idx_ns, ]
+
+muestra %>%
+    select(c("Categoría", "2023", "2024")) %>%
+    kable(align = "lcc", caption = "Muestra PPT No Sistemático.", booktabs = TRUE)
+```
+
+Para estimar el total del gasto en 2024, se usará la libreria `survey` de `R`.
+
+```{r}
+#| warning: false
+library(survey, warn.conflicts = F)
+dppt <- svydesign(id=~1,probs=~prob.inc,data=muestra)
+summary(dppt)
+```
+
+Estimamos el total:
+
+```{r}
+tot2024 <- svytotal(~`2024`, dppt, deff=T)
+CI <- confint(tot2024)
+```
+```{r}
+#| echo: false
+
+tot2024 %>%
+    kable(align = "ccc", caption = "Total Estimado con PPT No Sistemático.", booktabs = TRUE, col.names = c("Total Estimado", "SE", "DEff"))
+```
+
+Con un intervalo de confianza de [`r CI`].
+
+## PPT Sistemático.
+
+Para el muestro de probabilidad proporcional al tamaño sistemático se usa la función `ppss()` de `R`.
+
+```{r}
+ # Semilla para garantizar reproducibilidad.
+set.seed(14082001)
+ # indices de los registros.
+idx_s <- ppss(data$`2023`, n)
+idx_s
+```
+
+Nuestra muestra es:
+
+```{r}
+#| echo: false
+library(tidyverse, warn.conflicts = F)
+
+muestra.s <- data[idx_s, ]
+
+muestra.s %>%
+    select(c("Categoría", "2023", "2024")) %>%
+    kable(align = "lcc", caption = "Muestra PPT Sistemático.", booktabs = TRUE)
+```
+
+Para estimar el total del gasto en 2024, se usará la libreria `survey` de `R`.
+
+```{r}
+#| warning: false
+dppts <- svydesign(id=~1,probs=~prob.inc,data=muestra.s)
+summary(dppt)
+```
+
+Estimamos el total:
+
+```{r}
+tot2024.s <- svytotal(~`2024`, dppts, deff=T)
+CI.s <- confint(tot2024.s)
+```
+```{r}
+#| echo: false
+
+tot2024.s %>%
+    kable(align = "ccc", caption = "Total Estimado con PPT Sistemático.", booktabs = TRUE, col.names = c("Total Estimado", "SE", "DEff"))
+```
+
+Con un intervalo de confianza de [`r CI.s`].
+
+El gasto total real es: `r sum(data[3])` que para nuestro caso es incluido en el intervalo de confianza del PPT no sistemático pero no incluido en el PPT sistemático.

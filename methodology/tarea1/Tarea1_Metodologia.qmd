@@ -1,0 +1,1441 @@
+---
+title: "Metodología de la Investigación: Tarea 1"
+author: 
+  - name: Badillo Hernandez Christian Francisco
+  - name: Lopez Hernandez Lizbeth
+  - name: Nuñez Rodas Luis Antonio
+  - name: Pichardo Jiménez Sealtiel
+  - name: Santana Jaimes Luz María Concepción
+format: 
+      pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2cm, right=2cm, top=2cm, bottom=2cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+
+# Características de los estudios
+
+> **Determinar todas las características del tipo de estudio que se realiza en cada artículo. Además, establecer si en cada uno de ellos se tiene o no validez interna y/o externa.**
+
+## Cáncer de pulmón y consumo de vegetales en Asturias. Un estudio de casos y controles
+
+**Resumen:** Es un estudio de casos y controles retrospectivo, mediante el cual, a través de la aplicación de un cuestionario que mide la historia médica de los pacientes, datos demográficos y hábitos alimenticios, sugieren que el consumo de ciertos vegetales del género Brassica podrían tener un impacto específico en el desarrollo de cáncer de pulmón.
+
+**Características**
+
+**Objetivo:** El objetivo es estudiar la relación entre el consumo de vegetales, en especial del género Brassica, y el riesgo de desarrollar cáncer de pulmón.
+
+**Definición casos y controles:** Ambos grupos son provenientes de la base hospitalaria del Instituto Nacional de Silicosis de Asturias de entre los periodos 1993 a 1995. No se reporta el uso de un consentimiento informado.
+
+-   Los casos de tipo incidente son personas hospitalizadas con diagnóstico patológico o citológico de cáncer de pulmón y pareadas por edad, sexo y área sanitaria.
+
+-   Los casos de tipo control son personas hospitalizadas con diagnósticos de fracturas, apendicitis y hernias; esto para evitar que su diagnóstico tenga relación con el tabaquismo o alguna dieta especial.
+
+**Criterios de Inclusión y exclusión:**
+
+-   Inclusión:
+
+    -   Casos: Diagnóstico patológico o citológico de cáncer de pulmón.
+
+    -   Controles: Diagnóstico con misma fracción de hospitalización (que el 100% se encuentre hospitalizado).
+
+-   Exclusión:
+
+    -   Casos: Casos prevalentes, dudas en el diagnostico del tumor primario.
+
+    -   Controles: Padecimiento asociado al tabaquismo o a una dieta especial.
+
+**Recolección de datos:** Se realizó un cuestionario semiestructurado aplicado por médicos entrenados, el cuál incluía:
+
+-   Historia Médica: edad, sexo, área sanitaria, diagnóstico de fracturas, apendicitis, hernias.
+
+-   Historia Tabáquica: Registrando si se ha fumado al menos un cigarrillo al día durante un periodo de un año, sin definir una magnitud del hábito de fumador.
+
+-   Exposición laboral: Medido con los valores: Definitivamente asociado, Dudosamente asociado y Sin sospechas de asociación.
+
+-   Datos Demográficos.
+
+-   Clasificación social: Utilizando el Índice de Clase Social.
+
+-   Dieta: Registrada mediante un cuestionario de tipo (verduras como plato principal o acompañamiento) y frecuencia de consumo (200 alimentos de los cuales 150 son frutas y verduras). Este registro se hizo repitiendo las preguntas que se realizaron en un estudio previo, de diferente área y validado en 104 personas. Las categorías de la frecuencia son: del 1 al 5 desde 1 que significa nunca, hasta 5 que significa diariamente y las del tamaño de la ración del 1 al 3, grande: 1.33 veces la media, media y pequeña.
+
+**Factores de confusión:** Principalmente se controlan en la metodología de selección de casos y controles al medir el nivel de consumo de tabaco, emplear pareamiento y cuidar posibles variables de confusión en los controles, como el tipo de dieta o diagnóstico para ser incluído.
+
+**Medidas reportadas:** Se calculó el tamaño de muestra bajo los siguientes supuestos: "Sólo aproximadamente el 40% de los sujetos seleccionados sería informativo. De ellos se supone que el 50% estaría expuesto, por definición, y que entre los casos la exposición sería un 15% superior." El tamaño de la muestra efectiva serían 80 casos y 80 controles, y el real, 200 casos y 200 controles para detectar una odds ratio (OR) de entre 2 y 2,5, una p de 0,05 dos colas y un poder del 70 al 80%.
+
+Tablas de Contingencia: Odds Ratio (brutas y ajustadas).
+
+Regresión logística Incondicional.
+
+Evaluación de las variables de pareamiento como confusoras y de interacción.
+
+**Validez:**
+
+A pesar de que el estudio intenta seguir una buena metodología, tratando de realizar una selección minuciosa de los casos y controles, procurando entrevistar a los pacientes de manera uniforme y utilizando un cuestionario detallado, se pasó por alto un factor de confusión importante: el nivel de tabaquismo. Este factor no fue emparejado de forma adecuada en el estudio. Además, en la tabla 2 del estudio se muestra una diferencia estadísticamente significativa entre casos y controles en cuanto a la clase social V (*p*-value = 0.00001) y el número de fumadores y exfumadores (*p*-value = 0.0000). Sin embargo, no se observó una diferencia significativa en el consumo de Brassica (g/día) entre casos y controles (*p*-value = 0.54). Esto sugiere que cualquier asociación detectada podría atribuirse principalmente a los efectos de otras variables de confusión en lugar del consumo de Brassica.
+
+Un hecho adicional que respalda lo anterior es la siguiente mención en el estudio: "En el análisis bruto se ha observado un efecto protector de las crucíferas del género *Brassica* en los cánceres de pulmón distintos del adenocarcinoma, y se ha demostrado una ji-cuadrada de tendencia significativa para ese tipo de consumo en estos cánceres. Sin embargo, el efecto protector desaparece al ajustarlo por tabaco y clase social" (pp. 208). De manera complementaria, el hecho de que el estudio se base en hábitos alimenticios de una cierta región y con una población de pacientes hospitalarios que probablemente tengan una dieta controlada, limita la posibilidad de generalizar los resultados.
+
+Finalmente, otro problema identificado es que la forma de medición podría presentar un sesgo de recuerdo debido a la forma de medir los datos, la cual apela al recuerdo que se tenga de la exposición con los factores tales como la cantidad de veces que se comió uno de 200 posibles alimentos y la ración de cada uno.
+
+Por tanto, se concluye que el estudio carece de validez interna y, en consecuencia, no posee validez externa.
+
+## Estudio de casos y controles de Mesotelioma Maligno Pleural en trabajadores con Seguridad Social en México
+
+**Resumen:** Estudio de casos y controles para determinar la proporción de casos de mesotelioma maligno pleural, en el cual, los autores concluyen que la exposición al asbesto sí es un factor de riesgo.
+
+**Características**
+
+**Objetivo:** Estudiar la relación entre la exposición ocupacional al asbesto y el riesgo de padecer mesotelioma maligno pleural (MMP) en trabajadores mexicanos del seguro social, provenientes de la región centro del IMSS.
+
+**Definición casos y controles:** Los casos y controles son de tipo incidente, y son provenientes de una base hospitalaria. Se reporta el uso de consentimiento informado para el reclutamiento de casos y controles. Los controles se escogieron en una proporción de tres casos por cada control, pareados por edades (más/menos 5 años), sexo, tipo de aseguramiento (trabajadores activos y pensionados) y de la ciudad donde habitaban. Los datos de los controles se escogieron de manera aleatoria de una base de datos población que incluía a trabajadores asegurados por el IMSS de la misma región de donde se obtuvieron los casos.
+
+**Criterios de Inclusión y exclusión:**
+
+-   Inclusión:
+
+    -   Casos: Diagnóstico de MMP verificado por un estudio histopatológico y dos patólogas expertas y certificadas por el Consejo Mexicano de Patología.
+
+    -   Controles:
+
+-   Exclusión:
+
+    -   Casos:
+
+    -   Controles:
+
+**Recolección de datos:** Los datos se obtuvieron por medio de un cuestionario estandarizado que aplicaron encuestadoras previamente capacitadas. También, se reporta que a dicho instrumento se le realizó una prueba piloto previa en una población sana. Algunas de las medidas que incluía el instrumento eran:
+
+-   Datos de identificación
+
+-   Datos socioeconómicos
+
+-   Toxicomanías
+
+-   Datos laborales
+
+-   Descripción de actividades
+
+-   Condiciones de seguridad e higiene en el trabajo.
+
+-   Exposicion al asbesto por parte de algún familiar o de la persona entrevistada respecto a la cantidad de años que vivió alrededor de industrias que trabajaban con asbesto. Las posibles categorías son:
+
+    -   **Definitiva**: Exposición ocupacional directa o indirecta al asbesto.
+
+    -   **Probable**: Cuando el trabajador haya laborado en empresas conocidas con alto riesgo de exposición al asbesto pero no refirió conocerlas.
+
+    -   **Posible**: Cuando el trabajador laboró en industrias conocidas con riesgo de exposición al asbesto pero no las reporto como conocidas.
+
+    -   **No Expuesto.**
+
+-   Historia de tabaquismo: Se define un índice tabáquico entendido como el número de cigarrillos fumados al día, multiplicado por los años de duración del hábito y dividido entre 20 (lo que corresponde a la cantidad de cigarrillos en una cajetilla); el resultado se expresa en número de paquetes fumados por año.
+
+Una observación importante en la recolección de datos es que se realizó una doble captura de datos.
+
+**Factores de confusión:** Se presentan las siguientes medidas para controlar factores de confusión:
+
+-   Análisis por estratificación de cuatro grupos de acuerdo con la exposición al asbesto: definitiva, probable, posible y no expuesto.
+
+-   Control por sexo y edad en las estimaciones de la razón de momios por regresión logística.
+
+-   Verificación del nivel de consumo de cigarros entre grupos.
+
+**Medidas reportadas:** Cocientes de momios por grupos, de tipo bruto y ajustadas. Además de intervalos de confianza al 95% y estimaciones e intervalos del riesgo atribuible entre expuestos y población, análisis de varianza de los grupos, diferencia de proporciones y medias entre grupos.
+
+**Validez:** Los resultados del estudio indican que el estudio no cuenta en su totalidad con validez interna y por lo tanto, sucede lo mismo con la validez externa. A gran escala, el asbesto es un factor estadísticamente significativo en la incidencia de MMP y también involucra un tipo de relación causal, sin embargo, no se menciona la magnitud de esta relación.
+
+En el diseño se cuidaron aspectos que permiten de cierta manera un tipo generalización, además de que los resultados obtenidos mantienen consistencia con literatura previa y a pesar de los problemas metodológicos que pudieron generar una subestimación de la relación real, la asociación encontrada es fuerte.
+
+El artículo cita diversas fuentes que respaldan lo observado (a pesar de no tener medidas similares), lo que resulta en una válidez externa, pues una forma de medirla es la consistencia de resultados obtenidos con respecto de la literatura previa.
+
+Los valores significativos en la razón de momios y de riesgo relativos son parecidos, esto nos habla de que el estudio se podría generalizar a otras poblaciones que no impliquen a trabajadores del seguro social de una zona en específico y que el riesgo de padecer mesotelioma maligno pleural debido a exposición ocupacional al asbesto es general.
+
+La definición acertada de la población objetivo permite controlar aspectos de variabilidad debido a características sociodemográficas distintas a las del grupo estudiado y tiene como consecuencia un aumento de la validez interna, es decir, la generalización para todas las personas trabajadoras o pensionadas de la zona centro del IMSS.
+
+A pesar de lo anterior, el estudio presenta algunos problemas metodologicos como:
+
+Posible problemas del reclutamiento hospitalario referido al sesgo de Berkson, es decir, que las personas con una combinación de la enfermedad y exposición pueden quedar más representadas que aquellas que solo tienen la enfermedad o la exposición (exposición al asbesto), llegando a sobreestimar la verdadera relación entre las variables e impidiendo generalizar a otras poblaciones. Esto queda mejor visto al comparar la participación del 99.1% de los casos, del 59% de los controles que eran trabajadores activos y del 83% de los controles que eran trabajadores pensionados.
+
+No se mencionan criterios de exclusión para enfermedades similares; y la tasa de participación del 59% para trabajadores activos y de 83% para pensionados permite la existencia de sesgos de selección en cuanto a que las personas que son trabajadores activos pudieron no quedar tan bien representadas como las personas pensionadas. Para lo anterior, se reporta de manera correcta los motivos de no participación, los cuales no parecen tener relación con las variables a estudiar y quitan la posibilidad de no representar un aspecto que cambiaría la relación que se encontró.
+
+En cuanto a la medida del tabaquismo, no se reporta la confiabilidad de dicho instrumento de medición, puede ocurrir que esta medida subestime o sobreestime la verdadera cantidad de cigarrillos que fuman las personas. La medida tampoco toma en cuenta el caso donde el número de cigarrillos que fuma una persona sea diferente de un día a otro.  Esto podría traducirse en errores sistemáticos de medición de la variable y nublar o exagerar su efecto como variable de confusión.
+
+En cuanto a las preguntas que implican descripción detallada de actividades y condiciones de seguridad e higiene en el trabajo, puede ocurrir un sesgo de memoria porque dichas preguntas involucran el recuerdo de eventos que son muy específicos, lo que puede generar problemas de sobre y subestimación de la exposición con los factores, ya sea por el tipo de grupo al que se pertenece (caso o control) o por problemas asociados al mal recuerdo. Aunque en el estudio se comenta que este factor se controla debido a la escolaridad de las personas participantes.
+
+Es por estas razones que se considera que el artículo tiene una validez interna limitada y que podría ser mejorada en un estudio posterior. 
+
+La validez externa es limitada a personas con la misma exposición ambiental y/o de ocupación de las personas en el estudio, dado que existen diferencias pronunciadas en el tipo de industria y estilo de vida en la zona centro, norte y sur de México.\
+
+## Enfermedades crónicas degenerativas como factor de riesgo de letalidad por COVID-19 en México.
+
+**Resumen:** Es un estudio de Cohorte retrospectivo El enfoque de este estudio es analizar si tener una enfermedad crónica preexistente está asociado con mayor riesgo de fallecimiento en pacientes con COVID-19
+
+**Características**
+
+**Objetivo:** El objetivo de este estudio es analizar si tener una enfermedad crónica preexistente está asociado con un mayor riesgo de fallecimiento en pacientes con COVID-19.
+
+**Direccionalidad:** Va desde la exposición hasta el efecto (cumple)
+
+El enfoque de este estudio es analizar si tener una enfermedad crónica preexistente está asociado con mayor riesgo de fallecimiento en paciente con COVID-19, por lo que la direccionalidad se cumple, va desde la **exposición** que sería la presencia de una enfermedad crónica (diabetes mellitus tipo 2, hipertensión arterial sistémica, obesidad o enfermedad renal crónica), hasta el **efecto** que sería la letalidad por COVID-19.
+
+**Secuencia de acontecimientos:** (cumple)
+
+Esta secuencia se realizó mediante los expedientes clínicos electrónicos, por lo que no se observaron los acontecimientos en tiempo real para identificar qué personas estuvieron expuestas (presentaban una enfermedad crónica) y cuál fue la consecuencia (letalidad), por lo que la secuencia fue reconstruida y se analizaron siguiendo la secuencia de exposición a efecto
+
+**La selección de la muestra**: Representativa de la población objetivo o en función de la exposición (cumple)
+
+El estudio se realizó con expedientes clínicos electrónicos de pacientes de una Institución de Seguridad Social en Querétaro, México con RT-PCR positiva para COVID-19. La población objetivo eran todos los pacientes atendidos en esa institución, por lo que la muestra será representativa sólo de los pacientes de dicha institución y no de toda la población mexicana.
+
+De dicha población seleccionada se realizó la división de dos grupos: grupo expuesto (pacientes con mínimo una enfermedad crónica hasta 4) y el grupo no expuesto (pacientes sin enfermedades crónicas).
+
+Posteriormente, para seleccionar los 1,114 expedientes en total, dentro de cada grupo se utilizó una técnica de muestreo aleatorio simple que sirve para minimizar el sesgo y asegurar que cada uno de los expediente tuviera la misma probabilidad de ser seleccionado (muestreo equiprobable). Este muestreo es efectivo para mejorar la confiabilidad de los resultados.
+
+**Temporalidad de los hechos**: históricos, concurrentes o prospectivos, mixtos
+
+Este estudio analiza datos clínicos de pacientes atendidos entre marzo de 2020 y marzo de 2021, entonces es un estudio retrospectivo y por lo tanto, su temporalidad es histórica
+
+\
+**Sujetos libres del efecto y diferenciacion según la exposición:** (no cumple en su totalidad)
+
+En este estudio, al principio los sujetos no estaban libres del efecto, ya que al ser un estudio retrospectivo, se analizaron datos de pacientes con COVID-19 con la finalidad de evaluar la letalidad en función de las enfermedades crónico degenerativas presentes.
+
+**Periodo de inducción:** (no está especificado)
+
+En el artículo no se menciona un periodo de inducción específico para el desarrollo del efecto, es decir, la letalidad, ya que los investigadores analizaron los registros de pacientes ya diagnosticados y fallecidos o sobrevivientes de COVID-19, no controlaron ni observaron activamente el periodo entre exposición y desenlace. Entonces en este caso, el periodo de inducción entre la exposición a una enfermedad crónica y el desenlace de letalidad por COVID-19 no está determinado, porque los datos son retrospectivos y no siguen una cohorte en tiempo real.
+
+**Aparición del efecto en los dos grupos:** (cumple)
+
+Si bien se estudiaron dos grupos: pacientes con y sin enfermedad crónica, se realizaron subgrupos: pacientes con una, dos, tres y cuatro enfermedades, los cuales se compararon con los pacientes que no presentaron dichos padecimientos, por lo que en la sección de resultados se presenta la comparación de los desenlaces (letalidad) de los grupos mencionados para observar la aparición del efecto en todos los grupos.
+
+**Relación temporal entre la exposición y el efecto y obtener medidas de incidencia:** (cumple parcialmente)
+
+Sí existe una relación entre exposición y efecto y se pudo calcular el riesgo relativo, pero como es un estudio retrospectivo, la relación temporal no es tan evidente como en otro tipo de estudio, además no se calcula incidencia directamente ya que no se tiene un seguimiento de los pacientes a lo largo del tiempo para observar nuevos casos, sino, se calcula el riesgo relativo de letalidad para enfermedades crónicas comparando el desenlace en pacientes expuestos y no expuestos (sin enfermedad crónica).
+
+\
+**Minimización de sesgos si las cohortes son concurrentes:**
+
+-   Si las cohortes son concurrentes, se minimizan los sesgos en la medida de la exposición (no cumple)
+
+Por último, al tratarse de un estudio retrospectivo histórico, no es concurrente. Si bien utiliza registros médicos fiables, debido a la dependencia en datos previos y no en un seguimiento en tiempo real, hay un riesgo de sesgos en la información de exposición. Por lo que no cumple con minimizar los sesgos.
+
+**Validez:**
+
+La validez interna describe qué tan bien el estudio mide la relación entre la **exposición** a enfermedades crónicas y el **desenlace** que es la letalidad por COVID-19 **dentro** de la muestra estudiada de una Institución de Seguridad Social del estado de Querétaro sin tomar en cuenta otro factores. 
+
+Hay tres puntos principales que favorecen la validez interna: el primero es que permite entender el impacto de cada una de las enfermedades crónicas en la letalidad al analizar cada una por separado (una enfermedad crónica) y también las combinaciones entre ellas (hasta cuatro enfermedades crónicas). El segundo es que se minimizan las variaciones en la calidad de los registros, ya que los datos provienen de expedientes clínicos electrónicos del IMSS. Por último, la muestra tomada (1,114 expedientes) permite obtener resultados significativos y así, minimizar el error aleatorio.
+
+Por todo lo anterior, la validez interna en este estudio es buena, sin embargo el diseño retrospectivo provoca algunas limitaciones ya que hay menos control sobre la recolección de datos (podría introducir sesgos en la información), no se controlan factores como el tiempo de evolución de las enfermedades crónicas ni el control metabólico de cada una, lo que podría influir en los resultados.
+
+Por otra parte, la validez externa es limitada ya que el estudio se realizó en una sola institución de la república. Los pacientes atendidos pueden no representar a toda la población de México o de otro país, debido a la posible variación en los patrones  de enfermedades, atención médica y protocolos de manejo de COVID-19. Además, no se pueden generalizar los hallazgos debido a que en otros contextos o poblaciones, la prevalencia de las cuatro enfermedades en cuestión puede ser diferente. 
+
+Este artículo es de mucha relevancia ya que las enfermedades crónico degenerativas tuvieron una importancia muy grande en la severidad de COVID-19. Por lo que los resultados encontrados pueden ser de gran ayuda para incentivar nuevas políticas de salud pública, sin embargo, al ser una población de un solo IMSS, se debe tener mucho cuidado para poder generalizar dichos resultados, al igual que al tratar de generalizarlos internacionalmente, ya que como se comentó, la validez externa está limitada.
+
+Además, la estabilidad estadística de los resultados se ve afectada cuando se realizan las combinaciones de enfermedades, ya que conforme aumentan las enfermedades, el tamaño de muestra es limitado, y por tanto se podría introducir variabilidad en los riesgos relativos calculados. Un ejemplo de lo anterior, es que el riesgo relativo es mayor en personas con tres enfermedades crónicas (RR=17,60) que en aquellas que tienen cuatro (RR= 16,50), lo que podría hacer pensar que el tener una enfermedad más es un factor de protección, pero realmente ese valor podría asociarse al tamaño de la muestra.
+
+Si bien el diseño de cohorte retrospectivo es el adecuado para resolver la pregunta de investigación que se aborda, al depender de expedientes médicos puede existir un sesgo de información, por lo que la precisión de los datos sobre exposición y desenlace dependen de la confiabilidad de los registros previos. Por lo que es bueno recalcar las limitaciones especificadas como la falta de información sobre la evolución y control de las enfermedades crónicas.
+
+Aunado a lo anterior, al ser un estudio retrospectivo (no tener seguimiento en el tiempo), sería incorrecto inferir causalidad directa entre las enfermedades crónicas y la letalidad (causa-efecto), por lo que este aspecto debería ser reformulado, ya que pueden existir más factores como edad, estilo de vida u otros padecimientos que afecten a la letalidad. Por lo que el artículo presenta limitaciones en la causalidad directa y en la validez externa.
+
+## Sistema de gestión de riesgos para reducir el contagio de COVID-19 en el personal de salud.
+
+**Resumen:** Se realiza una encuesta transversal para conocer los factores de riesgo del personal de salud en un hospital de la ciudad de México
+
+**Características**
+
+**Objetivo:** Evaluar los factores laborales asociados con la ocurrencia de COVID-19 en el personal de salud expuesto a distintas magnitudes de riesgo con el uso de la PGCNUC-19
+
+**Evaluación de hipótesis de tipo casual** :(cumple)
+
+En el estudio se mantiene la premisa de que el sistema de gestión de riesgos tiene como objetivo proporcionar una estructura sistemática y coherente para la identificación, la evaluación, el tratamiento y el monitoreo continuo de los riesgos en una organización. Por está razón se creó el PGCNUC-19 para ayudar a las autoridades a desarrollar o revisar los planes de preparación y respuesta ante una pandemia; con está política se crearon recomendaciones sobre el uso del equipo de protección personal (EPP) en el personal de salud (PS) y una manera de revisar estos protocolos es evaluar los factores laborales asociados con la ocurrencia de COVID-19 en el PS expuesto a distinta magnitud de riesgo. Y es en este último punto en el que se centra el estudio, como una forma de evaluar los objetivos de la política, es decir, cumple con el primer punto de un estudio transversal.
+
+**Utilización de muestras representativas de la población:** (cumple parcialmente)
+
+En particular solo desarrolla el estudio en el Centro Médico ABC quien se mantenía al frente de la atención de pacientes con enfermedad de COVID-19 y otras enfermedades. Aún cuando se contemplaban 5000 miembros para el estudio solo se realizó con 1818 personas y aún cuando el estudio argumenta que las muestras para cada grupo de riesgo (GR) son aceptables, es limitante extender los resultados a toda la población del sector salud, justo se identifica como una limitación el hecho de que no todas las personas contempladas participaran entre ellos un gran número de médicos. 
+
+**Evaluación de exposiciones que no cambian en el tiempo:**(cumple)
+
+En esencia lo que se está evaluando es plantear adecuadamente protocolos ante una pandemia, este punto se cumple ya que ante otra pandemia se recomienda seguir las políticas de gestión de crisis de las Naciones Unidas mediante la aplicación de medidas de protección en el PS a través de del programa de reducción de riesgos, incluyendo el uso de equipo de protección personal y la capacitación  en medidas de prevención y control de infecciones. 
+
+**Sin direccionalidad:** evaluación de la exposición y del efecto se registran simultáneamente (cumple)
+
+Se cumple ya que se marca la temporalidad del estudio, entre el 4 de abril y el 1 de mayo del 2021. Se basa en una encuesta y en un periodo no mayor a 48hrs una prueba para la medición de anticuerpos IgG para la COVID-19. De está manera se tiene registro de personas con una prueba antes de la encuesta y después de ella \
+
+**Sin temporalidad:** sólo estudia relaciones causales (cumple)
+
+El estudio solo busca encontrar los factores de riesgo que presentan el personal de salud aún cuando existe un protocolo y equipo de protección personal por está razón dentro de la encuesta se manejan datos sociodemográficos, actividades laborales generales (turno, horas de trabajo, forma de transportarse) así como actividades laborales específicas dentro del hospital (personal médico, administrativos, personal de enfermería, limpieza y camilleros) y es en este punto donde se pueden clasificar por grupo de riesgo (bajo, medio y alto). Es por ello que solo estudia las relación que puede existir entre estos datos y desarrollar anticuerpos para el COVID-19 aun siguiendo los protocolos.
+
+\
+**Fácil de distinguir entre factor de riesgo y factor de pronóstico**: (no cumple)
+
+En el estudio no se especifican los factores de pronóstico, ya que en general no está centrado en la enfermedad como tal sino en los protocolos que se llevan para prevenir el contagio en el personal de salud que atiende el hospital en un momento donde la enfermedad ya es una pandemia.
+
+**Validez:**
+
+El estudio en general tiene un objetivo importante ya que en una crisis sanitaria global, la prevención y la adaptabilidad de los protocolos pueden ser tan importantes como la respuesta inmediata, asegurando un entorno seguro y resiliente tanto para los trabajadores como para la sociedad.
+
+Para la **validez interna:** tiene validez interna debido a que el estudio tiene claro las posibles variables de confusión (sexo, último grado académico, puesto administrativo, turno matutino) así como las limitaciones y fortalezas en el mismo. Para la **validez externa:** no tiene validez externa ya que tiene limitación en las muestras debido a que solo se realizó en un hospital, supone que existe generalización a todo el sector salud.
+
+Estos argumentos sugieren que el estudio tiene una base sólida, especialmente en términos de validez interna esto es una señal de un buen diseño, ya que las conclusiones obtenidas son confiables en el contexto específico del estudio. Sin embargo, la validez externa limitada indica que los resultados pueden no ser aplicables más allá del hospital en el que se realizó el estudio. Esta limitación no necesariamente reduce la calidad del estudio en sí, pero sugiere que es un estudio con un alcance restringido.
+
+En resumen, puede considerarse un buen estudio en términos de rigor metodológico y validez interna, pero se recomienda interpretarlo como un paso preliminar. Para aumentar su aplicabilidad, el estudio podría ampliarse a otros hospitales o incluir una muestra más diversa del sector salud.
+
+\
+
+\newpage
+
+# Diseño de Estudio
+
+> **Diseño un estudio, real o artificial (inventado), de casos y controles o de cohorte, enmarcado dentro del área a de trabajo de alguno de los integrantes del equipo.**
+
+**Área:** Finanzas
+
+**Descripción**: El estudio propuesto es un estudio de casos y controles con el propósito de evaluar la posible asociación entre la existencia del historial crediticio y el incumplimiento en el pago de un préstamo.
+
+**Objetivo**: Determinar si la existencia del historial crediticio de una persona está asociada con una mayor probabilidad de incumplimiento en un préstamo personal.
+
+**Definición de casos y controles:**
+
+**Casos**: Las personas que han incumplido en el pago de su préstamos (impago = 1). (Deudores)
+
+**Controles**: Las personas que han cumplido con el pago del préstamo (impago = 0 ). (No deudores)
+
+**Criterios de Inclusión y exclusión:**
+
+-   Inclusión: Personas con un préstamo personal vigente o pagado en los últimos cinco años. Personas de entre 25 y 60 años. Personas con disponibilidad de información: Ingreso, tipo de empleo, sector, antigüedad laboral, otros préstamos activos, sector de empleo, sexo.
+
+-   Exclusión: Personas con ingresos menores de 20,000 MNX, Personas con información incompleta de: Ingreso, tipo de empleo, sector, antigüedad laboral, otros préstamos activos, sector de empleo, sexo.
+
+**Recolección de datos:** Los datos se recolectarán de registros de instituciones financieras y bancos, incluyendo los siguientes elementos:
+
+-   **Historial crediticio**: Presencia o ausencia de historial crediticio en el buró de crédito.
+
+-   **Estado de cumplimiento**: Registros (en caso de que existan) de pagos de préstamo para identificar casos y controles.
+
+-   **Características adicionales**: Datos sobre edad, ingresos, tipo de empleo, antigüedad laboral, otros préstamos activos, estado civil, sexo.
+
+Para garantizar la calidad y representatividad, los datos se recolectarán de varias instituciones que representen distintos segmentos de mercado y regiones.
+
+**Factores de Confusión a controlar:**
+
+-   Edad
+
+-   Estado civil
+
+-   Ingreso anual
+
+-   Tipo de empleo
+
+-   Antigüedad laboral
+
+-   Otros préstamos activos
+
+-   Sexo
+
+**Control de Factores de Confusión:**
+
+1.  Inclusión de las variables de confusión en un modelo estadístico.
+
+2.  Estratificación del análisis por niveles de las variables de confusión.
+
+3.  Análisis multivariado para evaluar el impacto independiente del historial crediticio en el impago: ajustar por ingresos, edad y otros factores.
+
+**Medidas reportadas:**
+
++--------------------------+--------------+--------------+-------------------+
+|                          | Casos        | Controles    | Total             |
++:=========================+:=============+:=============+:==================+
+| Sin Historial crediticio | a            | b            | a + b             |
++--------------------------+--------------+--------------+-------------------+
+| Con Historial crediticio | c            | d            | c + d             |
++--------------------------+--------------+--------------+-------------------+
+| **Total**                | **a+c**      | **b+d**      | **N = a+b+c + d** |
++--------------------------+--------------+--------------+-------------------+
+
+-   a: Personas sin historial crediticio que incumplieron en el pago del préstamo.
+
+-   b: Personas sin historial crediticio que cumplieron con el pago.
+
+-   c: Personas con historial crediticio que incumplieron en el pago del préstamo.
+
+-   d: Personas con historial crediticio que cumplieron con el pago.
+
+    $$
+    \text{OR} = \frac{a \times d}{b \times c}
+    $$
+
+**Interpretación del OR:**
+
+-   **OR = 1: No hay asociación entre la falta de historial crediticio y el incumplimiento en el pago.**
+
+-   **OR \> 1: La falta de historial crediticio está asociada con una mayor probabilidad de impago (factor de riesgo).**
+
+-   **OR \< 1: La falta de historial crediticio está asociada con una menor probabilidad de impago (factor protector, lo cual sería inusual en este contexto).**
+
+**Válidez:**
+
+-   **Validez Interna**: El estudio asegura la validez interna a través de una selección cuidadosa de casos y controles y el control de los factores de confusión, lo cual reduce el sesgo en los resultados y permite que los hallazgos sean sólidos dentro de la muestra estudiada.
+
+-   **Validez Externa**: La validez externa puede estar limitada, ya que el estudio se basa en datos de instituciones financieras específicas y en una muestra que podría no representar a toda la población crediticia. Sin embargo, al incluir diferentes segmentos y tipos de empleo, los resultados pueden ser extrapolables a segmentos similares en otras instituciones financieras.
+
+\newpage
+
+# Riesgo atribuible
+
+> **Dar la definición de Riesgo Atribuible (RA) o Diferencia de riesgos. Además, desarrollar la estimación puntual y por intervalos (intervalo de confianza) para la medida de riesgo del inciso anterior (Como en las notas de clase, refiera este cálculo a una tabla de clasificación cruzada 2 × 2).**
+
+## Estimación Puntual.
+
+El ***riesgo atribuible*** representa el exceso de riesgo atribuible al factor de exposición para el desarrollo del evento de interés y se define como:
+
+$$
+AR = \pi_1 - \pi_2.
+$$
+
+Donde $\pi_1$ representa la proporción de la población que fue expuesta y que desarrolló el evento de interés y $\pi_2$ la proporción de la población que no fue expuesta y que presenta el evento de interés.
+
+En el caso de un estudio de casos y controles se puede usar la tabla de contingencia de $2$x$2$.
+
++---------------+---------------+-------------------+---------------+
+|               |               | Evento de Interés |               |
++:==============+:==============+:==================+:==============+
+| ```           | ```           | ```               | ```           |
+| SI            | a             |   b               | a + b         |
+| ```           | ```           | ```               | ```           |
++---------------+---------------+-------------------+---------------+
+| ```           | ```           | ```               | ```           |
+| NO            | c             |   d               | c + d         |
+| ```           | ```           | ```               | ```           |
++---------------+---------------+-------------------+---------------+
+| **Total**     | **a + c**     | **b+ d**          | **n**         |
++---------------+---------------+-------------------+---------------+
+
+: Tabla de Contingencia 2x2.
+
+Entonces, se puede realizar la estimación puntual del Riesgo Atribuible como:
+
+$$
+\hat{\pi}_1 = \frac{a}{a + b} = \frac{a}{n_{1 \bullet}} \ \ \ \ \ \text{y} \  \ \ \ \hat{\pi}_2 = \frac{c}{c+d} = \frac{a}{n_{2 \bullet}} \ \ \ \therefore
+$$ $$
+\hat{AR} = \hat{\pi}_1 - \hat{\pi}_2
+$$
+
+## Estimación por Intervalos.
+
+Para obtener el intervalo de confianza al $100(1 - \alpha)\%$, se debe estimar la varianza de nuestro estimador de riesgo atribuible ($\hat{AR}$). Para ello se utilizará el método delta multivariado de primer orden para aproximar la varianza del estimador, descrito en el @thm-multivariableDM que fue adaptado al español del libro *All of Statistics: A Concise Course in Statistical Inference* por Wasserman (2004).
+
+::: {#thm-multivariableDM}
+
+## Método Delta Multivariado
+
+Sea $Y_n = \left( Y_{n1}, \dots, Y_{nk} \right)$ una secuencia de vectores aleatorios que satisface:
+
+$$
+\sqrt{n} \left(Y_n - \mu \right) \xrightarrow{d} N\left(0, \Sigma \right),
+$$
+donde $\mu$ es el valor esperado de $Y_n$ y $\Sigma$ es la matriz de covarianzas. Y sea $g: \mathbb{R}^k \rightarrow \mathbb{R}$, una función diferenciable en $\mu$, cuya derivada parcial en cada componente $y_i$ está dada por: 
+\begin{align*}
+    \nabla g(y) &= 
+    \begin{bmatrix}
+        \frac{\partial g}{\partial y_1} \\
+        \vdots \\
+        \frac{\partial g}{\partial y_k}
+    \end{bmatrix}.
+\end{align*}
+ 
+Definimos $\nabla_\mu = \nabla g(y)$ el gradiente de $g$ evaluado en $\mu$, suponiendo que todos los elementos de $\nabla_\mu$ son distintos de cero. 
+
+Entonces, se cumple que:
+
+$$
+\sqrt{n} \left(g(Y_n) - g(\mu) \right) \xrightarrow{d} N\left(0, \nabla_\mu^T \Sigma \nabla_\mu \right).
+$$
+:::
+
+Para nuestro caso, definimos $g(AR) = \pi_1 - \pi_2$. La derivada parcial respecto a cada $\pi_i$ es: \begin{equation*}
+\begin{split}
+\frac{\partial g }{\partial \pi_1} &= 1 \\
+\frac{\partial g}{\partial \pi_2} &= -1.
+\end{split}
+\end{equation*}
+
+Entonces, el gradiente de $g$ evaluado en $\mu$ es:
+\begin{align*}
+     \nabla_\mu = \nabla g(\mu) &= 
+    \begin{bmatrix}
+        1 \\
+        - 1
+    \end{bmatrix}
+\end{align*}
+
+La varianza entonces es:
+\begin{align*}
+    \nabla_\mu^T \Sigma \nabla_\mu  &= 
+        \begin{bmatrix}
+             1 & -1 
+        \end{bmatrix} 
+        \begin{bmatrix}
+             \sigma_{11} & \sigma_{12} \\
+             \sigma_{21} & \sigma_{22}
+        \end{bmatrix}
+        \begin{bmatrix}
+             1 \\
+             -1 
+        \end{bmatrix}.
+\end{align*}
+
+Dado que $\sigma_{12} = \sigma_{21} = 0$ por el diseño metodológico de los estudios de casos y controles, la expresión anterior se simplifica a:
+\begin{align*}
+    \nabla_\mu^T \Sigma \nabla_\mu  &= 
+        \begin{bmatrix}
+             1 & -1 
+        \end{bmatrix} 
+        \begin{bmatrix}
+             \sigma_{11} & 0 \\
+             0 & \sigma_{22}
+        \end{bmatrix}
+        \begin{bmatrix}
+             1 \\
+             -1 
+        \end{bmatrix}.
+\end{align*}
+
+Resolviendo se obtiene:
+
+$$
+ \nabla_\mu^T \Sigma \nabla_\mu = \sigma_{11} + \sigma_{22}.
+$$
+
+Podemos estimar la varianza de cada una de las proporciones estimadas.
+\begin{equation*}
+\begin{split}
+\hat{\sigma}_{11} &= \hat{\mathbb{V}}(\hat{\pi}_1) =  \frac{\hat{\pi}_1 (1 - \hat{\pi}_1)}{n_{1 \bullet}} \\
+\hat{\sigma}_{11} &= \hat{\mathbb{V}}(\hat{\pi}_2) =  \frac{\hat{\pi}_2 (1 - \hat{\pi}_2)}{n_{2 \bullet}}.
+\end{split}
+\end{equation*}
+
+Entonces se puede aproximar la varianza del riesgo atribuible como: \begin{equation*}
+\begin{split}
+\mathbb{V}(\hat{AR}) &\approx \frac{\hat{\pi}_1 (1 - \hat{\pi}_1)}{n_{1 \bullet}} + \frac{\hat{\pi}_2 (1 - \hat{\pi}_2)}{n_{2 \bullet}}.
+\end{split}
+\end{equation*}
+
+Sustituyendo $\hat{\pi}_1$ y $\hat{\pi}_2$. \begin{equation*}
+\begin{split}
+\mathbb{V}(\hat{AR}) &= \frac{\frac{a}{a + b} (1 - \frac{a}{a + b})}{a + b} + \frac{\frac{c}{c+d} (1 - \frac{c}{c+d})}{c+d} \\
+&= \frac{\frac{a}{a + b} (\frac{a + b}{a + b} - \frac{a}{a + b})}{a + b} + \frac{\frac{c}{c+d} (\frac{c + d}{c+d} - \frac{c}{c+d})}{c+d} \\
+&= \frac{\frac{a}{a + b} (\frac{b}{a + b})}{a + b} + \frac{\frac{c}{c+d} (\frac{d}{c+d})}{c+d} \\       
+&= \frac{a}{a + b} \frac{b}{a + b} \frac{1}{a + b} + \frac{c}{c+d} \frac{d}{c+d} \frac{1}{c+d} \\
+&= \frac{ab}{(a + b)^3} + \frac{cd}{(c+d)^3} \\
+&= \frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}.
+\end{split} 
+\end{equation*}
+
+Por tanto. el intervalo de confianza al $100(1 - \alpha)\%$ se estima como: 
+$$
+\left[ \hat{AR} - Z_{(1 - \frac{\alpha}{2})} \sqrt{\frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}}, \ \ \hat{AR} + Z_{(1 - \frac{\alpha}{2})} \sqrt{\frac{ab}{n_{1 \bullet}^3} + \frac{cd}{n_{2 \bullet}^3}} \right].
+$$
+
+\newpage
+
+## Estimación del AR en Hulley y Cummings (1993).
+
+### Aproximación Teórica.
+
+Se define una función en el lenguaje de programación `R` para la estimación puntual y por intervalo del riesgo atribuible.
+
+\small
+
+```{r}
+# Se define una función
+ar_estimation <- function(df, alpha = 0.05){
+    if(!all(dim(df) == c(2, 2))) {
+        # Check the dim of the data
+        stop("The data must be a 2 x 2 data.frame")
+    }
+    
+    # Specify the values of the 2x2 table
+    a <- df[1, 1]; b <- df[1, 2]; c <- df[2, 1]; d <- df[2, 2]
+    
+    # Estimate the AR
+    ar_est <- a / (a + b) - c / (c + d)
+    
+    # Estimate the SE of the AR
+    se_ar <- sqrt(a*b/(a+b)^3 + c*d/(c+d)^3)
+    
+    # EStimate the Interval of Confidence for the AR.
+    ci_ar <- ar_est + c(-1, 1) * qnorm(1 - alpha) * se_ar
+    
+    # Return a list with the Estimations.
+    return(list(puntual.estimation = ar_est, SE = se_ar, CI = ci_ar))
+}
+```
+
+\normalsize
+
+Se cargan los datos de la tabla de Hulley y Cummings (1993).
+
+```{r}
+# Data
+hm_data <- data.frame(
+    infarto = c(40, 10),
+    no_infarto = c(460, 490),
+    row.names = c("Toma Café", "No Toma Café")
+)
+
+ar.theo <- ar_estimation(hm_data)
+```
+
+La estimación puntual es `r ar.theo$puntual.estimation`, con un intervalo de confianza al 95% de 
+[`r ar.theo$CI`].
+
+### Bootstrapping.
+
+Se define una función en `R` para la estimación puntual y por intervalos por medio de *bootstrapping*.
+
+\scriptsize
+
+```{r}
+# Definimos una función para muestreo con bootstrapping
+ar_bootstrap <- function(data, sims_num = 1000, seed = 140801){
+    # Data
+    a <- data[1, 1]; b <- data[1, 2]; c <- data[2, 1]; d <- data[2, 2]
+    
+    # Sample Size
+    n <- a + b + c + d
+    
+    # Define where we consider a sample bootstrap be a, b, c and, d
+    define_a <- c(1, a)
+    define_b <- c(a + 1, a + b)
+    define_c <- c(a + b + 1, a + b + c)
+    define_d <- c(a + b + c + 1, n)
+    
+    # Define the vector to store the estimations and its size
+    ar_est <- numeric(length = sims_num)
+    
+    #Set the seed
+    set.seed(seed)
+    
+    # Run the Bootstrap
+    for (i in 1:sims_num) {
+        
+        # Sample ID
+        idx_samples <- sample(1:n, replace = T, size = n)
+        
+        # How many a, b, c, d are in the sample?
+        sample_a <- sum(define_a[1] <= idx_samples & idx_samples <= define_a[2])
+        sample_b <- sum(define_b[1] <= idx_samples & idx_samples <= define_b[2])
+        sample_c <- sum(define_c[1] <= idx_samples & idx_samples <= define_c[2])
+        sample_d <- sum(define_d[1] <= idx_samples & idx_samples <= define_d[2])
+        
+        # Store the estimated AR of the i-th simulation.
+        ar_est[i] <- sample_a / (sample_a + sample_b) - sample_c / (sample_c + sample_d)
+    }
+    return(ar_est)
+}
+
+# Run Bootstrapping
+ar.boot <- ar_bootstrap(hm_data, 15000, seed = 123456789)
+```
+
+\normalsize
+
+La estimación puntual del método de *bootstrapping* es `r round(mean(ar.boot), 4)` y su intervalo de confianza al 95% es [`r round(quantile(ar.boot, probs = c(0.025, 0.975)), 4)`].
+
+```{r}
+#| echo: false
+#| fig-cap-location: top
+#| fig-cap: "Comparación de los Métodos de Estimación Puntual y por Intervalos."
+
+library(ggplot2)
+library(latex2exp)
+
+estimaciones <- data.frame(
+  metodo = c(1, 2),
+  estimacion = c(ar.theo$puntual.estimation, mean(ar.boot)),
+  lwr = c(ar.theo$CI[1], quantile(ar.boot, probs = 0.025)),  # Límite inferior del IC
+  upr = c(ar.theo$CI[2], quantile(ar.boot, probs = 0.975))   # Límite superior del IC
+)
+
+# Crear el gráfico
+ggplot(estimaciones, aes(x = factor(metodo, levels = c(1, 2), 
+                                    labels = c("Método Delta", "Bootstrapping"), 
+                                    ordered = T), 
+                         y = estimacion)) +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.2) + # Barra de error para el IC
+  geom_point(size = 3, color = "blue") +                 # Punto de la estimación
+  labs(title = "",
+       x = "Método",
+       y = TeX(r"($\hat{AR}$)")) +
+  theme_minimal()
+```
+
+Comparando las estimaciones para el riesgo atribuible en ambos métodos, se puede concluir que no difieren más que en el ancho de los intervalos de confianza, siendo que los intervalos de confianza al 95% en nuestra simulación de bootstrapping contienen al intervalo de confianza al 95% estimado por la aproximación del método Delta, sin embargo, no parecieran difererir de forma sustancial entre ellos.
+
+\newpage
+
+# Estimación de los OR
+
+La siguiente tabla refiere al éxito en el tratamiento de cálculos renales con cirugía abierta o nefrolitotomía percutánea. Los resultados del estudio fueron los siguientes:
+
+```{r}
+#| echo: false  
+#| message: false
+
+
+
+tabla_calculos <- data.frame(
+  `Tamaño del tumor` = c("<= 2cm.", "", "> 2cm.", ""),
+  `Factor de riesgo` = c("Cirugía", "Nefro", "Cirugía", "Nefro"),
+  Éxito = c(405, 1170, 960, 275),
+  Fracaso = c(30, 180, 355, 125)
+)
+
+
+#tabla_calculos
+
+#knitr::kable(tabla_calculos, format = "latex", booktabs = TRUE,
+ #     caption = "Tratamiento de cálculos renales.",
+  #    col.names = c("Tamaño del tumor", "Factor de riesgo", "Éxito", "Fracaso"))
+```
+
++------------------+------------------+---------------+---------------+
+| Tamaño del tumor | Factor de riesgo | Éxito         | Fracaso       |
++:================:+:================:+:=============:+:=============:+
+| ```              | ```              | ```           | ```           |
+| <= 2cm           | Cirugía          |   405         | 30            |
+|                  | Nefro            |   1170        | 180           |
+| > 2cm            | Cirugía          |   960         | 355           |
+| ```              | Nefro            |   275         | 125           |
+|                  | ```              | ```           | ```           |
++------------------+------------------+---------------+---------------+
+
+: Tratamiento de cálculos renales.
+
+Calcular las medidas de riesgo:
+
+## OR sin tomar la variable del tamaño del tumor
+
+Se crea la tabla para obtener los momios, juntando a los estratos del tamaño del tumor:
+
+```{r}
+#| echo: false
+
+tabla_sin_tumor <- data.frame( `Factor de riesgo`= c("Cirugía", "Nefro", "Total"),
+                  Éxito = c((405+960), (1170+275), (405+960+1170+275)),
+                  Fracaso = c((30+355), (180+125), (30+355+180+125)), 
+                  Total = c((1365+385), (1445+305), (1365+385+1445+305)))
+
+
+#tabla_sin_tumor
+
+#knitr::kable(tabla_sin_tumor, format = "latex", booktabs = TRUE,
+ #     caption = "Tratamiento de cálculos renales sin estratos",
+  #    col.names = c("Factor de riesgo", "Éxito", "Fracaso", "Total"))
+                               
+```
+
++------------------+---------------+---------------+---------------+
+| Factor de riesgo | ```           | ```           | ```           |
+|                  | Éxito         |   Fracaso     | Total         |
+|                  | ```           | ```           | ```           |
++==================+===============+===============+===============+
+| ```              | ```           | ```           | ```           |
+| Cirugía          | 1365          |   385         | 1750          |
+| Nefro            | 1445          |   305         | 1750          |
+| Total            | 2810          |   690         | 3500          |
+| ```              | ```           | ```           | ```           |
++------------------+---------------+---------------+---------------+
+
+: Tratamiento de cálculos renales, sin estratos.
+
+Para el cálculo de los momios en cada caso, este se define como:
+
+$$
+\varOmega_1 = \frac{\mathbb{P}[Y = 1 | X = 1]}{\mathbb{P}[Y = 2 | X = 1]}
+ = \frac{\pi_1} {1- \pi_1} \;\;\;\;\;\;\; \varOmega_2 = \frac{\mathbb{P}[Y = 1 | X = 2]}{\mathbb{P}[Y = 2 | X = 2]}
+ = \frac{\pi_2} {1- \pi_2}
+$$
+
+Donde Y es el factor de riesgo: el éxito o fracaso en el tratamiento; y X es el factor de exposición: el tipo de tratamiento (cirugía abierta o nefrolitotomía percutánea).
+
+\newpage
+
+Se calcula cada momio:
+
+\small
+
+```{r}
+
+a <- tabla_sin_tumor$Éxito[1]
+b <- tabla_sin_tumor$Fracaso[1]
+c <- tabla_sin_tumor$Éxito[2]
+d <- tabla_sin_tumor$Fracaso[2]
+
+momio_cir <- a/b
+
+momio_nefr <- c/d
+```
+
+\normalsize
+
+Las posibilidades de éxito en el tratamiento por medio de cirugía son `r format(momio_cir, big.mark = ",")` más respecto a las de fracaso.
+
+Las posibilidades de éxito en el tratamiento por medio de nefrolitotomía percutánea son `r format(momio_nefr, big.mark = ",")` más respecto a las de fracaso.
+
+El cociente de momios se calcula como:
+
+$$
+\theta = \frac{\varOmega_1}{\varOmega_2}
+$$
+
+Se calcula el cociente de momios tomando cada momio que se obtuvo anteriormente:
+
+\small
+
+```{r}
+
+or_bruto <- momio_cir/momio_nefr
+
+or_bruto
+```
+
+\normalsize
+
+El momio de éxito en el tratamiento por cirugía es `r format(or_bruto, big.mark = ",")` veces el momio de éxito en el tratamiento por nefrolitotomía percutánea.
+
+### Intervalo de confianza al 95%
+
+El intervalo de confianza para el cociente de momios se calcula como:
+
+$$
+OR \in \left( \exp \left\{ \log(\hat{OR}) \pm Z_{(1-\alpha/2)} \sqrt{\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}} \right\} \right)
+$$
+
+\newpage
+
+Función para calcular intervalos de confianza:
+
+\small
+
+```{r}
+
+IC_CocienteMomios<-function(a,b,c,d,alpha){
+O<-a*d/(b*c)
+sd<-sqrt(1/a+1/b+1/c+1/d)
+intervalo<-exp(log(O)+c(-1,1)*qnorm(1-alpha/2)*sd)
+return(list(Confianza = (1-alpha)*100, Intervalo_de_Cofianza= intervalo))
+}
+
+```
+
+\normalsize
+
+El intervalo de confianza para el cociente de momios, al 95% de confianza, es:
+
+\small
+
+```{r}
+
+IC_CocienteMomios(a,b,c,d,0.05)
+
+```
+
+\normalsize
+
+Dado que el intervalo no contiene al uno, se puede decir que se presenta una asociación negativa entre el éxito de la operación y el tratamiento por medio de cirugía abierta.
+
+## OR de cirugía abierta
+
+Se crea la tabla, donde ahora el factor de exposición es el tamaño del tumor y el factor de riesgo es el éxito o fracaso por medio del tratamiento de cirugía abierta:
+
+```{r}
+#| echo: false
+
+tabla_x_cirugia <- data.frame(`Factor de riesgo` = c("Tumor <= 2cm", "Tumor > 2cm", "Total"), 
+                              Éxito = c(405, 960, (405+960)), Fracaso = c(30, 355, (30+355)), 
+                              Total = c((405+30), (960+355), (1365+385)))
+
+#tabla_x_cirugia
+
+
+#knitr::kable(tabla_x_cirugia, format = "latex", booktabs = TRUE,
+ #     caption = "Tratamiento Cirugía",
+  #    col.names = c("Factor de riesgo", "Éxito", "Fracaso", "Total"))
+```
+
++----------------------+---------------+---------------+---------------+
+| **Factor de riesgo** | **Éxito**     | **Fracaso**   | **Total**     |
++:====================:+:=============:+:=============:+:=============:+
+| ```                  | ```           | ```           | ```           |
+| Tumor <= 2cm         | 405           |   30          | 435           |
+| Tumor > 2cm          | 960           |   355         | 1315          |
+| Total                | 1365          |   385         | 1750          |
+| ```                  | ```           | ```           | ```           |
++----------------------+---------------+---------------+---------------+
+
+: Tratamiento de cálculos renales, por cirugía abierta.
+
+Se calcula el momio de éxito con tumor menor o igual a 2cm y el momio de éxito con tumor mayor a 2cm
+
+\small
+
+```{r}
+
+a1 <- tabla_x_cirugia$Éxito[1]
+b1 <- tabla_x_cirugia$Fracaso[1]
+c1 <- tabla_x_cirugia$Éxito[2]
+d1 <- tabla_x_cirugia$Fracaso[2]
+
+momio_ct_peq <- a1/b1
+momio_ct_gra <- c1/d1
+
+```
+
+\normalsize
+
+Las posibilidades de éxito en el tratamiento por medio de cirugía abierta, cuando el tumor es menor a 2 cm, son de `r format(momio_ct_peq, big.mark = ",")` respecto a las de fracaso.
+
+Y las posibilidades de éxito en el tratamiento por medio de cirugía, cuando el tumor es mayor a 2 cm, son de `r format(momio_ct_gra, big.mark = ",")` respecto a las de fracaso.
+
+Se calcula el cociente de momios para el tratamiento por cirugía y tipo de tumor:
+
+\small
+
+```{r}
+
+or_x_cir <- momio_ct_peq/momio_ct_gra
+
+or_x_cir
+```
+
+\normalsize
+
+El momio de éxito en el tratamiento por cirugía, cuando el tumor es menor o igual a 2cm, es `r format(or_x_cir, big.mark = ",")` veces el momio de éxito en el tratamiento cuando el tumor es mayor a 2cm.
+
+### Intervalo de confianza al 95%
+
+El intervalo de confianza para el cociente de momios, al 95% de confianza, es:
+
+\small
+
+```{r}
+
+IC_CocienteMomios(a1,b1,c1,d1,0.05)
+
+```
+
+\normalsize
+
+Dado que el intervalo está lejos de contener al uno, se puede decir que hay una asociación de tipo positiva entre el éxito en el tratamiento por cirugía abierta y el tamaño del tumor cuando éste es pequeño.
+
+\newpage
+
+## OR de nefrolitotomía percutánea
+
+Se crea la tabla, donde ahora el factor de exposición es el tamaño del tumor y el factor de riesgo es el éxito o fracaso por medio del tratamiento por nefrolitotomía percutánea:
+
+```{r}
+#| echo: false
+
+tabla_x_nefro <- data.frame(`Factor de riesgo` = c("Tumor <= 2cm", "Tumor > 2cm", "Total"), 
+                              Éxito = c(1170, 275, (1170+275)), Fracaso = c(180, 125, (180+125)), 
+                              Total = c((1170+180), (275+125), (1445+305)))
+
+#tabla_x_nefro
+
+
+#knitr::kable(tabla_x_nefro, format = "latex", booktabs = TRUE,
+ #     caption = "Tratamiento nefrolitotomía percutánea",
+  #    col.names = c("Factor de riesgo", "Éxito", "Fracaso", "Total"))
+```
+
++----------------------+---------------+---------------+---------------+
+| **Factor de riesgo** | Éxito         | Fracaso       | Total         |
++:====================:+:=============:+:=============:+:=============:+
+| ```                  | ```           | ```           | ```           |
+| Tumor <= 2cm         | 1170          |   180         | 1350          |
+| Tumor > 2cm          | 275           |   125         | 400           |
+| Total                | 1445          |   305         | 1750          |
+| ```                  | ```           | ```           | ```           |
++----------------------+---------------+---------------+---------------+
+
+: Tratamiento de cálculos renales, por nefrolitotomía percutánea.
+
+Se calcula cada momio:
+
+\small
+
+```{r}
+
+a2 <- tabla_x_nefro$Éxito[1]
+b2 <- tabla_x_nefro$Fracaso[1]
+
+c2 <- tabla_x_nefro$Éxito[2]
+d2 <- tabla_x_nefro$Fracaso[2]
+
+momio_neft_peq <- a2/b2
+
+momio_neft_gra <- c2/d2
+```
+
+\normalsize
+
+Las posibilidades de éxito en el tratamiento por medio de nefrolitotomía percutánea, cuando el tumor es menor a 2 cm, son de `r format(momio_neft_peq, big.mark = ",")` respecto a las de fracaso.
+
+Las posibilidades de éxito en el tratamiento por medio de nefrolitotomía percutánea, cuando el tumor es mayor a 2cm, son de `r format(momio_neft_gra, big.mark = ",")` respecto a las de fracaso.
+
+El cociente de momios se calcula como:
+
+\small
+
+```{r}
+
+or_x_nefro <- momio_neft_peq/momio_neft_gra
+
+or_x_nefro
+```
+
+\normalsize
+
+El momio de éxito en el tratamiento por nefrolitotomía percutánea cuando el tumor es menor o igual a 2cm es `r format(or_x_nefro, big.mark = ",")` veces el momio de éxito en el tratamiento cuando el tumor es mayor a 2cm.
+
+### Intervalo de confianza al 95%
+
+El intervalo de confianza para el cociente de momios, al 95% de confianza, es:
+
+\small
+
+```{r}
+
+IC_CocienteMomios(a2,b2,c2,d2, 0.05)
+```
+
+\normalsize
+
+El intervalo de confianza no contiene al uno, por lo que se puede decir que existe una relación de tipo positiva entre el éxito del tratamiento por nefrolitotomía percutánea y el tamaño del tumor cuando éste es menor a 2cm.
+
+## ¿Se puede considerar que la variable tamaño del tumor es un factor de confusión?
+
+Para que una variable sea un factor de confusión, primero se deben considerar una serie de requisitos, de cumplir con estos se puede proceder a cuantificar el efecto de dicha variable confusora; a continuación se revisan dichos requisitos y si la variable del tamaño del tumor cumple con los mismos:
+
+Considerando que el factor de confusión es el tamaño del tumor \<= 2cm
+
+El factor de exposición es el tipo de cirugía, sí exposición corresponde a la cirugía abierta y no exposición es a la operación por nefro
+
+Enfermos son quienes tuvieron fracaso en el tratamiento y no enfermos son quienes tuvieron éxito en el tratamiento
+
+1.  **Asociación entre el factor de confusión y la exposición en los no enfermos**. Se debe encontrar una asociación entre el tamaño del tumor cuando es menor a 2cm y el tratamiento por cirugía abierta (es decir, un OR diferente a 1) en las personas que tienen éxito en el tratamiento.
+
+    ```{r}
+    #| echo: false
+
+
+    tablaexito_tumor_tx <- data.frame(`Tamaño del tumor` = c("<= 2cm", "> 2cm"), 
+                                      Cirugía = c(405, 960),
+                                      Nefro = c(1170,275))
+
+    #tablaexito_tumor_tx
+
+
+    #knitr::kable(tablaexito_tumor_tx, format = "latex", booktabs = TRUE,
+     #     caption = "Tamaño del tumor y tipo de tratamiento, en éxitos",
+      #    col.names = c("Tamaño del tumor", "Cirugía", "Nefro"))
+
+    ```
+
++------------------+---------------+---------------+---------------+
+| Tamaño del tumor | Cirugía       | Nefro         | Total         |
++:================:+:=============:+:=============:+:=============:+
+| ```              | ```           | ```           | ```           |
+| Tumor <= 2cm     | 405           |   1170        | 1575          |
+| Tumor > 2cm      | 960           |   275         | 1235          |
+| Total            | 1365          |   1445        | 2810          |
+| ```              | ```           | ```           | ```           |
++------------------+---------------+---------------+---------------+
+
+: Tipo de tratamiento y tamaño del tumor en éxitos.
+
+\newpage
+
+Se calcula el OR
+
+\small
+
+```{r}
+a_ex <- tablaexito_tumor_tx$Cirugía[1]
+b_ex <- tablaexito_tumor_tx$Nefro[1]
+c_ex <- tablaexito_tumor_tx$Cirugía[2]
+d_ex <- tablaexito_tumor_tx$Nefro[2]
+
+OR_ex <- (a_ex*d_ex)/(b_ex*c_ex) 
+
+OR_ex
+```
+
+\normalsize
+
+Cálculo del intervalo de confianza:
+
+\small
+
+```{r}
+IC_CocienteMomios(a_ex, b_ex, c_ex, d_ex, 0.05)
+```
+
+\normalsize
+
+De acuerdo con la estimación del OR y su intervalo a un 95% de confianza, se puede decir que hay una asociación entre el tamaño del tumor y el tratamiento por cirugía abierta en los casos de éxito del tratamiento. Lo cual confirma el primer requisito para que la variable tamaño del tumor se considere como un factor de confusión.
+
+2.  **Asociación entre el factor de confusión y la enfermedad en los grupos no expuestos**. Se debe encontrar una asociación entre el tamaño del tumor cuando es menor a 2cm y el fracaso del tratamiento (es decir, un OR diferente a 1) en las personas que son tratadas por nefrolitotomía percutánea.
+
+```{r}
+#| echo: false
+
+
+tablacirugia_tumor_frac <- data.frame(`Tamaño del tumor` = c("<= 2cm", "> 2cm"),
+                                      Fracaso = c(180, 125), 
+                                      Éxito = c(1170, 275))
+
+#tablacirugia_tumor_frac
+
+
+#knitr::kable(tablacirugia_tumor_frac, format = "latex", booktabs = TRUE,
+ #     caption = "Tamaño del tumor y éxito o fracaso, tratamiento por nefro",
+  #    col.names = c("Tamaño del tumor", "Fracaso", "Éxito"))
+```
+
++------------------+---------------+---------------+---------------+
+| Tamaño del tumor | Fracaso       | Éxito         | Total         |
++:================:+:=============:+:=============:+:=============:+
+| ```              | ```           | ```           | ```           |
+| Tumor <= 2cm     | 180           |   1170        | 1350          |
+| Tumor > 2cm      | 125           |   275         | 400           |
+| Total            | 305           |   1445        | 1750          |
+| ```              | ```           | ```           | ```           |
++------------------+---------------+---------------+---------------+
+
+: Resultado del tratamiento y tamaño del tumor en nefrolitotomía percutánea
+
+\newpage
+
+Se calcula el OR:
+
+\small
+
+```{r}
+a_cir <- tablacirugia_tumor_frac$Fracaso[1]
+b_cir <- tablacirugia_tumor_frac$Éxito[1]
+c_cir <- tablacirugia_tumor_frac$Fracaso[2]
+d_cir <- tablacirugia_tumor_frac$Éxito[2]
+
+OR_cir <- (a_cir*d_cir)/(b_cir*c_cir)
+
+OR_cir
+
+```
+
+\normalsize
+
+Cálculo del intervalo de confianza:
+
+\small
+
+```{r}
+IC_CocienteMomios(a_cir, b_cir, c_cir, d_cir, 0.05)
+```
+
+\normalsize
+
+De acuerdo con la estimación del OR y su intervalo a un 95% de confianza, se puede decir que hay una asociación entre el tamaño del tumor y el fracaso del tratamiento en los grupos que son tratados por nefrolitotomía percutánea. Lo cual confirma el segundo requisito para que la variable tamaño del tumor se considere como un factor de confusión.
+
+3.  **El factor de confusión no debe ser un paso intermedio en la secuencia causal entre el tipo de tratamiento y su éxito**. En este caso, el tamaño del tumor y el éxito del tratamiento son factores relacionados, independientemente de si el tratamiento fue por cirugía abierta o nefrolitotomía percutanea. No se conoce que el tipo de tratamiento genere el tamaño del tumor.
+
+Con esto se confirma que la variable tamaño del tumor puede ser considerada como una variable de confusión. Una vez verificados los requisitos de una variable de confusión, para poder conocer la magnitud del efecto de confusión, se debe calcular el porcentaje de exceso de riesgo explicado (ERE), el cual se calcula como:
+
+$$ ERE = \frac{OR_{bruto} - OR_{ajustado}}{OR_{bruto}-1}\times100 $$
+
+Para el cual primero se debe calcular el OR ajustado tomando los OR de cada estrato (tumor pequeño y grande), de acuerdo a la aproximación de Mantel y Haenszel (1959) este se calcula como:
+
+$$ OR_{ajustado} = \frac{\sum_{i=1}^{k} \frac{a_i \times d_i}{N_i}}{\sum_{i=1}^{k} \frac{b_i \times c_i}{N_i}} $$
+
+Se crean las tablas de cada estrato, tumores menores o iguales a 2cm y mayores a 2cm:
+
+```{r}
+#| echo: false
+
+#Tamaño del tumor <= 2cm
+
+tabla_tumor_peq <- data.frame(`Tratamiento` = c("Cirugía", "Nefro", "Total"), 
+                              Éxito = c(405, 1170, (405+1170)), 
+                              Fracaso = c(30, 180, (30+180)), 
+                              Total = c((405+30), (1170+180), (1170+180+405+30)))
+
+
+#tabla_tumor_peq
+
+
+#Tamaño del tumor > 2cm
+
+tabla_tumor_gran <- data.frame(`Tratamiento` = c("Cirugía", "Nefro", "Total"), 
+                              Éxito = c(960, 275, (960+275)), 
+                              Fracaso = c(355, 125, (355+125)), 
+                              Total = c((960+355), (275+125), (960+355+275+125)))
+
+
+#tabla_tumor_gran
+
+```
+
++--------------+--------------+--------------+--------------+
+| Tratamiento  | Éxito        | Fracaso      | Total        |
++:============:+:============:+:============:+:============:+
+| ```          | ```          | ```          | ```          |
+| Cirugía      | 405          |   30         | 435          |
+| Nefro        | 1170         |   180        | 1350         |
+| Total        | 1575         |   210        | 1785         |
+| ```          | ```          | ```          | ```          |
++--------------+--------------+--------------+--------------+
+
+: Tratamiento de cálculos renales en tumores \<= 2cm.
+
++--------------+--------------+--------------+--------------+
+| Tratamiento  | Éxito        | Fracaso      | Total        |
++:============:+:============:+:============:+:============:+
+| ```          | ```          | ```          | ```          |
+| Cirugía      | 960          |   355        | 1315         |
+| Nefro        | 275          |   125        | 400          |
+| Total        | 1235         |   480        | 1715         |
+| ```          | ```          | ```          | ```          |
++--------------+--------------+--------------+--------------+
+
+: Tratamiento de cálculos renales en tumores \> 2cm.
+
+Cálculo del OR cuando el tamaño del tumor es menor o igual a 2cm
+
+\small
+
+```{r}
+a_es1 <- tabla_tumor_peq$Éxito[1]
+b_es1 <- tabla_tumor_peq$Fracaso[1]
+c_es1 <- tabla_tumor_peq$Éxito[2]
+d_es1 <- tabla_tumor_peq$Fracaso[2]
+
+OR_es1 <- (a_es1*d_es1)/(b_es1*c_es1)
+
+OR_es1
+```
+
+\normalsize
+
+Esto indica que, cuando se estratifica por tamaño del tumor, el tratamiento por cirugía abierta parece efectivo si el tumor es pequeño.
+
+\newpage
+
+Cálculo del OR cuando el tamaño del tumor es mayor a 2cm
+
+\small
+
+```{r}
+a_es2 <- tabla_tumor_gran$Éxito[1]
+b_es2 <- tabla_tumor_gran$Fracaso[1]
+c_es2 <- tabla_tumor_gran$Éxito[2]
+d_es2 <- tabla_tumor_gran$Fracaso[2]
+
+OR_es2 <- (a_es2*d_es2)/(b_es2*c_es2)
+
+OR_es2
+```
+
+\normalsize
+
+Esto indica que, cuando se estratifica por tamaño del tumor, el tratamiento por cirugía abierta también es efectivo si el tumor es grande.
+
+Se calcula el OR ajustado:
+
+\small
+
+```{r}
+
+N1 <- tabla_tumor_peq$Total[3]
+N2 <- tabla_tumor_gran$Total[3]
+
+or_aj <- (((a_es1*d_es1)/N1)+((a_es2*d_es2)/N2)) / 
+  (((b_es1*c_es1)/N1) + ((b_es2*c_es2)/N2))
+
+or_aj
+```
+
+\normalsize
+
+Recordar que el valor del OR bruto (sin estratificar) era:
+
+\small
+
+```{r}
+or_bruto
+```
+
+\normalsize
+
+Indicando que la cirugía abierta no era efectiva para el tratamiento de cálculos renales
+
+Cálculo del porcentaje ERE:
+
+\small
+
+```{r}
+
+ERE <- 100* (or_bruto - or_aj)/ (or_bruto-1) 
+
+ERE
+```
+
+\normalsize
+
+El valor obtenido del ERE indica que el factor de confusión distorsiona la relación entre éxito y tipo de tratamiento en un 277%, confirmando que la variable tamaño del tumor es un factor de confusión.
+
+Esto representa un caso de la paradoja de Simpson, donde la relación observada en los estratos (tamaño del tumor) se invierte respecto a la observada en el total (sin estratos); en este caso, mostrando que la asociación es negativa (el tratamiento no es efectivo) cuando no hay estratos y sí es efectivo cuando se estratifica por el tamaño del tumor.
+
+## ¿Se puede decir que existe interacción entre la variable tamaño del tumor y el factor de riesgo, sobre la respuesta del éxito de los dos tratamientos?
+
+Para poder detectar interacción, al menos de tipo aditiva, entre el tamaño del tumor y el éxito entre tratamientos, el OR de los estratos debería ser diferente del OR sin estratos, lo cual sí ocurre. Además, se debería poder obtener el OR bruto promediando los OR de los estratos.
+
+Cálculo del promedio de los OR de los estratos:
+
+\small
+
+```{r}
+
+or_prom <- (OR_es1 + OR_es2)/2
+
+or_prom; or_bruto
+```
+
+\normalsize
+
+El promedio de los OR con estratos no es similar al del OR bruto. A pesar de no ser una medida fuerte para detectar variables de interacción, esto indicaría que de haber una interacción, esta no sería de tipo aditiva.
+
+Para confirmar si es una variable de interacción, se puede recurrir a la prueba de homogeneidad de efectos de Woolf (1955), la cual se basa en la ji-cuadrada y permite comparar si los OR de los dos estratos (tumor pequeño y tumor grande) son homogéneos o si varían de manera significativa entre sí. En caso de que el tamaño del tumor sea una variable de interacción entonces los OR deberían diferir de manera significativa entre ellos. Se toma como hipótesis nula que los grupos son homogéneos y como hipótesis alterna que los grupos no son homogéneos, a un alfa igual a 0.05
+
+\newpage
+
+Cálculo del estadístico de prueba:
+
+\small
+
+```{r}
+#| warning: false
+#| message: false
+
+library(DescTools)
+```
+
+```{r}
+calculos <- xtabs(freq ~ .,
+                  cbind(expand.grid(treatment=c("Cirugía","Nefro"),
+                                    response=c("Éxito","Fracaso"),
+                                    gender=c("tumor_peq","tumor_gr")),
+                        freq=c(405,1170,30,180,960,275,355,125))
+)
+
+WoolfTest(calculos)
+```
+
+\normalsize
+
+Dado que el *p-value* es menor a 0.05 entonces rechazamos la hipótesis nula de homogeneidad entre los OR estratificados; y junto a la comparación del valor de los OR en cada estrato, se puede concluir que que el tamaño del tumor interactúa de diferente manera en el éxito del tratamiento por cirugía abierta cuando el tamaño del tumor es pequeño (mayor efectividad) y cuando es grande (menor efectividad). Por lo tanto, la variable tamaño del tumor es una variable tanto de confusión como de interacción.
+
+\newpage
+
+# Variables de Confusión
+
+> **A partir de la lectura del estudio de casos y controles sobre cáncer de pulmón consumo de vegetales en Asturias, contestar la siguiente pregunta:** **Los resultados en la Tabla 3 se muestran en forma de OR total y OR total ajustado por las variables de tabaco y clase social. Comparando ambas medidas ¿se puede considerar que tabaco y clase social son variables de confusión? Argumente su respuesta**
+
+**Estudio:** Cáncer de pulmón y consumo de vegetales en Asturias
+
+**Relación estudiada:** Consumo de vegetales y cáncer de pulmón
+
+**Hipotético factor de confusión:** Variables: tabaco y clase social
+
+\
+El objetivo del estudio es evaluar la contribución del consumo de vegetales, en especial de los género Brassica, y el riesgo de cáncer de pulmón en Asturias. Es justificable porque se agrega la variable tabaquismo, colocándola como una plausible alternativa a la asociación original aunque no necesariamente sea una causa. Por otro lado, pensar a la variable "clase social" como posible explicación, esta más relacionado con el cómo se construye esta variable; lo cual se explicará a continuación.
+
+La clasificación social se hizo de acuerdo al Índice de Clase Social que se especifica en: *Alvarez Dardet en 1995* donde se asignaron diferentes ocupaciones para pertenecer a una misma clase social.
+
+Las ocupaciones para pertenecer a la clase V son:
+
+-   Personal de limpieza de fachadas de edificios y deshollinadores
+-   Otros trabajadores de acabado de construcción y asimilados
+-   Marineros de cubierta de barco y asimilados
+-   Vendedores ambulantes y asimilados
+-   Empleados del hogar
+-   Personal de limpieza de oficinas, hoteles y otros trabajos asimilados
+-   Conserjes de edificio
+-   Limpiadores, Recogedor de basura
+-   Peón agrícola, ganadero, agropecuario, forestal, pesca
+-   Peón de minería
+-   Peón de la construcción
+-   Peón de la industria manufacturera
+-   Peón del transporte y descarga
+
+Notamos aquí al menos dos ocupaciones donde el sistema respiratorio se vería comprometido, por está razón pudiera contemplarse está variable como una alternativa explicación al efecto, sin necesariamente serlo.
+
+Estas variables se identifican en el estudio por los datos de la tabla 2. Y como el mismo estudio lo menciona "La proporción de fumadores (que incluye fumadores actuales y ex fumadores) es mayor en los casos y también los casos están sobrerrepresentados en el grupo socioeconómico V". Es decir el tabaquismo representa al 92.3% de los casos y la clase social V al 33.5% de los casos.
+
+Veamos que cumplen los 3 requisitos de condicionalidad:
+
+1.  Estar asociada con la exposición: Notamos que estas variables se distribuyen de manera diferente en los casos y los controles.
+
+2.  Estar asociada con la enfermedad: como se explicó anteriormente el tabaquismo es un factor de riesgo pero no necesariamente es la causa de cáncer pulmonar. Ocupaciones como deshollinador y peón de minería también podrían ser un factor de riesgo.Además los OR en la mayoria de casos son distintos de uno.
+
+3.  Tanto el tabaquismo como la clase social no son un paso intermedio en la vía causal entre el consumo de verduras y el cáncer de pulmón
+
+Finalmente se evaluará la confusión mediante la comparación directa de estimación bruta del efecto y la estimación de éste no confundida. Esto lo realizaremos con la tabla 3 del estudio, donde se calcula el *porcentaje de exceso de riesgo explicado (%ERE)* en los casos donde el $OR_{bruto} > OR_{ajustado}$ y el *porcentaje de defecto de riesgo explicado (%DRE)* cuando el $OR_{bruto} < OR_{ajustado}$\
+
++---------------+--------------+-----------------+----------------+----------+----------+
+| **Vegetal**   | $OR_{bruto}$ | $OR_{ajustada}$ | **Diferencia** | **%DRE** | **%ERE** |
++:=============:+:============:+:===============:+:==============:+:========:+:========:+
+| Brassica      | 0.68         | 0.82            | 0.14           | -43.75   |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Solanácea     | 1            | 0.63            | -0.37          |          |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Liliácacea    | 0.72         | 0.72            | 0              | 0.00     |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Frutas        | 0.72         | 0.79            | 0.07           | -25.00   |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Vegetales     | 0.72         | 1.23            | 0.51           | -182.14  |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Betacarotenos | 0.67         | 0.70            | 0.03           | -9.09    |          |
++---------------+--------------+-----------------+----------------+----------+----------+
+| Retinol       | 0.93         | 0.89            | -0.04          |          | -57.14   |
++---------------+--------------+-----------------+----------------+----------+----------+
+
+A primera vista notamos que el OR es menor a uno, esto significa que existen factores de protección pero notamos que el $OR_{bruto}$ difiere en más del 10% con el $OR_{ajustado}$ al menos en la verdura de tipo Brassica, Frutas, Vegetales y Retinol. Por lo que la distorsión de los factores de confusión (Tabaquismo y clase social) son responsables del porcentaje de defecto de riesgo explicado de la asociación estimada (Consumo de vegetales y cáncer de pulmón). Es decir SI son variables de confusión.
+
+\newpage
+
+# Referencias
+
+-   Alvarez Dardet C, Alonso J, Domingo A, Regidor E. "Propuesta de un sistema de indicadores para la medición de clase social. En: La medición de la clase social en ciencias de la salud." Barcelona: SG editores, 1995.
+
+-   Mantel, N., & Haenszel, W. (1959). Statistical aspects of the analysis of data from retrospective studies of disease. *Journal of the national cancer institute*, *22*(4), 719-748.
+
+-   Wasserman, L. (2004). *All of Statistics: A Concise Course in Statistical Inference*. Springer Science & Business Media.
+
+-   Woolf, B. 1955: On estimating the relation between blood group and disease. *Ann. Human Genet.* (London) 19, 251-253.
