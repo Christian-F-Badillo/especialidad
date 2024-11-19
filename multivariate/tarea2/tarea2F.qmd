@@ -1,0 +1,1230 @@
+---
+title: "Tarea 2"
+author: 
+    - name: "Christian Badillo"
+    - name: "Luis Nuñez"
+    - name: "Luz Maria Santana"
+    - name: "Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+```{r}
+#| echo: false
+#| warning: false
+library(ggplot2)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(reshape2)
+library(cluster)
+library(factoextra)
+library(MASS)
+library(klaR)
+library(pander)
+library(readxl)
+library(MASS)
+library(scatterplot3d)
+```
+\newpage
+
+# Parte 1
+
+1. Observa que algunos datos están en segundos y otros en minutos. Comenta los problemas que esto  puede generar en el análisis de componentes principales.
+
+Utilizar variables con diferentes unidades de medición podría traer problemas en el análisis de componentes principales, ya que el análisis podría ser sencible a alguna de ellas. Por lo que es conveniente trabajar con los datos centrados y estandarizados, es decir, con la matriz R.
+
+
+2. Calcula la varianza de cada una de las variables y haz el cociente de la máxima entre la mínima.  Comenta (¿qué variables se deben transformar para evitar el cociente tan grande? ¿Cómo  transformarlas?).
+
+Vamos a cargar la base de datos.
+
+```{r}
+athletic <- read.csv("athletic.csv")
+# Primero vamos a poner todo en minutos
+athletic[,1:3] <- athletic[,1:3] / 60
+```
+
+Cálculo de varianzas.
+
+\footnotesize
+```{r}
+varianzas <- apply (athletic, 2, var)
+varianzas
+
+var_max <- max(varianzas)
+var_max
+
+var_min <- min(varianzas)
+var_min
+
+cociente_varianzas <- var_max /  var_min
+cociente_varianzas
+```
+\normalsize
+
+El cociente calculado es de 2481590, es un número demasiado grande que indica que la diferencia entre varianzas es muy grande. Esto ocurre por la variable Marathon, ya que es la que posee más varianza (85.134042), incluso entre las variables que también están en minutos. Esto es porque su rango de valores inicia desde el 128 hasta el 164.7. Por ello, esa variable es la que se podría normalizar (restar a cada valor su media y divir entre su varianza) para poder utilizar la matriz de varianzas y covarianzas. En R se tiene la función sclae() para realizar ese proceso
+
+```{r}
+#| echo: true
+athletic_normalizada <- scale(athletic)
+```
+
+3. Calcula la matriz de correlaciones (no imprimir). Comenta las relaciones entre las variables. 
+
+```{r}
+#| echo: true
+matriz_correlaciones <- cor(athletic)
+```
+
+De manera general podemos decir que las variables se correlacionan de manera positiva ya que no se tienen valores menores a cero. Aquellas variables con mayor correlación (cercanas a 1) son 100m con 400m, 400m con 800m, 400m con 1500m, 800m con 1500m, 500m con 1500m (0.928114), 1500m con 10000m (0.9337307), 5000m con 10000m (0.9738873) siendo estas 3 últimas las más grandes. 
+
+En general, la mayoría de las variables se encuentran asociadas de manera positiva y con una relación fuerte. La más débil es la de 0.26 entre la prueba de 200 y 400m Y en general es la prueba de 200m la que tiene menor correlación con las demás
+
+4. Calcule los componentes principales. (¿es recomendable usar la matriz de correlaciones?, explica). Describe brevemente los resultados.
+
+\scriptsize
+```{r}
+#| echo: false
+#pca <- princomp(na.omit(athletic),cor = TRUE)
+pca <- prcomp(athletic, center = TRUE, scale.= TRUE)
+summary(pca)
+```
+\normalsize
+
+De la matriz S, haciendo el cociente de la varianza máxima con la mínima se obtiene 20990.91 que es un valor muy grande y hace que usar la matriz S no sea viable. Por lo cual conviene utilizar la matriz de correlaciones.
+
+
+5. Haz una gráfica de la varianza de las componentes (screeplot).Comenta.  
+
+6. Explica tu criterio para selección de número de componentes. ¿qué proporción de la varianza total  se explica con el número de variables que seleccionaste? 
+
+Vamos a extraer la varianza de cada componente
+
+```{r}
+#| echo: false
+
+varianzas_pca <- summary(pca)$importance[2,]
+
+#Graficando
+plot(varianzas_pca, type="b",
+     main= "Varianzas de las componentes",
+     xlab = "Número de componentes principales", 
+     ylab = "Varianza", 
+     col = "blue", pch=16)
+```
+
+Convendría quedarse con entre 2 y 3 componentes. Si nos quedaramos con dos ya tendríamos el 87% de la varianza explicada y se facilitaría la interpretación. Si nos quedaramos con tres ya tendríamos el 95% de la varianza explicada, aunque la interpretación podría ser menos sencilla.
+
+Además, conviene más interpretar a los que se encuentran lejos del eje horizontal, ya que esa primera componente por sí sola se lleva el 75% de la varianza. 
+
+7. Haz el biplot (1ª y2a CP) comenta (identifica grupos de países, valores discrepantes y  comportamiento de las variables originales). 
+
+```{r}
+biplot(pca,main = "Biplot (1ª y2a CP)",
+       cex = 0.6) 
+```
+
+Dadas las cargas, la segunda componente tiene mayor carga en la variable 200m, por lo que si encontramos en el biplot variables por encima de la 2da componente, estas serían valores altos respecto a la prueba de $200$ m
+
+Como la primera componente tiene mayor carga en las variables de pruebas de 100 y 400 y más metros entonces las variables que se encuentren más a la derecha de la primera componente se asociarán a los países que se desempeñan mejor en las pruebas de 100, 400 o más metros.
+
+Convendría examinar a Cook_ls,  W_samoa que tienen los puntajes más altos de las pruebas que implican más de.
+$400$ m. Netherlands y Mauritius tendría los puntuajes más altos en pruebas que implican menos de 400m 
+
+Y que probablemente República dominicana sea la que menos destace de los países. Revisando los valores originales:
+
+\scriptsize
+```{r}
+#| echo: false
+athletic[c("Cook_Is", "W_Samoa","Netherlands", "Mauritius", "Dom_Rep"),]
+```
+\normalsize
+
+8. Calcula la correlación de la 1ª componente con cada una de las variables originales. Comenta.
+
+\scriptsize
+```{r}
+#| echo: false
+pca$rotation[,1]
+```
+\normalsize
+
+La primera componente correlaciona de manera similar con las variables de pruebas de 100, 400, 800, 1,500, 5,000, 10,000 m y el marathon. Solo correlaciona de manera más baja con la variable de la prueba de 200m
+
+9. Compara las cargas (loadings) de la 1ª y la 2ª CP. Haz los barplot correspondientes, compáralos y comenta.
+
+
+```{r}
+#| echo: false
+cargas_PC1 <- pca$rotation[, 1]
+cargas_PC2 <- pca$rotation[, 2]
+```
+
+\scriptsize
+```{r}
+cargas_PC1
+cargas_PC2
+```
+\normalsize
+
+La primera componente tiene mayor carga en las variables de pruebas de 100m y 400m y más metros la segunda componente tiene mayor carga en las pruebas de $200$ m. Por lo que, al examinar el biplot, los valores que se muevan más a la derecha podrían interpretarse como los que se desempeñan de mejor manera en la mayoría de las pruebas. Mientras que si hay valores que se mueven más hacia arriba, se interpretaría como aquellos que se desempeñan mejor en las pruebas de pocos metros pero que se desempeñan peor en las otras pruebas (debido a las cargas negativas).
+
+```{r}
+#| echo: false
+#| fig-cap: "Cargas de la 1ª Componente Principal (CP1)"
+
+
+barplot(cargas_PC1, main = "",
+        ylab = "Carga", xlab = "Variables", col = "skyblue", las = 2)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Cargas de la 2ª Componente Principal (CP2)"
+# Graficar las cargas de la 2ª CP
+barplot(cargas_PC2, main = "",
+        ylab = "Carga", xlab = "Variables", col = "salmon", las = 2)
+```
+
+10. Verifica que CP1 es ortogonal a la CP2.
+
+Para comprobar que la primera componente es ortogonal a la segunda, basta con hacer una correlación entre los scores de cada componente Como la correlación es muy cercana a 0, podemos decir que las dos componente son ortogonales
+
+```{r}
+#| echo: true
+cor(pca$x[,1], pca$x[,2])
+```
+
+# Parte 3
+
+1.  Con los datos **Distancias20ciudades.xlsx** haz un escalamiento métrico. Presenta las coordenadas en dos dimensiones, su gráfica y la medida de bondad de ajuste.
+
+2.  Con los datos haz un escalamiento no-métrico en dos dimensiones. Presenta las coordenadas en dos dimensiones, su gráfica y la medida de bondad de ajuste STRESS. También haz las gráficas dij vs \^ dij (como las vistas en clase función Sheppard de R) y coméntala .
+
+3.  Compara lo obtenido contra un mapa y comenta. 
+
+## K = 2
+
+Se leen los datos
+
+\tiny
+```{r}
+#| echo: false
+
+dist20ciudades <- read.csv("20ciudades.csv", row.names = 1)
+
+head(dist20ciudades)
+```
+\normalsize
+
+### Escalamiento métrico
+
+Se aplica el escalamiento multidimensional de tipo métrico para k = 2 dimensiones y se presentan algunas de las coordenadas
+
+```{r}
+#| echo: false
+
+
+mapa_k2<-cmdscale(dist20ciudades,eig=TRUE,k=2)
+
+head(mapa_k2$points[,1:2])
+```
+
+#### Gráfica
+
+Se presenta la gráfica de los puntos en k = 2 dimensiones y la etiqueta de las ciudades:
+
+```{r}
+#| echo: false
+
+
+plot(mapa_k2$points[,1],mapa_k2$points[,2], col = 2, asp = 1,
+     main = "Escalamiento métrico k = 2", pch = "*", 
+     xlab ="x", ylab = "y", 
+     ylim = c(-1500,2000))
+text(cmdscale(dist20ciudades),labels=row.names(dist20ciudades), pos=3, cex = 0.6)
+
+```
+
+#### Medida GOF
+
+Como se puede apreciar, el ajuste es bastante malo cuando no se toma el cuenta el valor absoluto de los eigenvalores (0.58) y aumenta apenas de manera aceptable cuando se toman en cuenta los lambda's en su valor absoluto (0.76). Esto indica que el escalamiento en k = 2 dimensiones reproduce el 58% de las distancias originales.
+
+```{r}
+#| echo: false
+
+mapa_k2$GOF
+
+```
+
+La aparición de eigenvalores negativos nos indica que no se pudo obtener una representación perfecta de los datos y que, además, las distancias no son euclidianas.
+
+```{r}
+#| echo: false
+
+mapa_k2$eig
+
+```
+
+### Escalamiento no métrico
+
+Se aplica el escalamiento no métrico para mismas dimensiones y se presentan las primeras coordenadas:
+
+```{r}
+#| echo: false
+
+cdnometrico_k2<-isoMDS(d = as.dist(dist20ciudades), y = cmdscale(dist20ciudades, 2),k=2, trace = T)
+
+head(cdnometrico_k2$points[,1:2])
+
+```
+
+#### Gráfica
+
+Se presenta la gráfica del escalamiento no métrico con mismas dimensiones. Genera distancias parecidas a las del escalamiento métrico.
+
+```{r}
+#| echo: false
+
+plot(cdnometrico_k2$points[,1],cdnometrico_k2$points[,2], col = 2, asp = 1, main = "Escalamiento no métrico k = 2", pch = "+", 
+     xlab ="x", ylab = "y", 
+     ylim = c(-1500,2000) )
+text(cdnometrico_k2$points,labels=row.names(dist20ciudades), pos=3, cex = 0.6)
+```
+
+#### STRESS
+
+La medida STRESS indica qué tan bien se ajusta la transformación de las distancias originales (para hacerlas euclideas) a las originales. Como el valor es mayor a 0.05, esto indica que el ajuste es malo y que las nuevas distancias euclidianas no se parecen a las originales después de la transformación.
+
+```{r}
+#| echo: false
+
+cdnometrico_k2$stress
+
+```
+
+#### dij - \^dij
+
+Se utiliza la función Shepard para generar el gráfico que permite comparar las distancias originales con las transformadas:
+
+```{r}
+#| echo: false
+
+distancias_Shepard_k2<- Shepard(dist(dist20ciudades), cdnometrico_k2$points )
+
+plot(distancias_Shepard_k2, col = 4, asp = 1, main = "Escalamiento no métrico k = 2", 
+     xlab = "x", ylab = "y")
+lines(distancias_Shepard_k2$x, distancias_Shepard_k2$yf,
+      type = "S", col = "red")
+points(distancias_Shepard_k2$x, distancias_Shepard_k2$y,
+       type = "l", col = "lightblue")
+legend("bottomright",
+       legend = c("Distancias transformadas", "Distancias originales"), 
+       col = c("red", "lightblue"), lty = 1, lwd = 2)
+text(5000,0,paste("STRESS=",round(cdnometrico_k2$stress,2)))
+
+```
+
+## K = 3
+
+Como análisis extra, se aplica el escalamiento multidimensional de tipo métrico para k = 3 dimensiones.
+
+```{r}
+#| echo: false   
+
+mapa_k3<-cmdscale(dist20ciudades,eig=TRUE,k=3)  
+```
+
+Presentación de algunas de las coordenadas en 3 dimensiones
+
+```{r}
+#| echo: false   
+
+head(mapa_k3$points[,]) 
+```
+
+#### Gráfica
+
+Gráfica de los puntos en k = 3 dimensiones
+
+```{r}
+#| echo: false   
+
+data <- data.frame(mapa_k3$points[,1], mapa_k3$points[,2], mapa_k3$points[,3], rownames(dist20ciudades))  
+
+colnames(data) <- c("x", "y", "z", "ciudad")   
+
+s3d <- scatterplot3d(      x = data$x,       y = data$y,       z = data$z,       pch = "*",  # Tipo de punto      
+                           color = "blue", # Color de los puntos      
+                           main = "MDS Métrico k = 2",   xlab = "Distancia X",   ylab = "Distancia Y",   zlab = "Distancia Z" )  
+
+# Añadir etiquetas a cada punto   
+s3d_coords <- s3d$xyz.convert(data$x, data$y, data$z)   
+
+text(s3d_coords$x, s3d_coords$y, labels = data$ciudad, cex = 0.7, pos = 3) 
+```
+
+#### Medida GOF
+
+Como se puede apreciar, el ajuste también es malo cuando no se toma el cuenta el valor absoluto de los eigenvalores (0.66) y aumenta de manera aceptable cuando se toman en cuenta los lambda's en su valor absoluto 0.85 Esto indica que el escalamiento en k = 3 reproduce el 66% de las distancias originales, de nuevo, destacando que estas no son euclideas y no parece mejorar mucho la representación de los datos.
+
+```{r}
+#| echo: false   
+
+mapa_k3$GOF 
+```
+
+#### Escalamiento no métrico
+
+Se aplica el escalamiento no métrico para k = 3 dimensiones y se presentan sus primeras coordenadas en tres dimensiones
+
+```{r}
+#| echo: false  
+
+
+cdnometrico_k3<-isoMDS(d = as.dist(dist20ciudades), y = cmdscale(dist20ciudades, 3),k=3, trace = T)    
+
+head(cdnometrico_k3$points[,1:3])
+```
+
+#### Gráfica
+
+Se genera una gráfica en tres dimensiones para representar a los datos.
+
+```{r}
+#| echo: false   
+
+
+data_nometrico <- data.frame(cdnometrico_k3$points[,1], cdnometrico_k3$points[,2], cdnometrico_k3$points[,3], row.names(dist20ciudades) )   
+
+colnames(data_nometrico) <- c("x", "y", "z", "ciudad")    
+
+s3d_nometric <- scatterplot3d(   x = data_nometrico$x,    y = data_nometrico$y,    z = data_nometrico$z,    pch = "+",   color = "red", main = "MDS no Métrico k = 3",   xlab = "Distancia X",   ylab = "Distancia Y",   zlab = "Distancia Z" )   
+
+# Añadir etiquetas a cada punto   
+
+s3d_coords_nometric <- s3d_nometric$xyz.convert(data_nometrico$x, data_nometrico$y, data_nometrico$z)   
+
+text(s3d_coords_nometric$x, s3d_coords_nometric$y, labels = data_nometrico$ciudad, cex = 0.7, pos = 3)  
+```
+
+#### STRESS
+
+Como el valor es mayor a 0.05 esto indica que el ajuste también es malo y que las nuevas distancias euclidianas no se parecen a las originales. Incluso aumentando el error un poco más respecto a cuando k = 2
+
+```{r}
+#| echo: false   
+
+cdnometrico_k3$stress 
+```
+
+#### dij - \^dij
+
+A simple vista, no se nota mejoría respecto al caso donde k = 2. En conclusión, probablemente se necesiten más dimensiones para representar de manera adecuada a las distancias entre ciudades.
+
+```{r}
+#| echo: false    
+
+distancias_Shepard_k3<- Shepard(dist(dist20ciudades), cdnometrico_k3$points )    
+
+plot(distancias_Shepard_k3, col = 4, asp = 1,      main = "Escalamiento no métrico k = 3")   
+
+lines(distancias_Shepard_k3$x, distancias_Shepard_k3$yf,              
+      type = "S", col = "red")   
+
+points(distancias_Shepard_k3$x, distancias_Shepard_k3$y,                
+       type = "l", col = "lightblue")   
+
+legend("bottomright",        
+       legend = c("Distancias transformadas", "Distancias originales"), col = c("red", "lightblue"), lty = 1, lwd = 2)   
+
+text(6000,0,paste("STRESS=",round(cdnometrico_k3$stress,2)))    
+```
+
+# Parte 4
+
+Vemos los datos.
+
+```{r}
+#| echo: false
+data <- read.delim("ceramicas.txt", sep = " ", header = T)
+
+data %>%
+    head(10) %>%
+    kable(caption = "Primeras diez observaciones.", caption.short = "Datos.")
+```
+
+Dado que las escalas de los datos son distintas, se normalizaron los datos con la función `scale` de `R` base, después se calculo la distancia euclidiana para las 45 observaciones.
+
+```{r}
+data.centered <- scale(data)
+dist.matrix <- as.matrix(dist(data.centered, 
+                              method = "euclidean"), 45, 45)
+```
+
+\scriptsize
+
+```{r}
+#| echo: false
+#| fig-cap: "Mapa de Calor de la Matrix de Distancias."
+#| out-height: "400"
+#| out-width: "800"
+#| fig-cap-location: top
+
+colnames(dist.matrix) <- 1:45
+rownames(dist.matrix) <- 1:45
+
+data1 <- melt(dist.matrix)
+ 
+ggplot(data1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(high = "red", low = "white") +
+  scale_x_discrete(breaks = 1:45, limits = as.character(1:45)) + 
+  scale_y_discrete(breaks = 1:45, limits = as.character(1:45)) + 
+  labs(title = "",
+       x = "Observación",
+       y = "Observación",
+       fill = "Distancia") + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(face="bold", color="black", size=4),
+          axis.text.y = element_text(face="bold", color="black", size=4))
+```
+
+\normalsize
+
+En el mapa de calor se puede visibilizar una estructura de 3 grupos marcada, por lo cual se espera que cualquier análisis que contemple la existencia de 3 grupos debería de ajustarse bien.
+
+## Análisis de Conglomerados.
+
+Se filtran los datos para solo tomar en cuenta la composición química de las vasijas y después se procede a realizar el análisis jerárquico de conglomerados usando liga sencilla, liga completa y el método de Ward.
+
+```{r}
+data.chem <- data.centered %>%
+    as.data.frame() %>%
+    dplyr::select(!c(kiln))
+
+dist.chem <- data.chem %>%
+    dist() %>%
+    as.matrix(ncols =45, nrows = 45)
+
+link.complete <- agnes(x = dist.chem, diss = T, method = "complete")
+link.single <- agnes(x = dist.chem, diss = T, method = "single")
+cluster.ward <- agnes(x = dist.chem, diss = T, method = "ward")
+```
+
+Usando la hipótesis de que existen 3 grupos se predice que el mejor corte se vera reflejado con $k=3$ para los distintos métodos. Se visualizarán los grupos formados usando las primeras dos componentes principales con la ayuda del paquete `factoextra` de `R`.
+
+### Liga Sencilla.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 3, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust),geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (liga sencilla)."
+link.single <- as.hclust(link.single)
+plot(link.single, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.single, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (liga sencilla)."
+clust <- cutree(link.single, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Se puede observar que usando la liga sencilla, el mejor agrupamiendo se da para $k=3$ y $k=4$, dado que las demás tienden a crear una espacie de subgrupo dentro de otro, al menos en la proyección observada en el plano de la primera y segunda componente principal.
+
+### Liga Completa.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (liga completa)."
+clust <- cutree(link.complete, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (liga completa)."
+
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 3, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (liga completa)."
+clust <- cutree(link.complete, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (liga completa)."
+clust <- cutree(link.complete, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (liga completa)."
+clust <- cutree(link.complete, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (liga completa)."
+clust <- cutree(link.complete, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (liga completa)."
+clust <- cutree(link.complete, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (liga completa)."
+link.complete <- as.hclust(link.complete)
+plot(link.complete, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(link.complete, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (liga completa)."
+clust <- cutree(link.complete, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", 
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Usando la liga completa parece que una buena selección para $k$ podría ser 3 o 7, dado que son el número de grupos que parece diferenciar mejor a las observaciones, al menos usando la liga completa.
+
+### Métdo de Ward.
+
+#### Dos Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 2 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 2, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 2 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 2)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Tres Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 3 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 3, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 3 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 3)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cuatro Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 4 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 4, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 4 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 4)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+            xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Cinco Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 5 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 5, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 5 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 5)
+fviz_cluster(list(data = data.chem, cluster = clust),
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Seis Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 6 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 6, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 6 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 6)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+            geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="",
+             xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Siete Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 7 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 7, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 7 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 7)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+            geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+#### Ocho Grupos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Dendograma: 8 grupos (métdo de Ward)."
+cluster.ward <- as.hclust(cluster.ward)
+plot(cluster.ward, main = "", xlab = "Observación", ylab="Altura", cex = 0.6, hang = -1)
+rect.hclust(cluster.ward, k = 8, border = 2:20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Conglomerados: 8 grupos (métdo de Ward)."
+clust <- cutree(cluster.ward, k = 8)
+fviz_cluster(list(data = data.chem, cluster = clust), 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+El método de Ward parece ser el método que crea de una mejor forma los grupos para nuestros datos, la mejor $k$ en este caso puede ser 3 o 4, ya que dividen de mejor forma las observaciones tanto en el dendograma como en la proyección.
+
+## K-Means.
+
+Realicemos primero un análisis para ver cuál $k$ minimiza de buena manera la función de costo WSS.
+
+```{r}
+#| echo: false
+#| fig-cap: "Gráfico de Codo para K-Means."
+
+
+set.seed(1234)
+wcss <- vector()
+for(i in 1:20){
+  wcss[i] <- sum(kmeans(data.centered, i)$withinss)
+}
+
+ggplot() + geom_point(aes(x = 1:20, y = wcss), color = 'blue') + 
+  geom_line(aes(x = 1:20, y = wcss), color = 'blue') + 
+  ggtitle("") + 
+  xlab('Cantidad de Centroides k') + 
+  ylab('WSS')
+```
+
+Podemos ver que la función tiene un salto abrupto entre $k = 3$ y $k=4$. Para otros $k$ mayores el cambio en la función de costo $WSS$ es menor, por lo cuál podemos suponer que un $k = 4$ debería ser apropiado, lo que va acorde a lo observado en el método de Ward anteriormente.
+
+### Comparación de K-Means.
+
+Se comparan las divisiones creadas por un K-Means de $k$ igual a 3, 4, 5 y 6.
+
+```{r}
+k3 <- kmeans(data.centered, 3, iter.max = 1000, nstart = 20)
+k4 <- kmeans(data.centered, 4, iter.max = 1000, nstart = 20)
+k5 <- kmeans(data.centered, 5, iter.max = 1000, nstart = 20)
+k6 <- kmeans(data.centered, 6, iter.max = 1000, nstart = 20)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 3 grupos."
+fviz_cluster(k3, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 4 grupos."
+fviz_cluster(k4, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 5 grupos."
+fviz_cluster(k5, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "K-Means: 6 grupos."
+fviz_cluster(k6, data = data.chem,
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw(),
+             main="", xlab = "Componente Principal 1", ylab = "Componente Principal 2")
+```
+
+Como se puede observar, el K-means con 3 y 4 grupos son buenos para la creación de grupos siendo $k=4$ una muy buena estructura para la formación de los grupos.
+
+## Análsis de Discriminante.
+
+Dado que la principal diferencia entre el discriminante lineal y el cuadrático es la suposición de varianzas iguales, es indispensable el verificar como es la varianza entre las variables.
+
+\scriptsize
+
+```{r}
+#| echo: false
+cov.data <- data %>%
+    dplyr::select(!c(kiln)) %>%
+    cov()
+
+data1 <- melt(cov.data)
+cov.data %>%
+    kable(caption = "Matrix de Covarianza de los Datos.")
+```
+
+\normalsize
+
+```{r}
+#| echo: false
+#| fig-cap: "Mapa de Calor de la Matrix de Covarianzas."
+#| out-height: "400"
+#| out-width: "800"
+#| fig-cap-location: top
+
+ggplot(data1, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(high = "yellowgreen", low = "white") +
+  labs(title = "",
+       x = "",
+       y = "",
+       fill = "Covarianza") + 
+    theme_minimal() + 
+    theme(axis.text.x = element_text(face="bold", color="black", size=8),
+          axis.text.y = element_text(face="bold", color="black", size=8))
+```
+
+Lo que se puede observar es que la varianza es muy pequeña dada la escala de medición de los datos, sin embargo, no se nota una gran diferencia entre las variables a excepción de la concentración del Óxido de Hierro III ($Fe_2O_3$) y del Óxido de Aluminio ($Al_2O_3$). Por lo cual se espera que el discriminante lineal y el cuadrático no difieran demasiado entre si.
+
+### Discriminante Lineal.
+
+#### Predicción de Horno.
+
+```{r}
+#| echo: false
+data$kiln <- as.factor(as.character(data$kiln))
+disc.lineal <- lda(kiln ~ ., data=data, prior = rep(1/5, 5))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(kiln) ~ ., data=data,method="lda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+Existen 36 posibles combinaciones para visualizar las 4 reglas de decisión creadas por el discriminante lineal para clasificar el tipo de horno, see observa una tasa elevada de error en varias combinaciones.
+
+```{r}
+#| echo: false
+
+grupo <- predict(disc.lineal, method="plug-in")$class
+
+crossvalid<-table(grupo, data$kiln, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, lo cual indica que el modelo se desempeña bien para clasificar el horno usado para crear las vasijas.
+
+#### Predicción de Región.
+
+Primero se crean las regiones con base en el tipo de horno.
+
+```{r}
+region.data <- data %>%
+    mutate(region =
+               case_when(
+                   kiln == 1 ~ "1",
+                   kiln == 2 | kiln == 3 ~ "2",
+                   kiln == 4 | kiln == 5 ~ "3")) %>%
+    dplyr::select(!c(kiln))
+```
+
+Ajustamos el modelo de discriminante lineal.
+
+```{r}
+#| echo: false
+region.disc.lineal <- lda(region ~ ., data=region.data, prior = rep(1/3, 3))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(region) ~ ., data=region.data, method="lda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+La mayoría de los gráficos indican que la tasa de error es bastante baja para la predicción de la región.
+
+```{r}
+#| echo: false
+
+grupo <- predict(region.disc.lineal, method="plug-in")$class
+
+crossvalid<-table(grupo, region.data$region, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, es decir, el modelo es capaz de clasificar correctamente todas las vasijas en su región correspondiente.
+
+### Discriminante Cuadrático.
+
+#### Predicción de Horno.
+
+Dado que para la clase 3 de hornos (variable `kiln` en los datos), solo tiene 2 observaciones, la función `MASS::qda` no se puede correr debido a la pequeña cantidad de datos, por lo cual se omitirá su estimación.
+
+#### Predicción de Región.
+
+Ajustamos el modelo de discriminante cuadrático.
+
+```{r}
+#| echo: false
+region.disc.quac <- qda(region ~ ., data=region.data, prior = rep(1/3, 3))
+```
+
+```{r}
+#| fig-height: 14
+#| fig-width: 14
+
+partimat(as.factor(region) ~ ., data=region.data, method="qda", 
+         main = "Gráficos LDA", 
+         plot.matrix = F)
+```
+
+La mayoría de los gráficos indican que la tasa de error es bastante baja para la predicción de la región.
+
+```{r}
+#| echo: false
+
+grupo <- predict(region.disc.quac, method="plug-in")$class
+
+crossvalid<-table(grupo, region.data$region, dnn=c("Predicción","Real"))
+
+pander(ftable(crossvalid))
+```
+
+La proporción de elementos bien clasificados es `r sum(diag(prop.table(crossvalid, 1)))/length(diag(prop.table(crossvalid, 1)))`, que es idéntico al discriminante lineal.
+
+## Conclusión.
+
+A través de los distintos análisis de conglomerados se pudo detectar que las vasijas se pueden agrupar en al menos 3 grupos distintivos lo cual no concuerda con el número de hornos pero si con el número de regiones de las cuales proviene, de hecho se logró un modelo perfecto en el discriminante lineal y cuadrático cuando se predice la región, por tanto se concluye que la composición química de las vasijas difiere por la región y no por el tipo de horno.
