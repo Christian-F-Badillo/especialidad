@@ -1,0 +1,1641 @@
+---
+title: "Metodología de la Investigación: Tarea 2"
+author: 
+  - name: Badillo Hernandez Christian Francisco
+  - name: Lopez Hernandez Lizbeth
+  - name: Nuñez Rodas Luis Antonio
+  - name: Pichardo Jiménez Sealtiel
+  - name: Santana Jaimes Luz María Concepción
+format: 
+      pdf:
+        toc: true
+        documentclass:  article
+        number-sections: false
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2cm, right=2cm, top=2cm, bottom=2cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        crossref: 
+            tbl-prefix: "tabla"
+        
+editor: source
+
+engine: knitr
+
+lang: es-ES
+execute:
+    cache: false
+    freeze: false
+---
+```{r}
+#| echo: false
+#| warning: false
+
+#Librerias.
+library(tidyverse)
+library(MASS)
+library(knitr)
+library(kableExtra)
+library(jtools)
+library(gtsummary)
+library(dplyr)
+library(DescTools)
+library(tidyr)
+library(gt)
+
+theme_gtsummary_language(language = "es")
+```
+
+\newpage
+# Ejercicio 1
+
+Para este problema se utiliza la base de datos _sexbias.csv_ que contiene la información de 4526 sujetos que deseaban ingresar a los 6 (A,B,C,D,E,F) programas de posgrado más prestigiosos de la Universidad de California.
+
+```{r}
+#| echo: false
+data_1 <- read.csv("sexbias.csv")
+```
+Tenemos en un principio la **hipótesis nula ($H_0$):** Las mujeres y hombres reciben el mismo trato, es decir, no hay preferencia hacia los hombres(misma tasa de aceptación). Nos lleva a la **Hipótesis Alternativa($H_{\alpha}$):** Los hombres están recibiendo un trato preferencial sobre las mujeres en la admisión a ciertos programas de posgrado.
+
+Vamos a realizar el ejercicio de dos maneras, primero por medio de proporciones y finalmente por tasas.
+
+## Usando Proporciones
+
+Empezamos colocando una tabla con el conteo de cada posgrado, señalando cuántas mujeres, hombres fueron aceptados o no en cada uno de los programas; se visualiza el total de candidatos a cada programa.
+
+```{r}
+#| echo: false
+#| message: false
+
+# Resumen de datos
+tabla_resumen <- data_1 %>%
+  mutate(condicion = case_when(
+    sex == "female" & accepted. == "Y" ~ "M_Aceptadas",
+    sex == "female" & accepted. == "N" ~ "M_No_Aceptadas",
+    sex == "male" & accepted. == "Y" ~ "H_Aceptados",
+    sex == "male" & accepted. == "N" ~ "H_No_Aceptados"
+  )) %>%
+  group_by(department, condicion) %>%
+  summarise(Conteo = n(), .groups = "drop") %>%
+  pivot_wider(
+    names_from = condicion,
+    values_from = Conteo,
+    values_fill = 0
+  ) %>%
+
+ # columna con la suma de las filas
+  mutate(Postulantes = rowSums(across(starts_with("M_") | starts_with("H_")), na.rm = TRUE)) %>%
+  # fila con la suma de columnas
+  bind_rows(
+    summarise(
+      .,
+      department = "Total", 
+      `M_Aceptadas` = sum(`M_Aceptadas`), 
+      `M_No_Aceptadas` = sum(`M_No_Aceptadas`),
+      `H_Aceptados` = sum(`H_Aceptados`),
+      `H_No_Aceptados` = sum(`H_No_Aceptados`),
+      Postulantes = sum(Postulantes)
+    )
+  ) 
+
+tabla_resumen %>%
+       kable(align = "cccccc", caption = "Conteo General") 
+
+```
+
+
+### Proporciones por programa
+
+Sea $i$ el subíndice que indica el programa, entonces las propociones que representan las tasas de aceptación de mujeres y hombres están representadas por:
+
+- $\hat{p}_{m_i}= \frac{x_{m_i}}{n_{m_i}}$
+
+- $\hat{p}_{h_i}= \frac{x_{h_i}}{n_{h_i}}$
+
+Donde $x$ son los sujetos aceptados y $n$ el total de postulantes.
+
+```{r}
+#| echo: false
+#Proporciones por programa
+
+programa <- c("A", "B", "C", "D", "E", "F")
+
+x_mi <- head(tabla_resumen$M_Aceptadas, -1)
+x_hi <- head(tabla_resumen$H_Aceptados, -1)
+
+
+n_mi <- head(tabla_resumen$M_Aceptadas, -1) + head(tabla_resumen$M_No_Aceptadas, -1)
+n_hi <- head(tabla_resumen$H_Aceptados, -1) + head(tabla_resumen$H_No_Aceptados, -1)
+
+p_mi <- x_mi / n_mi
+p_hi <- x_hi / n_hi
+
+# Crear la tabla 
+proporciones_programas <- data.frame(Columna1 = programa , Columna2 = p_mi, Columna3 = p_hi)
+# Cambiar los nombres de las columnas
+colnames(proporciones_programas) <- c("posgrado", "proporción_m", "proporción_h")
+
+proporciones_programas %>%
+       kable(align = "ccc", caption = "Proporción aceptación por programa") 
+
+```
+
+De esta tabla resaltamos como en el programa A, las mujeres tienen mayor proporción de aceptación.
+
+### Proporciones globales
+
+Podemos combinar los datos por programas para obtener las proporciones globales:
+
+- $\hat{p}_m= \frac{\sum_i x_{m_i}}{\sum_i n_{m_i}}$
+
+- $\hat{p}_h= \frac{\sum_i x_{h_i}}{\sum_i n_{h_i}}$
+
+Estas proporciones serían
+
+```{r}
+#| echo: false
+
+p_m <- round(sum(x_mi)/sum(n_mi), 4)
+p_h <- round(sum(x_hi)/sum(n_hi),4)
+ 
+ 
+print(paste("Proporción global de mujeres aceptadas:", p_m))
+print(paste("Proporción global de hombres aceptados:", p_h))
+```
+ 
+Podríamos hacer una prueba de diferencia de proporciones de dos poblaciones
+
+$$z= \frac{(\hat{p_m} - \hat{p_h}) - 0}{\sqrt{\hat{p}(1-\hat{p})(\frac{1}{n_m}+\frac{1}{n_h})}}$$
+Donde la proporción combinada es $\hat{p}=(x_m + x_h)/(n_m+n_h)$
+
+```{r}
+#| echo: false
+
+#Proporción combinada
+n_m <- 1835
+n_h <- 2691
+p <- (tabla_resumen$M_Aceptadas[7] + tabla_resumen$H_Aceptados[7]) / (n_m+n_h)
+
+z <- (p_m - p_h) / (sqrt(p*(1-p) * (1/n_m + 1/n_h)))
+
+print("El valor de z= -9.606")
+```
+
+Para $\alpha= 0.05$ el valor crítico de la prueba de hipótesis es de $Z_{\alpha/2}= 1.96$. 
+
+Como: 
+$$  |-9.606| > 1.96$$
+Rechazamos la prueba de hipótesis ($H_0$), entonces se acepta la hipótesis nula ($H_\alpha$).
+
+
+## Usando tasas 
+
+Creamos una tabla de tasas de incidencia:
+
+```{r}
+#| echo: false 
+
+Mujeres <- c(tabla_resumen$M_Aceptadas[7], tabla_resumen$M_Aceptadas[7]+ tabla_resumen$M_No_Aceptadas[7])
+Hombres <- c(tabla_resumen$H_Aceptados[7], tabla_resumen$H_Aceptados[7]+ tabla_resumen$H_No_Aceptados[7])
+Totales <- c(Mujeres[1]+Hombres[1], Mujeres[2]+Hombres[2])
+Categoria <- c("Aceptados", "Candidatos")
+
+# Crear la tabla 
+incidencia_posgrado <- data.frame(Columna1 = Categoria , Columna2 = Mujeres, Columna3 = Hombres, Columna4= Totales)
+# Cambiar los nombres de las columnas
+colnames(incidencia_posgrado) <- c(" ", "Mujeres", "Hombres", "Totales")
+ 
+incidencia_posgrado %>%
+    kable(align = "cccc", caption = " Tasas de incidencia")
+
+```
+
+Para comparar las tasas de aceptación entre los individuos Hombres y Mujeres, recurrimos a un análisis relativo, es decir, el cociente entre las dos tasas: tasa de hombres aceptados y tasa de mujeres aceptadas. Para ello se utiliza una función para calcular el RR y su intervalo de confianza; se llama `calcular_IC_RR` y se describe a detalle en el problema 7. 
+
+```{r}
+#| echo: false
+
+## Función para calcular el RR y su intervalo de confianza
+calcular_IC_RR <- function(E1, T1, E2, T2, nivel_confianza = 0.95) {
+  # Calcular el RR
+  RR <- (E1 / T1) / (E2 / T2)
+  
+  # Logaritmo natural del RR
+  ln_RR <- log(RR)
+  
+  # Error estándar del log(RR)
+  SE_ln_RR <- sqrt(1 / E1 + 1 / E2)
+  
+  # Valor crítico de Z para el nivel de confianza especificado
+  Z <- qnorm(1 - (1 - nivel_confianza) / 2)
+  
+  # Intervalo de confianza en escala log
+  lower_ln <- ln_RR - Z * SE_ln_RR
+  upper_ln <- ln_RR + Z * SE_ln_RR
+  
+  # Convertir a escala original
+  IC_lower <- exp(lower_ln)
+  IC_upper <- exp(upper_ln)
+ 
+  # Resultado
+  list(
+    RR = RR,
+    IC = c(IC_lower, IC_upper),
+    SE = SE_ln_RR,
+    nivel_sig = nivel_confianza)
+ }
+```
+
+
+
+```{r}
+#| echo: false
+
+E2<- incidencia_posgrado$Mujeres[1]
+T2<- incidencia_posgrado$Mujeres[2]
+E1<- incidencia_posgrado$Hombres[1]
+T1<- incidencia_posgrado$Hombres[2]
+
+rr_posgrado <- calcular_IC_RR(E1, T1, E2, T2)
+
+Z_ <- log(rr_posgrado$RR) / rr_posgrado$SE
+
+p_value_rr<- 2*(1-pnorm(Z_))
+
+print(paste("Este cociente usando la función fue de:", round(rr_posgrado$RR,3)))
+print(paste("Con un intervalo de confianza entre:", toString(round(c(rr_posgrado$IC),3))))
+print(paste("Estadístico Z:", round(Z_,3)))
+print(paste("p-value:", p_value_rr))
+
+```
+
+Nuestra Hipótesis nula ($H_0$) es equivalente a pensar que el cociente entre estas tasas debería ser 1, lo cual no sucede; usando el nivel de significancia de $0.05$ esta hipótesis resulta ser significativa con un p-value de orden $10^{-14}$ y un estadístico $z= 7.5$. Por tales motivos podemos rechazar la $H_0:$ misma tasa de aceptación a los programas de posgrado. 
+
+# Ejercicio 2
+
+La base de datos senic.csv corresponde a Study on the Efficacy of Nosocomial Infection Control (SENIC Project).Con esta base realice lo siguiente.
+
+1. Ajuste un modelo de regresión lineal simple entre las variable INFRISK (Riesgo de infección. Como variable de respuesta) y LOS (Duración del periodo de estancia o tiempo de duración de la estancia. Como variable explicativa).
+
+    - **INFRISK** : Probabilidad estimada promedio de adquirir una infección en el hospital (en porcentaje)
+
+    - **LOS**: Duración promedio de la estadía de todos los pacientes en el hospital (en días)
+
+\footnotesize
+```{r}
+data_2 <- read.csv("senic.csv")
+
+#Se crea una variable que mapee a todas las regiones
+
+data_2 <- data_2 %>%
+  mutate(N_REGION = case_when(
+    REGION == 1 ~ "NE",
+    REGION == 2 ~ "NC",
+    REGION == 3 ~ "S",
+    REGION == 4 ~ "W",
+    
+  ))
+
+##Se aplica un modelo de regresión lineal simple que contiene a la variable INFRISK como respuesta,
+#en función de la variable explicativa LOS :
+
+modelo <- lm(INFRISK ~ LOS, data = data_2)
+summary(modelo)
+```
+\normalsize
+
+Por lo que el modelo ajustado queda como:
+$$
+y= \beta_0 + \beta_1 x = 0.732 + 0.375 x
+$$
+
+
+2. Interprete el parámetro estimado asociado a su única variable predictora.
+
+El parámetro $\beta_1$ estimado es de 0.3751 y representa el cambio promedio en INFRISK por cada unidad adicional de LOS en términos del contexto de los datos, indica que por cada día adicional de estancia hospitalaria, el riesgo de infección aumenta en promedio 0.375 unidades; o en un 37.5% ,este parámetro, de acuerdo con el p-value $< 0.05$, es significativamente distinto de cero y se diría que sí hay un efecto positivo en la cantidad de días de estancia sobre el riesgo de infección.
+
+3. ¿Tiene una interpretación lógica el intercepto del modelo ($\hat{\beta}_0$) en el contexto de los datos que lo generan? Si es así, interprete este parámetro estimado.
+
+En este caso el valor estimado de $\beta_0 = 0.732$ y representaría el valor promedio de riesgo de infección cuando la duración de la estancia es 0. Es decir, el riesgo de infección cuando el paciente no estuvo hospitalizado lo cual solo podría significar el riesgo asociado al no estar en el hospital. Pero como los datos no toman en cuenta o no están diseñados para tener en cuenta a personas con estancia 0, la única interpretación del intercepto es como un  ajuste matemático para generar la predicción dentro del rango posible de los datos.
+
+4. Ajuste el mismo modelo controlando por región (REGION) (recuerde que esta variables es nominal con cuatro categorías). Interprete los parámetros estimados para las categorías de región. ¿Se puede considerar que esta variable es de confusión? Argumente su respuesta.
+
+\footnotesize
+```{r}
+#Se tranforma la variable región a factor de 4 niveles:
+data_2$REGION <- as.factor(data_2$REGION)
+
+#Se aplica el modelo de regresión tomando en cuenta las regiones:
+modelo_x_region <- lm(INFRISK ~ LOS + N_REGION, data = data_2)
+
+#Resumen del modelo. 
+summary(modelo_x_region)
+
+```
+\normalsize
+
+No sale NC porque es la que se usa de referencia para obtener las diferencias reportadas en las demás, es decir, comparadas con la region NC
+
+LOS $\beta_1$: Su valor es de 0.41392, lo que indica que si se mantuviera constante la región (es decir, ajustando las diferencias que puedan existir entre regiones, eliminando dichas diferencias),cada día de estancia  (LOS) incrementaría el riesgo de infección en $0.414$ unidades. Y esto es significativo para un p-value $< 0.05$. 
+
+
+REGION NE: $\beta_2$: Su valor es de -0.10421, lo que indica que, en promedio, por cada unidad de LOS, el riesgo de infección es menor en -0.104 unidades respecto a lo que ocurre en la REGION1, del NC, pero su p-value es mayor a 0.05 por lo que el efecto no es significativo.
+
+REGION S:$\beta_3$: Su valor es de -0.25245, lo que indica que, en promedio, por cada unidad de LOS, el riesgo de  infección es menor en 0.25245 unidades respecto a lo que ocurre en la región de NC, pero su p-value es mayor a 0.05 por lo que el efecto tampoco es significativo.
+
+REGION W: $\beta 4$: Su valor es de 0.64782, lo que indica que, en promedio, por cada unidad de LOS, el riesgo de  infección es mayor en 0.64782 unidades respecto a lo que ocurre en la NC, pero su p-value es solo un poco mayor a 0.05 por lo que el efecto está cerca de ser significativo, pero no lo es.
+
+**¿Se puede considerar que la región es una variable es de confusión?**
+
+Para ello, se debe considerar al coeficiente $\beta_1$ estimado del modelo que no toma en cuenta las regiones y del que ponera a las regiones del $\beta_1$. Además de examinar si hay diferencias en los coeficientes de las regiones (respecto a la REGION1) y si estas son significativas
+
+En el primer caso, se obtuvo un $\beta_1 = 0.37510$,  en el segundo fue $\beta_1 = 0.41392$. Hay un cambio en la magnitud de los coeficientes, pero no pareciera ser muy grande el cambio. Además, el cambio en los coeficientes de las regiones no representa una diferencia estadísticamente significativa. Por lo que se concluye que la variable region no es una variable de confusión.
+
+
+5. Adicione al modelo inicial la interacción (multiplicativa) entre las variable LOS y REGION. ¿Se puede afirmar a un nivel de significancia, $\alpha = 0.05$, que existe interacción entre estas variables? Y si así fuera, ¿qué significa en el
+contexto de esta investigación?
+
+\footnotesize
+```{r}
+##Se genera el modelo con interacción:
+
+model_interaction <- lm(INFRISK ~ LOS * N_REGION, data = data_2)
+summary(model_interaction)
+```
+\normalsize
+
+6. Genere y muestre las gráficas de regresión para el caso del modelo que incluye a la región y el que incluye a la interacción. 
+
+\footnotesize
+```{r}
+#Quitamos los NA
+data_sin_na_2 <- data_2 %>%
+  filter(!is.na(INFRISK))
+
+# Crear un data frame con predicciones del modelo sin interacción, pero que toma en cuenta
+#a las regiones
+data_sin_na_2$predicted_no_interaction <- predict(modelo_x_region)
+
+# Graficar
+ggplot(data_sin_na_2, aes(x = LOS, y = INFRISK, color = N_REGION)) +
+  geom_point() +
+  geom_line(aes(y = predicted_no_interaction)) +
+  labs(title = "Modelo sin interacción",
+       x = "Duración de estancia (LOS)",
+       y = "Riesgo de infección (INFRISK)") +
+  theme_minimal()
+
+
+# Crear un data frame con predicciones del modelo con interacción
+data_sin_na_2$predicted_interaction <- predict(model_interaction)
+
+# Graficar
+ggplot(data_sin_na_2, aes(x = LOS, y = INFRISK, color = N_REGION)) +
+  geom_point() +
+  geom_line(aes(y = predicted_interaction, linetype = "solid")) +
+  labs(title = "Modelo con interacción",
+       x = "Duración de estancia (LOS)",
+       y = "Riesgo de infección (INFRISK)") +
+  theme_minimal()
+
+```
+\normalsize
+
+
+\newpage
+# Ejercicio 3
+
+* El riesgo de cáncer de mama está directamente relacionado con la edad de las mujeres a las que tuvieron su primer hijo. Cuando se evalúa la asociación entre el número total de hijos y el riesgo de cáncer de mama, ¿debe controlarse por edad de la madre a la  que tuvieron el primer hijo? Argumente su respuesta. En esta cadena causal, ¿qué roles tienen las tres variables involucradas?
+
+***Variables de análisis:*** Número de hijos, edad de la madre al tener su primer hijo, y riesgo de cáncer de mama.
+
+***Pregunta de investigación:*** ¿Debe considerarse la edad de la madre al tener su primer hijo como una variable de control al estudiar la relación entre el número total de hijos y el riesgo de desarrollar cáncer de mama?
+
+La pregunta de investigación anterior, se resume en determinar si la edad de la madre al tener al primer hijo actúa como una variable de confusión en la asociación de interés. 
+
+Identificar la presencia de una variable de confusión es crucial, ya que estas pueden distorsionar la estimación del efecto real de la variable de exposición (en este caso, el número total de hijos) sobre el resultado (riesgo de cáncer de mama). 
+
+Para evaluar la posibilidad de que la edad sea una variable de confusión, se hace referencia al artículo de la Secretaría de Salud (2009), titulado: “Factores de riesgo asociados con el cáncer de mama”, el cual proporciona evidencia relevante que fácilita argumentos en favor de considerar la edad como una variable de consufión. En este artículo, se menciona que las mujeres con mayor número de hijos presentan un menor riesgo de desarrollar cáncer de mama, atribuyendo este efecto protector a los cambios hormonales y estructurales que ocurren en la glándula mamaria durante el embarazo y la lactancia.
+
+Asimismo, el artículo destaca que la edad al primer embarazo influye directamente en el riesgo de cáncer de mama. Las mujeres que tienen su primer hijo antes de los 30 años presentan un menor riesgo en comparación con aquellas que lo tienen después de esta edad o que no tienen hijos. Este fenómeno se relaciona con la diferenciación completa del tejido mamario inducida por un embarazo temprano, lo que reduce la susceptibilidad a transformaciones malignas.
+
+Dado que la edad al primer hijo afecta tanto al número total de hijos (exposición) como al riesgo de cáncer de mama (resultado), debe considerarse como una variable de control para evitar sesgos en los análisis. No ajustar los resultados por esta variable podría llevar a interpretar incorrectamente la relación entre el número total de hijos y el riesgo de cáncer de mama.
+
+En conclusión, la evidencia respalda la necesidad de incluir la edad de la madre al primer hijo como una variable de control al investigar esta asociación, con el fin de garantizar estimaciones precisas y evitar resultados erróneos.
+
+**Referencia.**
+
+Secretaría de Salud. (2009). Factores de riesgo asociados con el cáncer de mama. Salud Pública de México, 51(6), 422-429. Recuperado de [https://www.scielo.org.mx/scielo.php?pid=S0036-36342009000800006&script=sci_arttext](https://www.scielo.org.mx/scielo.php?pid=S0036-36342009000800006&script=sci_arttext)
+
+\newpage
+# Ejercicio 4
+
+En la siguiente tabla se muestran los resultados de un estudio de casos y controles para estudiar el efecto del asma y el sexo sobre la alergia primaveral a las gramíneas. Se definen como casos a los individuos alérgicos y como controles a los no alérgicos.
+
+```{r}
+#| echo: false
+
+tabla_ej4 <- data.frame(
+  Grupo = c("Casos", "Controles"),
+  Hombre_Asmáticos = c(19, 51),
+  Hombre_No_Asmáticos = c(8, 84),
+  Mujer_Asmáticos = c(10, 31),
+  Mujer_No_Asmáticos = c(24, 89)
+)
+
+# Generar la tabla con kable
+tabla_ej4 %>%
+  kable(
+    col.names = c("", "Asmáticos", "No Asmáticos", "Asmáticos", "No Asmáticos"),
+    align = "c",
+    caption = "Alergias"
+  ) %>%
+  add_header_above(c(" " = 1, "Hombre" = 2, "Mujer" = 2)) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) %>%
+  row_spec(0, bold = TRUE, color = "blue") %>%  # Encabezado general en azul
+  column_spec(2:5, bold = TRUE, color = "magenta") # Encabezado hombre/mujer en magenta
+```
+
+### *OR* para asma y alergia
+
+-   ¿Existe relación entre el hecho de ser asmático y la definición de caso y control (sin considerar la variable sexo). Utilizar la medida de riesgo adecuada, e interpretar los resultados obtenidos (Usar $\alpha = 0.05$).
+
+Como no se tomará en cuenta el sexo, se deben sumar hombres y mujeres pero haciendo la distinción entre casos y controles; asmáticos y no asmáticos:
+
+```{r}
+#| echo: false
+
+tabla_asma_alergia <- data.frame(
+  `Asma` = c("Sí", "No", "Total"),
+  `Alergia (Casos)` = c(29,32, 61),
+  `No Alergia (Controles)` = c(82, 173, 255),
+  Total = c(111, 205, 316)
+)
+
+
+#tabla_asma_alergia %>%
+ # kable(align = "cccc", caption = "Tabla de Asma por Alergia") %>%
+#  kable_styling(full_width = FALSE)
+
+
+tabla_asma_alergia %>%
+  kable(
+    col.names = c("Asma", "Alergia (Casos)", "No Alergia (Controles)", "Total"),
+    align = "c",
+    caption = "Tabla de Asma y Alergia"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) 
+```
+
+Como medida de riesgo, se utilizará la razón de momios (*OR*), para ello se necesita primero el cálculo de los momios en cada caso, estos se definen como:
+
+$$ \varOmega_1 = \frac{\mathbb{P}[Y = 1 | X = 1]}{\mathbb{P}[Y = 2 | X = 1]}  = \frac{\pi_1} {1- \pi_1} \;\;\;\;\;\;\; \varOmega_2 = \frac{\mathbb{P}[Y = 1 | X = 2]}{\mathbb{P}[Y = 2 | X = 2]}  = \frac{\pi_2} {1- \pi_2} $$
+
+Donde Y es el desarrollo o no de la alergia; y X es el factor de exposición: tener o no asma. Entonces, el *OR* se calcula como el cociente del momio de tener alergia entre los que tienen asma y el momio de tener alergia entre los que no tienen asma:
+
+$$
+\theta = \frac{\varOmega_1}{\varOmega_2}
+$$
+
+Con intervalo de confianza igual a:
+
+$$ OR \in \left( \exp \left\{ \log(\hat{OR}) \pm Z_{(1-\alpha/2)} \sqrt{\frac{1}{a} + \frac{1}{b} + \frac{1}{c} + \frac{1}{d}} \right\} \right) $$
+
+Se genera una función para calcular el cociente de momios y su intervalo de confianza:
+
+\scriptsize
+
+```{r}
+#| echo: true
+IC_OR <- function(X,alpha){
+  
+  a <- X[1]
+  b <- X[3]
+  c <- X[2]
+  d <- X[4]
+  
+  OR <- (a*d)/(b*c)
+  
+  sd<-sqrt(1/a+1/b+1/c+1/d)
+  IC<-exp(log(OR)+c(-1,1)*qnorm(1-alpha/2)*sd)
+  
+  return(list(OR = OR, IC = IC))
+}
+```
+
+```{r}
+#| echo: false
+
+a <- tabla_asma_alergia$Alergia..Casos.[1]
+b <- tabla_asma_alergia$No.Alergia..Controles.[1]
+c <- tabla_asma_alergia$Alergia..Casos.[2]
+d <- tabla_asma_alergia$No.Alergia..Controles.[2]
+
+matrix_asma_alergia <- matrix( c(a,c,b,d), nrow = 2, 
+                               byrow = F)
+```
+
+\normalsize
+
+Se calcula el cociente de momios y su intervalo a un 95% de confianza:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+resultado <- IC_OR(matrix_asma_alergia, alpha = 0.05)
+OR_alergia <- resultado$OR
+IC_alergia <- resultado$IC
+
+```
+
+\normalsize
+
+El *OR* de tener alergia en los que tienen asma es `r round(OR_alergia, 3)` veces el momio de tener alergia en los que no tienen asma. Y el intervalo de confianza para el OR, al 95% de confianza, es de \[`r round(IC_alergia[1],3)`, `r round(IC_alergia[2],3)`\]. Dado que el intervalo no contiene al valor nulo, se puede decir que existe una relación positiva débil entre tener asma y desarrollar alergia primaveral. O bien, que las personas que tienen asma desarrollan más la alergia primaveral que las personas que no tienen asma.
+
+### Variable de interacción
+
+-   ¿Es la variable sexo modificadora del efecto? Justifique su respuesta.
+
+Para poder detectar si la variable sexo es modificadora del efecto, también llamada una variable de interacción, se puede realizar análisis estratificado calculando el *OR* en los hombres y en las mujeres por separado y, al promediarlos, se debería tener un valor próximo al del *OR* sin estratificar.
+
+Se genera la tabla de 2x2 para el estrato de los hombres:
+
+```{r}
+#| echo: false
+
+tabla_asma_alergia_h <- data.frame(
+  `Asma` = c("Sí", "No", "Total"),
+  `Alergia (Casos)` = c(19,8, 27),
+  `No Alergia (Controles)` = c(51, 84, 135),
+  Total = c(70, 92, 162)
+)
+
+
+#tabla_asma_alergia_h %>%
+ # kable(align = "cccc", caption = "Tabla de Asma por Alergia para Hombres") %>%
+  #kable_styling(full_width = FALSE)
+
+
+tabla_asma_alergia_h %>%
+  kable(
+    col.names = c("Asma", "Alergia (Casos)", "No Alergia (Controles)", "Total"),
+    align = "c",
+    caption = "Tabla de Asma y Alergia en Hombres"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) 
+```
+
+```{r}
+#| echo: false
+
+a <- tabla_asma_alergia_h$Alergia..Casos.[1]
+b <- tabla_asma_alergia_h$No.Alergia..Controles.[1]
+c <- tabla_asma_alergia_h$Alergia..Casos.[2]
+d <- tabla_asma_alergia_h$No.Alergia..Controles.[2]
+
+matrix_asma_alergia_h <- matrix( c(a,c,b,d), nrow = 2, 
+                               byrow = F)
+```
+
+Se calcula el *OR* del estrato de los hombres:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+resultado <- IC_OR(matrix_asma_alergia_h, alpha = 0.05)
+OR_alergia_h <- resultado$OR
+IC_alergia_h <- resultado$IC
+
+```
+
+\normalsize
+
+El *OR* de tener alergia en los que tienen asma es `r round(OR_alergia_h, 3)` veces el momio de tener alergia en los que no tienen asma; en los hombres. Y el intervalo de confianza para el *OR*, al 95% de confianza, es de \[`r round(IC_alergia_h[1],3)`, `r round(IC_alergia_h[2],3)`\]. Dado que el intervalo no contiene al valor nulo, se podría decir que existe una relación positiva moderada, en los hombres, entre tener asma y desarrollar alergia primaveral.
+
+Ahora se calculará el *OR* para el estrato de las mujeres. Primero se genera la tabla de 2x2 para el estrato de las mujeres:
+
+```{r}
+#| echo: false
+
+tabla_asma_alergia_m <- data.frame(
+  `Asma` = c("Sí", "No", "Total"),
+  `Alergia (Casos)` = c(10,24, 34),
+  `No Alergia (Controles)` = c(31, 89, 120),
+  Total = c(41, 113, 154)
+)
+
+
+#tabla_asma_alergia_m %>%
+ # kable(align = "cccc", caption = "Tabla de Asma por Alergia para Mujeres") %>%
+  #kable_styling(full_width = FALSE)
+
+tabla_asma_alergia_m %>%
+  kable(
+    col.names = c("Asma", "Alergia (Casos)", "No Alergia (Controles)", "Total"),
+    align = "c",
+    caption = "Tabla de Asma y Alergia en Mujeres"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) 
+
+```
+
+```{r}
+#| echo: false
+
+a <- tabla_asma_alergia_m$Alergia..Casos.[1]
+b <- tabla_asma_alergia_m$No.Alergia..Controles.[1]
+c <- tabla_asma_alergia_m$Alergia..Casos.[2]
+d <- tabla_asma_alergia_m$No.Alergia..Controles.[2]
+
+matrix_asma_alergia_m <- matrix( c(a,c,b,d), nrow = 2, 
+                               byrow = F)
+
+```
+
+Se calcula el *OR* del estrato de las mujeres:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+resultado <- IC_OR(matrix_asma_alergia_m, alpha = 0.05)
+OR_alergia_m <- resultado$OR
+IC_alergia_m <- resultado$IC
+
+
+```
+
+\normalsize
+
+En las mujeres, el *OR* de tener alergia en los que tienen asma es `r round(OR_alergia_m, 3)` veces el momio de tener alergia en los que no tienen asma. Y el intervalo de confianza para el *OR*, al 95% de confianza, es de \[`r round(IC_alergia_m[1],3)`, `r round(IC_alergia_m[2],3)`\]. Dado que el intervalo sí contiene al valor nulo, se podría decir que no existe una relación, en las mujeres, entre tener asma y desarrollar alergia primaveral.
+
+Tomando en cuenta que en un caso sí hay relación y en otro no, ahora se realiza el promedio de los *OR* estratificados:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+promedio_OR <- (OR_alergia_h + OR_alergia_m)/2
+
+```
+
+\normalsize
+
+El promedio de los *OR* es de `r round(promedio_OR, 3)` y el *OR* sin estratificar era de `r round(OR_alergia, 3)`, hay una pequeña diferencia entre ambos valores. Aunque la diferencia entre el *OR* de los hombres es `r round((OR_alergia_h/OR_alergia_m),3)` veces el de las mujeres.
+
+Para confirmar si esta diferencia es lo suficientemente significativa, se recurre a la prueba de homogeneidad de Woolf (1955), que permite comparar el *OR* de los dos estratos (hombres y mujeres). En el caso en que el sexo sea una variable de interacción, los *OR* deberían diferir de manera significativa entre sí. Se toma como hipótesis nula que los grupos son homogéneos y como altera que no son homogéneos, tomando de referencia $\alpha = 0.05$.
+
+Se aplica el estadístico de prueba:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+alergias <- xtabs(freq ~ .,
+                  cbind(expand.grid(risk=c("Asma","No Asma"),
+                                    response=c("Alergia","No Alergia"),
+                                    gender=c("Hombre","Mujer")),
+                        freq=c(19,8,51,84,10,24,31,89))
+)
+
+WoolfTest(alergias)
+
+```
+
+\normalsize
+
+Dado que el *p-value* resultó mayor a $0.05$, se rechaza la hipótesis alterna de que los grupos no son homogéneos. Por lo tanto, la variable sexo no es una de interacción o que modifique el efecto de la relación entre el asma y el desarrollo de alergia. Es decir, el efecto del asma sobre la alergia en realidad es consistente para hombres y mujeres.
+
+### Variable de confusión
+
+Se consideran los siguientes requisitos para poder considerar a una variable como de confusión. Se define al factor de exposición como la presencia de asma, la presencia del factor de riesgo o enfermedad es poseer alergia de primavera y al factor de confusión como el sexo de la persona.
+
+1.  **Asociación entre el factor de confusión y la exposición en los no enfermos**. Se debe encontrar una asociación entre el sexo y el asma en el grupo de personas no alérgicas (controles). Es decir, un *OR* diferente a 1 en las personas que no tienen alergia.
+
+Se genera la tabla con los datos:
+
+```{r}
+#| echo: false
+
+tabla_sexo_asma_controles <- data.frame(
+  `Sexo` = c("Hombre", "Mujer", "Total"),
+  `Asma Sí` = c(51,31, 82),
+  `Asma No` = c(84, 89, 173),
+  Total = c(135, 120, 255)
+)
+
+
+#tabla_sexo_asma_controles %>%
+ # kable(align = "cccc", caption = "Tabla de Sexo por Asma para no alergias #(controles") %>%
+#  kable_styling(full_width = FALSE)
+
+tabla_sexo_asma_controles %>%
+  kable(
+    col.names = c("Sexo", "Asma (Sí)", "Asma (No)", "Total"),
+    align = "c",
+    caption = "Tabla de Sexo y Asma para Controles (No Alergia)"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) 
+
+```
+
+```{r}
+#| echo: false
+
+matrix_sexo_asma_controles <- matrix(c(51, 31, 84, 89), 
+                          nrow = 2, 
+                          byrow = FALSE
+                          )
+```
+
+\normalsize
+
+Se calcula el *OR* para los controles:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+resultado <- IC_OR(matrix_sexo_asma_controles, 0.05)
+
+OR_sex_asm_control <- resultado$OR
+IC_sex_asm_control <- resultado$IC
+
+```
+
+\normalsize
+
+En los controles, el *OR* de tener asma en los hombres es `r round(OR_sex_asm_control, 3)` veces el momio de tener asma en las mujeres. Y el intervalo de confianza para el *OR*, al 95% de confianza, es de \[`r round(IC_sex_asm_control[1],3)`, `r round(IC_sex_asm_control[2],3)`\]. Como el intervalo no contiene al uno, se podría decir que existe una asociación positiva entre el tener asma y ser hombre. O bien, que dentro de las personas que no tienen alergias, los hombres desarrollan más el asma que las mujeres. Para comprobar la fuerza de esta asociación, se realizará una prueba $\chi^2$ para independencia.
+
+Se calcula el estadístico de prueba utilizando la función que toma en cuenta la corrección por continuidad de Yates:
+
+\scriptsize
+
+```{r}
+chisq.test(matrix_sexo_asma_controles)
+```
+
+\normalsize
+
+El *p-value* obtenido con la función devuelve un valor de $0.05691$, el cual es mayor al $0.05$. Entonces se rechaza la hipótesis nula de que las variables no son independientes, es decir que no hay suficiente evidencia como para rechazar la independencia de las variables. Al igual que el resultado obtenido en el análisis de variables de interacción, se puede decir que el asma influye de la misma manera a hombres y mujeres que no tienen alergias. Por lo que, al no haber relación, el primer requisito no se cumple.
+
+2.  **Asociación entre el factor de confusión y la enfermedad en los grupos no expuestos**. Se debe evaluar si existe una relación entre el sexo y la presencia de alergia en el grupo de personas que no tienen asma (no expuestos).
+
+Se genera la tabla con los datos:
+
+```{r}
+#| echo: false
+
+tabla_sexo_asma_no_exp <- data.frame(
+  `Sexo` = c("Hombre", "Mujer", "Total"),
+  `Alergia Sí` = c(8,24, 32),
+  `Alergia No` = c(84, 89, 173),
+  Total = c(92, 113, 205)
+)
+
+
+#tabla_sexo_asma_no_exp %>%
+ # kable(align = "cccc", caption = "Tabla de Sexo por Asma para no asma (no expuestos") %>%
+  #kable_styling(full_width = FALSE)
+
+tabla_sexo_asma_no_exp %>%
+  kable(
+    col.names = c("Sexo", "Asma (Sí)", "Asma (No)", "Total"),
+    align = "c",
+    caption = "Tabla de Sexo y Alergia para No Expuestos (No Asma)"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) 
+
+```
+
+```{r}
+#| echo: false
+
+matrix_sexo_asma_no_exp <- matrix(c(8, 24, 84, 89), 
+                          nrow = 2, 
+                          byrow = FALSE
+                          )
+
+```
+
+Se calcula el *OR* para los no expuestos:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+resultado <- IC_OR(matrix_sexo_asma_no_exp, 0.05)
+
+OR_no_exp <- resultado$OR
+IC_no_exp <- resultado$IC
+
+```
+
+\normalsize
+
+En las personas que no tienen asma, el *OR* de tener alergia en las mujeres es `r round(1/OR_no_exp, 3)` veces el momio de tener alergia en los hombres. Y el intervalo de confianza para el *OR*, al 95% de confianza, es de \[`r round(1/IC_no_exp[2],3)`, `r round(1/IC_no_exp[1],3)`\]. Como el intervalo no contiene al uno, se podría decir que existe una asociación positiva entre el tener alergia y ser mujer. O bien, que dentro de las personas que no tienen asma, las mujeres desarrollan más alergias que los hombres. Para comprobar la fuerza de esta asociación, se realizará una prueba $\chi^2$ para independecia.
+
+\scriptsize
+
+```{r}
+#| echo: false
+
+chisq.test(matrix_sexo_asma_no_exp)
+
+```
+
+\normalsize
+
+El *p-value* obtenido con la función devuelve un valor de $0.02335$, el cual es menor al $0.05$. Por lo que se rechaza la hipótesis nula de que las variables son independientes. En este caso, se puede decir que existe una relación positiva, en las personas que no tienen asma, de desarrollar alergia y ser mujer. Por lo que, al haber asociación, el segundo requisito sí se cumple.
+
+3.  **El factor de confusión no debe ser un paso intermedio en la secuencia causal entre el tipo de tratamiento y su éxito**. En este caso, como el sexo es una característica definida o intrínseca de los individuos, no se puede considerar como un paso intermedio entre el asma y la alergia. Es decir, no es posible que el asma provoque el sexo de las personas y con ello un mayor o menor aumento del desarrollo de alergias. Por lo que este criterio se cumple.
+
+Tomando de referencia que el valor del *OR* bruto es `r round(OR_alergia,3)` con un intervalo de confianza de \[`r round(IC_alergia[1],3)` , `r round(IC_alergia[2],3)` \] se puede apreciar que el intervalo está muy cerca del valor nulo, donde se demostraría que no hay asociación entre el desarrollo de alergia primaveral y tener o no asma, independientemente del sexo. Al estratificar por sexo, el *OR* de los hombres es `r round(OR_alergia_h,3)` con un intervalo de confianza de \[`r round(IC_alergia_h[1],3)` , `r round(IC_alergia_h[2],3)` \], el cual revelaría una posible asociación positiva moderada entre tener alergia primaveral y asma para los hombres. Por último, el *OR* de las mujeres es `r round(OR_alergia_m,3)` con un intervalo de confianza de \[`r round(IC_alergia_m[1],3)` , `r round(IC_alergia_m[2],3)` \], el cual demuestra que en el caso de las mujeres no se encuentra asociación entre tener alergia primaveral y asma. Dentro de los criterios, se encontró que dos de los tres se cumplen para ser una variable de confusión y uno no lo cumple por tener un *p-value* de $0.05691$, es decir un valor muy cercano a la zona de rechazo. Tomando toda esta información, se concluye que la variable sexo sí es una variable de confusión, la cual genera confusión al enmascarar el efecto, donde, de tener más información, se podría notar que el *OR* global sea cercano a 1 (sin asociación) pero que el *OR* de un estrato muestra asociación (el de los hombres) y el otro no.
+
+### Conclusión
+
+Para toda la información obtenida, se puede decir que, al no estratificar por sexo, no hay asociación entre el desarrollo de alergia primaveral y tener asma. Al estratificar por sexo, solo los hombres muestran una asociación moderada entre entre el desarrollo de alergia y tener asma; esta relación no se encuentra en las mujeres. Por ello, la variable sexo se considera como una de confusión, pero no una de interacción; esto último debido a no tener suficiente evidencia estadística para indicar que los *OR* de cada estrato difieran de manera significativa entre ellos.
+
+\newpage
+
+# Ejercicio 5
+
+La siguiente tabla corresponde a la clasificación cruzada de las variables: Enfermedad coronaria (CHD, por sus siglas en inglés), Fumar (Smoke) y bebedor de café (Coffee).
+
+```{r}
+#| echo: false
+
+chd_smoke_coffee <- data.frame(CHD = c("Sí", "No",
+                                          "Sí","No",
+                                          "Sí", "No", 
+                                          "Sí", "No"), 
+                                  Smoke = c("No", "No", 
+                                            "Sí", "Sí", 
+                                            "No", "No", 
+                                            "Sí", "Sí"), 
+                                  Coffee = c("No", "No", 
+                                            "No", "No", 
+                                            "Sí", "Sí", 
+                                            "Sí", "Sí"), 
+                                  n = c(15, 42,
+                                        11, 8, 
+                                        15, 21, 
+                                        25, 14))
+
+#chd_smoke_coffee %>%
+ # kable(align = "cccc", caption = "Tabla de CHD, Fumar y Café") %>%
+  #kable_styling(full_width = FALSE)
+
+
+chd_smoke_coffee %>%
+  kable(
+    col.names = c("CHD", "Smoke", "Coffee", "n"),
+    align = "c",
+    caption = "CHD, Soke and Coffee"
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    position = "center",
+    font_size = 12
+  ) %>%
+  row_spec(0, bold = TRUE, color = "blue") %>%  # Encabezado general en azul
+  column_spec(1:4, bold = TRUE, color = "magenta") 
+
+
+```
+
+-   Utilizando un modelo de regresión logística (*logit*) responda: ¿Están el tabaquismo y/o el café relacionados con el incremento del momio de CHD? (Use $\alpha = 0.05$).
+
+Para aplicar el modelo de regresión logística, primero modificamos la tabla para que represente a cada observación en las filas y no como al conjunto de las frecuencias en cada grupo:
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+chd_expanded <- chd_smoke_coffee %>%
+  uncount(n)
+
+head(chd_expanded)
+```
+
+\normalsize
+
+Se convierte la variable dependiente (CHD) a una variable *dummy* de 0 y 1 y se aplica el modelo logístico con *Smoke* y *Coffee* como variables independientes; este se definiría como:
+
+$$
+\log\left(\frac{\pi}{1-\pi}\right) = \beta_0 + \beta_1 \cdot \text{Smoke} + \beta_2 \cdot \text{Coffee}
+$$
+
+Donde:
+
+$\pi=$probabilidad de que ocurra CHD
+
+$\beta_0=$ Intercepto. El $log(OR)$ de tener CHD en los no fumadores y no bebedores de café
+
+$\beta_1=$ Coeficiente asociado a fumar $(Smoke)$
+
+$\beta_2=$ Coeficiente asociado al consumo de café $(Coffee)$
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+chd_expanded$CHD_bin <- ifelse(chd_expanded$CHD == "Sí", 1, 0)
+
+modelo <- glm(CHD_bin ~ Smoke + Coffee, family = binomial, data = chd_expanded)
+
+summary(modelo)
+```
+
+\normalsize
+
+Se calcula $e^{\beta_i}\ con\ i=1,2$ para obtener cada *OR*
+
+```{r}
+#| echo: true
+#| message: false
+
+
+exp(cbind(OR = coef(modelo), confint(modelo)))
+```
+
+El *OR* de tener CHD en los fumadores es $3.01$ veces el *OR* de los no fumadores que tienen CHD; y con una confianza al 95% su intervalo no contiene al valor nulo, por lo que se dice que hay una asociación positiva entre tener CHD y ser fumador. O bien, al examinar el $ln(OR)$ se encuentra que el *p-value* es menor a $0.05$, confirmando la asociación entre ser fumador y tener CHD.
+
+El momio de tener CHD en los que sí beben café es $1.69$ veces el momio de los que tienen CHD y no beben café; y su intervalo contiene al valor nulo, por lo que se dice que no hay una asociación entre tener CHD y ser bebedor de café, con una confianza de 95%. O bien, al examinar el $ln(OR)$ se encuentra que el *p-value* es mayor a $\alpha =0.05$, confirmando que no hay asociación entre ser bebedor de café y tener CHD.
+
+En conclusión, solo el ser fumador se encuentra asociado de manera positiva con tener enfermedad coronaria
+
+-   ¿Es la asociación de café y CHD mayor entre los fumadores? Es decir, ¿fumar es un efecto modificador de las asociaciones de café-CHD? (Use $\alpha = 0.05$)
+
+Se genera el modelo que incluye a la interacción entre fumar y ser bebedor de café y se examina el coeficiente de la variable de interacción; este sería:
+
+$$
+\log\left(\frac{\pi}{1-\pi}\right) = \beta_0 + \beta_1 \cdot \text{Smoke} + \beta_2 \cdot \text{Coffee} + \beta_3 \cdot (\text{Smoke} \cdot \text{Coffee})
+$$
+
+Donde:
+
+$\beta_3=$ Coeficiente asociado a la interacción $(Smoke\cdot Coffee)$
+
+\scriptsize
+
+```{r}
+#| echo: true
+
+# Modelo con interacción
+modelo_con_interaccion <- glm(CHD_bin ~ Smoke * Coffee, 
+                              family = binomial, 
+                              data = chd_expanded)
+
+summary(modelo_con_interaccion)
+
+```
+
+\normalsize
+
+Se calcula $e^{\beta_i}\ con\ i=1,2,3$ para obtener cada *OR*
+
+\scriptsize
+
+```{r}
+#| echo: true
+#| message: false
+
+
+
+exp(cbind(OR = coef(modelo_con_interaccion), confint(modelo_con_interaccion)))
+
+```
+
+\normalsize
+
+Como se puede observar, el *p-value* del coeficiente asociado a la interacción entre las variables de ser bebedor de café y fumador es mayor al $\alpha= 0.05$, por lo que se puede concluir que no hay interacción significativa de los fumadores en la relación de ser bebedor de café y tener enfermedad coronaria. Si se aplica el exponencial y calculando el intervalo a un 95% de confianza, se observa que el intervalo $[0.1534, 2.7101]$ contiene al valor nulo, por lo que se confirma que, de manera significativa, no hay interacción de los fumadores en la relación de tomar café y tener enfermedad coronaria
+
+\newpage
+# Ejercicio 6
+
+La base de datos Melanoma.csv, contiene información sobre un estudio de cohorte para estudiar la muerte por melanoma realizado en Dinamarca. La descripción de esta base es la siguiente:
+
+Description: The Melanoma data frame has data on 205 patients in Denmark with malignant melanoma. This data frame contains the following columns: time: survival time in days, possibly censored. status: 1 died from melanoma, 2 alive, 3 dead from other causes. sex : 1 = male, 0 = female. age: age in years. year : of operation. thick- ness: tumour thickness in mm. ulcer : 1 = presence, 0 = absence. Con estos datos realice:
+
+• Calcule la tasa de incidencia anual por 1000 de muerte por melanoma
+
+Si definimos a D como el número total de ocurrencias y a T como el periodo de Ocurrencia, por lo visto en clase, podemos asumir que D tiene una distribución Poisson con una tasa de ocurrencia $\lambda$. De esta manera, el estimador máximo verosímil de $\lambda$ queda definido como: $$\left[ \lambda = \frac{D}{T} \right]$$
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+datos= read.csv("Melanoma.csv")
+```
+
+```{r}
+# Muertes por melanoma
+D<- datos[datos$status == 1, ]
+# Tiempo total anualizado
+T <- sum(datos$time)/365
+# Tasa de incidencia anual por 1000 (estimador máximo verosímil)
+lam <- (nrow(D) / T) * 1000
+cat("La muerte anual por melanoma es de", lam, "personas de cada mil.")
+
+```
+
+-   Realice los 4 tipos intervalos de confianza vistos en clase (la programación debe ser de ustedes, no la del script) ($\alpha = 0.05$)
+
+```{r}
+# Intervalos de confianza por aproximación normal
+error_estandar <- sqrt(nrow(D)) / T
+z <- qnorm(0.975)  # Para un nivel de confianza del 95%
+ic_normal <- c(lam - z * error_estandar * 1000, 
+               lam + z * error_estandar * 1000)
+ic_normal=round(ic_normal,2)
+# Resultados
+cat("IC Aproximación Normal:\n")
+cat("Límite inferior:", ic_normal[1], "\n")
+cat("Límite superior:", ic_normal[2], "\n")
+```
+
+```{r}
+# Intervalos de confianza por conteos bajos
+casos <- sum(datos$status == 1)  
+tiempo <- sum(datos$time) / 365  # Tiempo total de observación en años
+k <- 1000 
+tasa <- casos / tiempo
+alpha <- 0.05
+
+# Cuantil de la distribución normal estándar
+z <- qnorm(1 - alpha / 2)
+zi <- (z / 3) * sqrt(1 / (casos + 0.5))
+
+# Límite inferior del intervalo
+li <- ((casos + 0.5) / tiempo) * ((1 - (1 / (9 * (casos + 0.5))) - zi)^3) * k
+
+# Límite superior del intervalo
+ls <- ((casos + 0.5) / tiempo) * ((1 - (1 / (9 * (casos + 0.5))) + zi)^3) * k
+
+# Redondeo
+li <- round(li, 2)
+ls <- round(ls, 2)
+
+# Resultados
+cat("IC Aproximación Conteos Bajos:\n")
+cat("Límite inferior :", li, "\n")
+cat("Límite superior :", ls, "\n")
+```
+
+```{r}
+# Intervalos de confianza Gamma
+casos <- sum(datos$status == 1)  
+tiempo <- sum(datos$time) / 365
+k <- 1000  
+alpha <- 0.05
+tasa <- casos / tiempo
+
+# Cuantiles de la distribución Gamma
+g_lower <- qgamma(alpha / 2, casos)  # Límite inferior
+g_upper <- qgamma(1 - alpha / 2, casos + 1)  # Límite superior
+
+# Cálculo de los límites
+li <- (g_lower / tiempo) * k  # Límite inferior escalado
+ls <- (g_upper / tiempo) * k  # Límite superior escalado
+
+# Redondeo
+li <- round(li, 2)
+ls <- round(ls, 2)
+
+cat("IC Método Gamma:\n")
+cat("Límite inferior :", li, "\n")
+cat("Límite superior :", ls, "\n")
+```
+
+```{r}
+# Intervalos de confianza exacto por Cassela y Berger
+casos <- sum(datos$status == 1)  
+tiempo <- sum(datos$time) / 365 
+k <- 1000 
+alpha <- 0.05
+
+# Función para calcular el límite inferior
+calcular_LI <- function(LI, Y) {
+  1 - ppois(Y, LI) + dpois(Y, LI) - alpha / 2
+}
+
+# Función para calcular el límite superior
+calcular_LS <- function(LS, Y) {
+  ppois(Y, LS) - alpha / 2
+}
+
+# Calcular el límite inferior
+root_LI <- uniroot(calcular_LI, interval = c(0, casos * 10), Y = casos, extendInt = "yes")
+li <- root_LI$root / tiempo  # Convertir el límite inferior a tasa
+
+# Calcular el límite superior
+root_LS <- uniroot(calcular_LS, interval = c(0, casos * 10), Y = casos, extendInt = "yes")
+ls <- root_LS$root / tiempo  # Convertir el límite superior a tasa
+
+li <- round(li, 2) * k
+ls <- round(ls, 2) * k
+
+# Imprimir los resultados
+cat(" IC Método Exacto (Casella y Berger):\n")
+cat("Límite inferior :", li, "\n")
+cat("Límite superior :", ls, "\n")
+```
+
+-   ¿Es estadísticamente distinta esta tasa de incidencia entre hombres y mujeres?. Argumente su respuesta. ($\alpha = 0.05$)
+
+```{r}
+# Filtrar datos para hombres
+hombres <- datos[datos$sex == 1, ]
+hm <- sum(hombres$status == 1)  # Muertes por melanoma en hombres
+th <- sum(hombres$time) / 365  # Tiempo total de observación para hombres en años
+
+# Filtrar datos para mujeres
+mujeres <- datos[datos$sex == 0, ]
+mm <- sum(mujeres$status == 1)  # Muertes por melanoma en mujeres
+tm <- sum(mujeres$time) / 365  # Tiempo total de observación para mujeres en años
+
+alpha <- 0.05
+z <- qnorm(1 - alpha / 2)
+tasa_hombres <- hm / th
+error_hombres <- sqrt(hm) / th
+li_hombres <- (tasa_hombres - z * error_hombres) * 1000
+ls_hombres <- (tasa_hombres + z * error_hombres) * 1000
+tasa_hombres <- tasa_hombres * 1000
+tasa_mujeres <- mm / tm
+error_mujeres <- sqrt(mm) / tm
+li_mujeres <- (tasa_mujeres - z * error_mujeres) * 1000
+ls_mujeres <- (tasa_mujeres + z * error_mujeres) * 1000
+tasa_mujeres <- tasa_mujeres * 1000
+
+# Redondeo
+tasa_hombres <- round(tasa_hombres, 2)
+li_hombres <- round(li_hombres, 2)
+ls_hombres <- round(ls_hombres, 2)
+
+tasa_mujeres <- round(tasa_mujeres, 2)
+li_mujeres <- round(li_mujeres, 2)
+ls_mujeres <- round(ls_mujeres, 2)
+
+#  Resultados
+resultados <- data.frame(
+  Grupo = c("Hombres", "Mujeres"),
+  Tasa = c(tasa_hombres, tasa_mujeres),
+  LI = c(li_hombres, li_mujeres),
+  LS = c(ls_hombres, ls_mujeres)
+)
+print(resultados)
+```
+
+```{r}
+# comparación por medio del riesgo relativo
+RR <- tasa_hombres/tasa_mujeres
+# Intervalo de confianza
+se_logRR <- sqrt(1/hm+1/mm)
+#Intervalo de confianza del log(RR)
+alpha<-0.05
+z<-qnorm(1-alpha/2)
+LS<-exp(log(RR)-(z*se_logRR))
+LI<-exp(log(RR)+(z*se_logRR))
+#IRR con intervalo de confianza del 95%
+RR_IC<-data.frame(RR=RR,LS=LS,LI=LI)
+print(RR_IC)
+# prueba de hipótesis
+#Donde H0: log(rr)=0 vs. H1: log(rr)/=0
+Z <- (log(RR)-0)/se_logRR
+p_val <- 2*(1-pnorm(Z))
+hp<-data.frame("Z"=Z,"p-Value"=p_val)
+print(hp)
+
+# Se observa que el P-value es menor a 0.05 (nivel de significancia) por lo tanto sí existe una diferencia entre las tasas de incidencia por sexo
+```
+
+-   Calcule la tasa de incidencia anual por 1000 de muerte dentro de este estudio.
+
+```{r}
+muertes_totales <- sum(datos$status == 1 | datos$status == 3)  # Muertes por melanoma o por otras causas
+tiempo_total <- sum(datos$time) / 365
+
+# Tasa de incidencia total
+tasa_total <- (muertes_totales / tiempo_total) * 1000
+cat("Tasa de incidencia total por 1000 personas al año:", tasa_total, "\n")
+```
+
+-   ¿Es estadísticamente distinta esta tasa de incidencia de la de muerte solo por melanoma?. Argumente su respuesta. ($\alpha = 0.05$)
+
+```{r}
+muertes_melanoma <- sum(datos$status == 1)  
+muertes_totales <- sum(datos$status == 1 | datos$status == 3)
+tiempo_total <- sum(datos$time) / 365
+
+tasa_melanoma <- muertes_melanoma / tiempo_total
+tasa_total <- muertes_totales / tiempo_total
+
+# Varianzas 
+var_melanoma <- muertes_melanoma / (tiempo_total^2)
+var_total <- muertes_totales / (tiempo_total^2)
+
+# Estadístico Z
+z <- (tasa_melanoma - tasa_total) / sqrt(var_melanoma + var_total)
+
+# Cuantil crítico para alpha = 0.05
+z_critico <- qnorm(1 - 0.05 / 2)
+
+# Resultados
+cat("Tasa por melanoma (por 1000 personas-año):", round(tasa_melanoma * 1000, 2), "\n")
+cat("Tasa total (por 1000 personas al año):", round(tasa_total * 1000, 2), "\n")
+cat("Estadístico Z:", round(z, 2), "\n")
+cat("Cuantil :", round(z_critico, 2), "\n")
+
+
+if (abs(z) > z_critico) {
+  cat("Conclusión: Las tasas son estadísticamente distintas (alpha = 0.05).\n")
+} else {
+  cat("No hay evidencia suficiente para afirmar que las tasas son distintas (alpha = 0.05) o que la diferencia de las tasas es significativa.\n")
+}
+```
+
+
+\newpage
+
+# Ejercicio 7
+
+* ¿Existe diferencia signiﬁcativa en las tasas de muerte al tiempo de inicio en el empleo (`start`)?. Responda esta pregunta construyendo las tasas por nivel de la covariable y después comparándolas como en el ejercicio previo.
+
+```{r}
+#| echo: false
+df.resp.deaths <- read.csv("Montana.csv") %>%
+    tibble()
+
+df.resp.deaths$arsenic <- as.factor(df.resp.deaths$arsenic)
+
+tasas.start.year <- df.resp.deaths %>%
+    group_by(start) %>%
+    summarise(personyear = sum(personyrs),
+              cases = sum(respdeath),
+              rate = cases/personyear)
+
+df.table <- data.frame(list("pre1925" = c(tasas.start.year$cases[1], 
+                                          tasas.start.year$personyear[1]), 
+                 "post1925" = c(tasas.start.year$cases[2], 
+                                tasas.start.year$personyear[2])), 
+                 row.names = c("Casos", "Tiempo-Persona")
+                 )
+
+df.table$Total <- as.vector(rowSums(df.table))
+
+df.table %>%
+    kable(align = "ccc", caption = "Tabla de tasas de incidencia")
+```
+
+Suponiendo que nuestro nivel de exposición aumento con el tiempo, se tomará como exposición al periodo posterior a 1925 y como no expuesto al periodo anterior a 1925.
+
+Definimos una función para estimar la razón de tasas de incidencia (IRR).
+
+\small
+```{r}
+## Función para calcular el RR y su intervalo de confianza
+calcular_IC_RR <- function(E1, T1, E2, T2, nivel_confianza = 0.95) {
+  # Calcular el RR
+  RR <- (E1 / T1) / (E2 / T2)
+  
+  # Logaritmo natural del RR
+  ln_RR <- log(RR)
+  
+  # Error estándar del log(RR)
+  SE_ln_RR <- sqrt(1 / E1 + 1 / E2)
+  
+  # Valor crítico de Z para el nivel de confianza especificado
+  Z <- qnorm(1 - (1 - nivel_confianza) / 2)
+  
+  # Intervalo de confianza en escala log
+  lower_ln <- ln_RR - Z * SE_ln_RR
+  upper_ln <- ln_RR + Z * SE_ln_RR
+  
+  # Convertir a escala original
+  IC_lower <- exp(lower_ln)
+  IC_upper <- exp(upper_ln)
+ 
+  # Resultado
+  list(
+    RR = RR,
+    IC = c(IC_lower, IC_upper),
+    SE = SE_ln_RR,
+    nivel_sig = nivel_confianza)
+ }
+```
+\normalsize
+
+Estimamos el IRR y hacemos la prueba de hipótesis.
+
+\small
+```{r}
+rr.stats <- calcular_IC_RR(tasas.start.year$cases[2], 
+               tasas.start.year$personyear[2], 
+               tasas.start.year$cases[1], 
+               tasas.start.year$personyear[1])
+
+Z.test <- log(rr.stats$RR) / rr.stats$SE
+
+p.value.rr.rate <- 2*(1-pnorm(Z.test))
+```
+\normalsize
+
+Las tasas de incidencia 1000 persona-año es de 1.6629 para el periodo del inicio de trabajo antes de 1925 y 4.0822 para el periodo posterior a 1925. La razón de las tasas de incidencia es de 2.4549, con un intervalo de confianza al 95% de [1.9325, 3.1186]. 
+
+Usando un nivel de significancia del 0.05, la prueba de hipótesis ($H_0: \log{RR} = 0$) resulta ser significativa con un *p-value* = 1.898481e-13 y un estadístico Z de 7.3558. Por lo cual podemos rechazar la hipótesis nula de que ambas tasas de incidencia son iguales, al ser de dos colas solo se puede afirmar que son distintas sin indicar su dirección.
+
+2. Utilizando el modelo de regresión Poisson, utilizando como *oﬀset* la variable `personyrs`, responda la misma pregunta del inciso anterior. Este ejercicio es para que comprueben que sale lo mismo con los dos procedimientos y aprendan a usar este modelo.
+
+El modelo de regresión Poisson es:
+\begin{align*}
+\log{\text{rate}} &= X_i^T \beta \\
+&= \log{\text{personyrs}} + \beta_0 + \beta_1 \cdot \text{start}
+\end{align*}
+
+Donde:
+
+$\text{rate} = \frac{\text{respdeath}}{\text{personyrs}} =$ es la tasa de incidencia de muerte respiratoria.
+
+$\log{\text{personyrs}}=$ Variable *offset* que ajusta por el tiempo de exposición.
+
+$\beta_0=$  Corresponde al $\log{}$ de la tasa esperada en el nivel de referencia (`start` = 1).
+
+$\beta_1=$ Coeficiente asociado a la razón de la tasa de incidencia $\hat{IRR}$ para el tiempo de inicio en el empleo (`start`).
+
+Se escribe el modelo en `R`.
+
+```{r}
+#| echo: true
+
+poisson.rate <- glm(
+    formula = respdeath ~ start,
+    family = "poisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-regstart
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+a <- tbl_regression(poisson.rate, exponentiate = TRUE, intercept= TRUE,
+                estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión Poisson (`start`).") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**")  %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+Como se observa en la @tbl-regstart, el coeficiente estimado por el modelo de regresión corresponde al riesgo relativo estimado anteriormente, además de que su intervalos de confianza son idénticos. Además su estimación es significativa estadísticamente a un nivel de $\alpha = 0.05$ ($Z = 7.356, \text{ p-value} =  1.9e-13$).
+
+Se puede probar la suposición de que la varianza y la media de los datos son iguales, que subyace al modelo de regresión Poisson, con la siguiente instrucción de `R`.
+```{r}
+epiDisplay::poisgof(poisson.rate)
+```
+
+Dado que nuestra hipótesis nula es que este supuesto se cumple, podemos ver que el modelo de Poisson no es el más indicado, por lo cual se realizará con el modelo quasipoison.
+
+```{r}
+qpoisson.rate <- glm(
+    formula = respdeath ~ start,
+    family = "quasipoisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-qpoisson1
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+tbl_regression(qpoisson.rate, exponentiate = TRUE, intercept= TRUE,
+               estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión QuasiPoisson (`start`).") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**")  %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+Se observa en la @tbl-qpoisson1 que la IRR no cambia a diferencia de la amplitud del intervalo de confianza que se amplia tomando en consideración que existe sobre dispersión o subdispersión, para verificar este hecho se utiliza el mismo modelo estimado.
+
+```{r}
+summary(qpoisson.rate)$dispersion
+```
+
+Lo que nos indica una sobre dispersión de $3.77$, por ende es más adecuado el uso de un modelo de quasipoisson o uno binomial negativo.
+
+* Utilizando regresión Poisson pruebe si hay diferencias signiﬁcativas en las tasas muerte por nivel de arsénico.
+
+El modelo de regresión Poisson es:
+\begin{align*}
+\log{\mu_i} &= X_i^T \beta \\
+&= \log{\text{personyrs}} + \beta_0 + \beta_{1l} \cdot \text{arsenic}
+\end{align*}
+
+Donde:
+
+$\text{rate} = \frac{\text{respdeath}}{\text{personyrs}} =$ es la tasa de incidencia de muerte respiratoria.
+
+$\log{\text{personyrs}}=$ Variable *offset* que ajusta por el tiempo de exposición.
+
+$\beta_0=$  Corresponde al $\log{}$ de la tasa esperada en el nivel de referencia (`arsenic` = 1)
+
+$\beta_{1l}=$ Coeficiente asociado a la razón de la tasa de incidencia $\hat{IRR}$ para los distintos niveles de exposición ($l = 2, 3, 4$) al arsénico (`arsenic`).
+
+
+Se escribe el modelo en `R`.
+
+```{r}
+#| echo: true
+
+poisson.rate.arsenic <- glm(
+    formula = respdeath ~ arsenic,
+    family = "poisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-regarsenic
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+tbl_regression(poisson.rate.arsenic, exponentiate = TRUE, intercept= TRUE, 
+               estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión Poisson (`arsenic`).", text_interpret = "md") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**")  %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+Los coeficientes estimados son significativos (veáse @tbl-regarsenic), indicando que el riesgo de muerte por enfermedad respiratoria es dos veces mayor para un nivel de exposición 2 (1-4 años) y 3 (5-14 años) con respecto al nivel de exposición 1 (<1 año) y es cuatro veces mayor cuando el tiempo de exposición al arsénico es mayor a 15 años (nivel 4). El nivel de riesgo esperado cuando el nivel de exposición es el más bajo es prácticamente nulo, por tanto el modelo indica que este nivel de exposición no afecta la tasa de muerte por enfermedad respiratoria.
+
+Igualmente se comprueba la suposición del modelo de regresión Poisson.
+
+```{r}
+epiDisplay::poisgof(poisson.rate.arsenic)
+```
+
+```{r}
+#| echo: false
+qpoisson.rate.arsenic <- glm(
+    formula = respdeath ~ arsenic,
+    family = "quasipoisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+
+dis.qp.arsenic <- summary(qpoisson.rate.arsenic)$dispersion
+
+dis.qp.arsenic <- round(dis.qp.arsenic, 5)
+```
+
+Se vuelve a obtener que el modelo no es el más apropiado. Al ajustar un modelo quasipoisson, se obtiene que el parámetro de dispersión es de `r dis.qp.arsenic` (menor que la del modelo para `start`), indicando una sobre dispersión. Igualmente se obtienen los mismos estimadores de los coeficientes del modelo con un intervalo de confianza al 95% más amplio (veáse @tbl-qposi-2) como consecuencia, el coeficiente estimado para el nivel de exposición 3 al arsénico resulta no ser significativo.
+
+```{r}
+#| echo: false
+#| label: tbl-qposi-2
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+tbl_regression(qpoisson.rate.arsenic, exponentiate = TRUE, intercept= TRUE, 
+               estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión QuasiPoisson (`arsenic`).", text_interpret = "md") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**")  %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+4. Utilizando regresión Poisson veriﬁque si existe interacción entre el tiempo de inicio en el empleo y los niveles de exposición de arsénico.
+
+El modelo de regresión Poisson es:
+\begin{align*}
+\log{\mu_i} &= X_i^T \beta \\
+&= \log{\text{personyrs}_i} + \beta_0 + \beta_1 \cdot \text{start} + \beta_{2l} \cdot \text{arsenic} + \beta_{3l} \cdot \text{start} * \text{arsenic}
+\end{align*}
+
+Donde:
+
+$\text{rate} = \frac{\text{respdeath}}{\text{personyrs}} =$ es la tasa de incidencia de muerte respiratoria.
+
+$\log{\text{personyrs}_i}=$ Variable *offset* que ajusta por el tiempo de exposición.
+
+$\beta_0=$  Corresponde al $\log{}$ de la tasa esperada en el nivel de referencia (`arsenic` = 1).
+
+$\beta_1=$ Coeficiente asociado a la razón de la tasa de incidencia $\hat{IRR}$ para el tiempo de inicio en el empleo (`start`).
+
+$\beta_{2l}=$ Coeficiente asociado a la razón de la tasa de incidencia $\hat{IRR}$ para los distintos niveles de exposición ($l = 2, 3, 4$) al arsénico (`arsenic`).
+
+$\beta_{3l}=$ Coeficiente asociado a la razón de la tasa de incidencia $\hat{IRR}$ para los distintos niveles de interacción entre el tiempo de inicio en el empleo (`start`) y el nivel de exposición al arsénico ($l = 2, 3, 4$).
+
+
+Estimamos el modelo de interacción con `R`.
+
+```{r}
+#| echo: true
+
+poisson.rate.inter <- glm(
+    formula = respdeath ~ start*arsenic,
+    family = "poisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-reginter
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+tbl_regression(poisson.rate.inter, exponentiate = TRUE, intercept= TRUE,
+               estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión Poisson (Interacción: `arsenic * start`).", text_interpret = "md") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**") %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+Al ajustar el modelo se obtiene que los estimadores de la interacción no son significativos a un nivel de $\alpha = 0.05$, por lo cual no hay evidencia estadística para hablar de una posible interacción entre el tiempo de inicio del trabajo y el nivel de exposición al arsénico. Solo un efecto principal es significativo (`start`) indicando que la razón de la tasa de incidencia es dos veces mayor cuando se empieza el empleo en años posteriores a 1925 controlando por el nivel de exposición al arsénico. Esta exposición resulta no ser significativa cuando se controla por el periodo de inicio del trabajo.
+
+Se procede a corroborar la aplicabilidad del modelo.
+
+```{r}
+#| echo: false
+
+qpoisson.rate.inter <- glm(
+    formula = respdeath ~ start*arsenic,
+    family = "quasipoisson",
+    offset =  log(personyrs), 
+    data = df.resp.deaths)
+```
+
+```{r}
+epiDisplay::poisgof(poisson.rate.inter)
+```
+
+```{r}
+#| echo: false
+#| label: tbl-qpois3
+#| output: asis
+#| classes: plain
+#| tbl-pos: H
+
+tbl_regression(qpoisson.rate.inter, exponentiate = TRUE, intercept= TRUE,
+               estimate_fun = purrr::partial(style_ratio, digits = 5)) %>%
+    modify_caption(caption = "Estimadores de Regressión QuasiPoisson (Interacción: `arsenic * start`).", text_interpret = "md") %>%
+    modify_header(label = "**Variable**", p.value = "**p-value**") %>%
+    as_gt() %>%
+    gt::as_raw_html(inline_css = T)
+```
+
+El modelo no es el más adecuado. La dispersión estimada es de `r summary(qpoisson.rate.inter)$dispersion` indicando la presencia de sobre dispersión (se estimo usando un modelo quasipoisson con la interacción incluida). Los parámetros estimados se muestran en la @tbl-qpois3. A excepción de la amplitud de los intervalos de confianza, las estimaciones e interpretaciones de este modelo no son distintas al anterior.
