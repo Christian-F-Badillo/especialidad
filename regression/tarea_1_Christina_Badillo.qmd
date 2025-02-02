@@ -1,0 +1,93 @@
+---
+title: "Regresión"
+subtitle: "Tarea 1"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+
+# Ejercicio 0 (clase).
+
+Encuentra los Estimadores de Mínimos Cuadrados de los parámetros $\beta_0$ y $\beta_1$ minimizamdp la función:
+
+$$
+f\left( \beta_0, \beta_1 \right) = \sum_{i=1}^{n} \left( y_i - \beta_0 - \beta_1 x_i \right) ^2
+$$
+
+## Solución.
+
+Derivamos la función $f\left( \beta_0, \beta_1 \right)$ con respecto a $\beta_0$ y $\beta_1$ e igualamos a cero:
+\begin{align}
+\frac{\partial f}{\partial \beta_0} &= -2 \sum_{i=1}^{n} \left( y_i - \beta_0 - \beta_1 x_i \right) = 0 \label{eq:1} \\
+\frac{\partial f}{\partial \beta_1} &= -2 \sum_{i=1}^{n} \left( y_i - \beta_0 - \beta_1 x_i \right) x_i = 0 \label{eq:2}
+\end{align}
+
+Se divide entre $-2$ y se distribuyen las sumatorias en \ref{eq:1}:
+\begin{align*}
+\sum_{i=1}^{n} y_i - \sum_{i=1}^{n} \beta_0 - \sum_{i=1}^{n} \beta_1 x_i &= 0 \\
+n \bar{y} - n \beta_0 - \beta_1 n \bar{x} &= 0 && \text{Utilizando } \bar{y} = \frac{1}{n} \sum_{i=1}^{n} y_i \text{ y } \bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i \\
+\bar{y} - \beta_0 - \beta_1 \bar{x} &= 0 && \text{Factorizando } n
+\end{align*}
+
+Realizamos el mismo procedimiento con \ref{eq:2}:
+\begin{align*}
+\sum_{i=1}^{n} y_i x_i - \sum_{i=1}^{n} \beta_0 x_i - \sum_{i=1}^{n} \beta_1 x_i^2 &= 0 && \text{Distribuyendo la sumatoria y } x_i \\
+\sum_{i=1}^{n} y_i x_i - n \beta_0 \bar{x} - \beta_1 \sum_{i=1}^{n} x_i^2 &= 0 && \text{Utilizando } \bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i \\
+\end{align*}
+
+Obtenemos el sistema de ecuaciones:
+\begin{align}
+\bar{y} - \beta_0 - \beta_1 \bar{x} &= 0 \label{eq:3} \\
+\sum_{i=1}^{n} y_i x_i - n \beta_0 \bar{x} - \beta_1 \sum_{i=1}^{n} x_i^2 &= 0 \label{eq:4}
+\end{align}
+
+Despejamos $\beta_0$ de \ref{eq:3}:
+\begin{align*}
+\beta_0 &= \bar{y} - \beta_1 \bar{x} \\
+\end{align*}
+
+Sustituimos $\beta_0$ en \ref{eq:4} y resolvemos para $\beta_1$:
+\begin{align*}
+\sum_{i=1}^{n} y_i x_i - n \left( \bar{y} - \beta_1 \bar{x} \right) \bar{x} - \beta_1 \sum_{i=1}^{n} x_i^2 &= 0 \\
+\sum_{i=1}^{n} y_i x_i - n \bar{y} \bar{x} + n \beta_1 \bar{x}^2 - \beta_1 \sum_{i=1}^{n} x_i^2 &= 0 && \text{Distribuyendo } n \\
+n \beta_1 \bar{x}^2 - \beta_1 \sum_{i=1}^{n} x_i^2 &= - \sum_{i=1}^{n} y_i x_i + n \bar{y} \bar{x} \\
+- \beta_1 \left( \sum_{i=1}^{n} x_i^2 - n \bar{x}^2 \right) &= - \sum_{i=1}^{n} y_i x_i + n \bar{y} \bar{x} && \text{Factorizando } \beta_1 \\
+- \beta_1 s^2_X &= n \bar{x} \bar{y} - \sum_{i=1}^{n} y_i x_i && \text{Se usa la relación } s^2_X = \sum_{i=1}^{n} x_i^2 - n \bar{x}^2 \\
+\beta_1 s^2_X &= s_{XY} && \text{Donde } s_{XY} = n \bar{x} \bar{y} - \sum_{i=1}^{n} y_i x_i \\
+\beta_1 &= \frac{s_{XY}}{s^2_X} 
+\end{align*}
+
+Por último, sustituimos $\beta_1$ en \ref{eq:3} y despejamos $\beta_0$:
+\begin{align*}
+\beta_0 &= \bar{y} - \frac{s_{XY}}{s^2_X} \bar{x} \\
+\end{align*}
+
+Por lo tanto, los estimadores de mínimos cuadrados de los parámetros $\beta_0$ y $\beta_1$ son:
+\begin{align*}
+\hat{\beta_0} &= \bar{y} - \frac{s_{XY}}{s^2_X} \bar{x} \\
+\hat{\beta_1} &= \frac{s_{XY}}{s^2_X}
+\end{align*}

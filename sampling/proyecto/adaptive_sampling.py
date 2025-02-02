@@ -4,79 +4,88 @@ import random
 import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
-import matplotlib.cm as cm
+import matplotlib
 import pandas as pd
+matplotlib.rcParams['figure.figsize'] = 8, 10
 
-
-# 1. Simulación de datos
-def generar_vecindades(municipios, max_vecinos, seed = 1):
+def generar_vecindades(familia, max_vecinos, seed=1):
     np.random.seed(seed)
-    for id_mun in municipios:
-        num_vecinos = np.random.randint(1, max_vecinos)
-        municipios[id_mun]["vecinos"] = random.sample(
-            [m for m in municipios if m != id_mun], 
-            num_vecinos
-        )
-    return municipios
+    random.seed(seed)  # Configurar la semilla para random
+    for id_mun in familia:
+        num_vecinos = np.random.binomial(n=max_vecinos, p = 0.65, size=1).item()
+        
+        vecinos = random.sample([m for m in familia if m != id_mun], num_vecinos)
+        familia[id_mun]["vecinos"] = vecinos
 
-def simular_datos(num_municipios, max_poblacion, max_vecinos, seed = 1):
-    municipios = {}
+        # Aseguramos que las conexiones sean bidireccionales
+        for vecino in vecinos:
+            if id_mun not in familia[vecino]["vecinos"]:
+                familia[vecino]["vecinos"].append(id_mun)
+
+    return familia
+
+
+def simular_datos(num_familias, max_miembros, max_vecinos, seed=1):
+    familia = {}
     np.random.seed(seed)
-    for i in range(1, num_municipios + 1):
-        municipios[i] = {
-            "poblacion": np.random.choice(range(4000, max_poblacion), 1),
-            "casos": np.random.binomial(n = max_poblacion/1000, p = 0.05) * 25,
+    random.seed(seed)  # Configurar la semilla para random
+    for i in range(1, num_familias + 1):
+        cases = np.random.poisson(0.35)
+        familia[i] = {
+            "miembros": np.random.choice(range(2, max_miembros), 1).item(),
             "vecinos": []
         }
-    new_municipios = generar_vecindades(municipios, max_vecinos, seed)
-    return new_municipios
+
+        familia[i]["casos"] = cases if cases <= familia[i]["miembros"] else familia[i]["miembros"]
+
+    new_familia = generar_vecindades(familia, max_vecinos, seed)
+    return new_familia
 
 
-# 2. Muestreo adaptativo
-def muestreo_adaptativo(municipios, tamano_inicial, C_min, seed = 1):
-
+def muestreo_adaptativo(familia, tamano_inicial, C_min, seed=1):
     np.random.seed(seed)
-    mas = np.random.choice(list(municipios.keys()), tamano_inicial, replace=False)
+    random.seed(seed)  # Configurar la semilla para random
+    mas = np.random.choice(list(familia.keys()), tamano_inicial, replace=False)
     muestra = mas.tolist()
     evaluados = set()
     recorrido = []  # Para guardar el orden del recorrido
 
     while True:
-        nuevos_municipios = []
+        nuevos_familia = []
         for mun_id in muestra:
             if mun_id not in evaluados:
                 evaluados.add(mun_id)
                 recorrido.append(mun_id)
-                if municipios[mun_id]["casos"] >= C_min:
-                    vecinos = municipios[mun_id]["vecinos"]
+                if familia[mun_id]["casos"] >= C_min:
+                    vecinos = familia[mun_id]["vecinos"]
                     for vecino_id in vecinos:
-                        if vecino_id not in muestra and vecino_id not in nuevos_municipios:
-                            nuevos_municipios.append(vecino_id)
-                            
-        muestra.extend(nuevos_municipios)
+                        if vecino_id not in muestra and vecino_id not in nuevos_familia:
+                            nuevos_familia.append(vecino_id)
 
-        if not nuevos_municipios:
+        muestra.extend(nuevos_familia)
+
+        if not nuevos_familia:
             break
 
     return muestra, recorrido
 
 # 3. Graficar con contornos y aristas personalizadas
-def graficar_muestra(municipios, muestra, recorrido):
+def graficar_muestra(familia, muestra, recorrido):
+
     G = nx.Graph()
 
     # Crear nodos y aristas
-    for mun_id, data in municipios.items():
+    for mun_id, data in familia.items():
         G.add_node(mun_id, casos=data["casos"])
         for vecino in data["vecinos"]:
             G.add_edge(mun_id, vecino)
 
     # Obtener la intensidad del color basada en los casos
-    casos_maximos = max([municipios[n]["casos"] for n in G.nodes()])
+    casos_maximos = max([familia[n]["casos"] for n in G.nodes()])
     normalizador = Normalize(vmin=0, vmax=casos_maximos)  # Normalizar valores de casos
-    cmap = cm.get_cmap('Purples')  # Colormap para intensidad del color
 
     # Crear lista de colores para nodos
-    colores = [cmap(normalizador(municipios[n]["casos"])) for n in G.nodes()]
+    colores = [normalizador(familia[n]["casos"]) for n in G.nodes()]
     bordes = ['black' if n not in muestra else 'red' for n in G.nodes()]  # Contorno azul para seleccionados
     node_width = [1 if n not in muestra else 3 for n in G.nodes()]
 
@@ -94,89 +103,136 @@ def graficar_muestra(municipios, muestra, recorrido):
     # Graficar el grafo
     pos = nx.spring_layout(G, seed=42)  # Layout del grafo
     plt.figure(figsize=(10, 8))
+    plt.set_cmap("Purples")
     nx.draw_networkx_nodes(G, pos, node_color=colores, edgecolors=bordes, node_size=500, alpha=0.9, linewidths=node_width)
     nx.draw_networkx_edges(G, pos, edge_color=edge_colors, alpha=0.6, width=widths)
     nx.draw_networkx_labels(G, pos, font_size=8, font_color="black")
 
     # Crear el mappable para la barra de color
-    sm = ScalarMappable(norm=normalizador, cmap=cmap)
+    sm = ScalarMappable(norm=normalizador)
     sm.set_array([])
     cbar = plt.colorbar(sm, ax=plt.gca(), shrink=0.8)
     cbar.set_label("Número de casos", fontsize=12)
 
     # Agregar título
-    plt.title("Muestra Seleccionada", fontsize=14)
+    plt.title("", fontsize=1)
     plt.axis('off')
+    plt.tight_layout()
+    plt.savefig("img/ejem4_disease.jpg", bbox_inches='tight', dpi=400)
     plt.show()
 
-def crear_dataframe_subredes(nodos):
-    """
-    Crea un DataFrame que describe las subredes conectadas de los nodos.
-
-    Parámetros:
-        nodos (list[dict]): Lista de nodos donde cada nodo es un diccionario
-                            con las llaves 'población', 'casos' y 'vecinos'.
-
-    Retorna:
-        pd.DataFrame: DataFrame con las columnas:
-                      - 'Red': ID de la subred.
-                      - 'Número de Nodos': Número total de nodos en la subred.
-                      - 'Lista de Nodos': Lista de nodos en la subred.
-                      - 'Total de Casos': Suma total de casos en la subred.
-                      - 'Suma de Población': Suma de las poblaciones en la subred.
-    """
+def get_conections(nodos, id):
     # Crear el grafo
     G = nx.Graph()
-    
-    # Agregar nodos y conexiones
-    for i, nodo in enumerate(nodos):
-        G.add_node(i, pop=nodo['poblacion'], cases=nodo['casos'])
-    for vecino in nodo['vecinos']:
-        G.add_edge(i, vecino)
-    
+
+    for mun_id, data in nodos.items():
+        G.add_node(mun_id)
+        for vecino in data["vecinos"]:
+            G.add_edge(mun_id, vecino)
+
     # Identificar componentes conexas
-    componentes = list(nx.connected_components(G))
-    
-    # Crear una lista para almacenar la información de las subredes
-    datos_redes = []
-    for idx, componente in enumerate(componentes):
-        # Obtener nodos de la subred
-        lista_nodos = list(componente)
-        
-        # Calcular métricas
-        suma_casos = sum([G.nodes[int(node)]['cases'] for node in lista_nodos])
-        suma_poblacion = sum([G.nodes[node]['pop'] for node in lista_nodos])
-        
-        # Agregar información de la subred
-        datos_redes.append({
-            'Red': idx + 1,
-            'Número de Nodos': len(lista_nodos),
-            'Lista de Nodos': lista_nodos,
-            'Total de Casos': suma_casos,
-            'Suma de Población': suma_poblacion
-        })
-    
+    vecinos_distancia_1_todos = {nodo: list(G.neighbors(nodo)) for nodo in G.nodes()}
+    vecinos_distancia_1_todos = {k:v for k,v in vecinos_distancia_1_todos.items() if k in id}
+
+
+    return vecinos_distancia_1_todos
+
+def bfs(nodo, visitados, diccionario):
+    subred = []
+    cola = [nodo]
+    while cola:
+        actual = cola.pop(0)
+        if actual not in visitados:
+            visitados.add(actual)
+            subred.append(actual)
+            cola.extend(diccionario.get(actual, []))
+    return subred
+
+def generar_dataframe_subredes(diccionario):
+
+    visitados = set()
+    subredes = []
+    nodos_llave_por_subred = []
+
+    for nodo in diccionario:
+        if nodo not in visitados:
+            subred = bfs(nodo, visitados, diccionario)
+            subredes.append(subred)
+            # Nodos que son llaves dentro de esta subred
+            nodos_llave = [n for n in subred if n in diccionario]
+            nodos_llave_por_subred.append(nodos_llave)
+
     # Crear el DataFrame
-    df_redes = pd.DataFrame(datos_redes)
-    
-    return df_redes
+    data = {
+        "SubRed": list(range(0, len(subredes))),
+        "#Nodos": [len(subred) for subred in subredes],
+        "Nodos": [", ".join(map(str, sorted(subred))) for subred in subredes],
+        "Nodos en Muestra": [", ".join(map(str, sorted(llaves))) for llaves in nodos_llave_por_subred],  # Nodos que son llaves
+    }
+    df = pd.DataFrame(data)
+    return df
 
 # Ejecución
-NMUNICIPIOS = 75
-SEMILLA = 19111973
+Nfamilia = 100
+SEMILLA = 423204
 NINICIAL = 10
-CRITERIO = 30
-MAXPOP = 20000
+CRITERIO = 1
+MAXPOP = 12
 MAXVECINOS = 4
 
-datos_municipios = simular_datos(NMUNICIPIOS, MAXPOP, MAXVECINOS, SEMILLA)
-muestra, recorrido = muestreo_adaptativo(datos_municipios, NINICIAL, CRITERIO, SEMILLA)
+datos_familia = simular_datos(Nfamilia, MAXPOP, MAXVECINOS, SEMILLA)
+muestra, recorrido = muestreo_adaptativo(datos_familia, NINICIAL, CRITERIO, SEMILLA)
 
 print(f"Muestra: {muestra},\nn = {len(muestra)}")
-#graficar_muestra(datos_municipios, muestra, recorrido)
 
-# Ejemplo de uso
-nodos = [datos_municipios.get(i) for i in muestra]
+muestra_nodos = {mun:datos_familia[mun] for mun in muestra}
 
-df_resultado = crear_dataframe_subredes(nodos)
-print(df_resultado)
+connections = get_conections(datos_familia, muestra)
+
+# Subredes
+df_subredes = generar_dataframe_subredes(connections)
+print(df_subredes.head())
+
+#graficar_muestra(datos_familia, muestra, recorrido)
+
+def get_data_muestra(df:pd.DataFrame= None, data:dict=None)-> pd.DataFrame:
+
+    fam_id = df["Nodos"]
+
+    disease_cases = []
+
+    for i in fam_id:
+
+        nodos = [int(j) for j in i.split(",")]
+
+        data_cases = [data[j]["casos"] for j in nodos]
+
+        disease_cases.append(data_cases)
+
+    valid_nodes = []
+    for i in disease_cases:
+        valids = 0
+        for j in i:
+            if j > 0:
+                valids += 1
+        valid_nodes.append(valids if valids != 0 else 1)
+
+    w_i = [sum(i)/j for i, j in zip(disease_cases, valid_nodes)]
+
+    df.drop(["Nodos", "#Nodos", "Nodos en Muestra", "Nodos"], axis=1, inplace=True)
+    df["#Nodos Validos"] = valid_nodes
+    df["Casos"] = [np.sum(i) for i in disease_cases]
+    df["$w_i$"] = w_i
+
+    return df
+
+df = get_data_muestra(df_subredes, datos_familia)
+print(df)
+
+df.to_csv("DatosEjemplo4.csv", index=False)
+
+casos = 0
+for i in datos_familia.keys():
+    casos += datos_familia[i]["casos"]
+
+print(casos)
