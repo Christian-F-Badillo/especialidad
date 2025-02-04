@@ -32,7 +32,7 @@ execute:
 
 # Ejercicio 0 (clase).
 
-Encuentra los Estimadores de Mínimos Cuadrados de los parámetros $\beta_0$ y $\beta_1$ minimizamdp la función:
+Encuentra los Estimadores de Mínimos Cuadrados de los parámetros $\beta_0$ y $\beta_1$ minimizando la función:
 
 $$
 f\left( \beta_0, \beta_1 \right) = \sum_{i=1}^{n} \left( y_i - \beta_0 - \beta_1 x_i \right) ^2
@@ -91,3 +91,166 @@ Por lo tanto, los estimadores de mínimos cuadrados de los parámetros $\beta_0$
 \hat{\beta_0} &= \bar{y} - \frac{s_{XY}}{s^2_X} \bar{x} \\
 \hat{\beta_1} &= \frac{s_{XY}}{s^2_X}
 \end{align*}
+
+# Ejercicio 2.
+
+1. Menciona los supuestos sobre los errores $\epsilon_i$ para el modelo de regresiónn lineal simple.
+
+    1. Su valor esperado es 0, $\mathbb{E}(\epsilon_i) = 0$.
+    2. Homocedasticidad, es decir, la varianza de los errores es constante, $Var(\epsilon_i) = \sigma^2$.
+    3. Los errores son no correlacionados entre sí, $Cov(\epsilon_i, \epsilon_j) = 0, i \neq j$.
+    
+2. ¿Qué le da el carácter aleatorio al modelo de regresión lineal simple?
+
+EL término $\epsilon$ del modelo dado que nos permite añadir un termino estocástico a un proceso determinístico como lo es la función del modelo (en este caso una función lineal).
+
+3. ¿Cuáles de los siguientes pueden considerarse modelos de regresión lineal? ¿Por qué?
+    
+    * $f(\beta_0, \beta_1) = \beta_0 + e^{\beta_1 x_1}$. 
+
+    No es un modelo lineal dado que para tiene una no linealidad sobre uno de sus parámetros en este caso $\beta_1$ y no es posible eliminarla.
+
+    * $f(\beta_0, \beta_1, \dots, \beta_k) = \beta_0 + \sum^{k}_{i=1} \beta_i \cosh^i{x_i}$.
+
+    Es un modelo lineal dado que es una combinación lineal de los parámetros.
+
+    * $f(\beta_0, \beta_1) = \beta_0 + \beta_1 x_1 + \beta_0 \beta_1 x_2$.
+
+    No es un modelo lineal dado que hay dos parámetros que interactuán de manera multiplicativa entre ellos.
+    
+# Ejercicio 3.
+
+Supongamos que la variable aleatoria $\epsilon$ sigue una distribución normal con media $\mu$ y varianza $\sigma^2$, y que, para $1 \leq i \leq n$, la variables aleatorias $\epsilon_i$ son independientes y cada una sigue una distribución normal con media $\mu_i$ y varianza $\sigma_i$.
+
+* ¿Cómo podemos asociar $\epsilon$ a una variable aleatoria que sigue una distribución normal estándar?
+
+* ¿Qué distribución siguen las siguientes variables aleatorias?
+
+1. Para $a, b \in \mathbb{R}$, con $a \neq 0, X = a\epsilon + b$.
+
+La variable aleatoria X sigue una distribución normal con media $a\mu_\epsilon + b$ y varianza $(a\sigma_\epsilon )^2$.
+
+***Demostración.***
+
+Teorema 2.1.5 en Casella y Berger (2002):
+
+Si X es una variable aleatoria con pdf, $f_X(x)$, continua sobre su soporte $\mathcal{X}$ y $Y = g(X)$ con soporte $\mathcal{Y}$ y con $g$ una función monótona. Y suponiendo que $g^{-1}(y)$ es diferenciable en  $\mathcal{Y}$. Entonces:
+\begin{equation*}
+f_Y(y) = \frac{d}{dy} F_Y(y) = 
+\begin{cases}
+f_X \left( g^{-1}(y) \right) \left| \frac{d}{dy} g^{-1}(y) \right|, & y \in \mathcal{Y} \\
+0, & \text{en otro caso}.
+\end{cases}
+\end{equation*}
+
+Usando los datos del problema:
+$$
+f_X(x) = f_\epsilon (\frac{x - b}{a}) \left|\frac{d}{dx} \frac{x - b}{a} \right| = \frac{1}{\sqrt{2\pi \sigma_\epsilon^2}}e^{-\frac{ \left( \frac{x - b}{a} - \mu_\epsilon \right)^2}{2\sigma_\epsilon^2}} \frac{1}{|a|} 
+$$
+Con un poco de algebra:
+$$
+f_X(x) = \frac{1}{\sqrt{2\pi \sigma_\epsilon^2 a^2}} e^{-\frac{(x - (a\mu_\epsilon + b))^2}{2\sigma_\epsilon^2a^2}}
+$$
+
+Con lo que llegamos a la conclusión de que la variable aleatoria X sigue una distribución normal con media $a\mu_\epsilon + b$ y varianza $(a\sigma_\epsilon )^2$.
+
+2. $X = \epsilon_1 + \epsilon_2$.
+
+La variable aleatoria X sigue una distribución normal con media $\mu_{\epsilon_1} +\mu_{\epsilon_2}$ y varianza $\sigma_{\epsilon_1}^2 + \sigma_{\epsilon_2}^2$.
+
+***Demostración.***
+
+Dada la función generadora de momentos de la distribución normal:
+$$
+M_\epsilon (t) = e^{t\mu + \frac{t^2\sigma^2}{2}}.
+$$
+
+Y que la función generadora de momentos de una combinación lineal de variables aleatorias independientes es el producto de sus funciones generadora de momentos individuales. Entonces:
+\begin{align*}
+M_{\epsilon_1 + \epsilon_2} (t) &= \mathbb{E} \left( e^{(\epsilon_1 + \epsilon_2)t}\right) \\
+&= M_{\epsilon_1}(t) M_{\epsilon_2} (t) \\ 
+&= e^{t\mu_{\epsilon_1} + \frac{t^2\sigma_{\epsilon_1}^2}{2}} e^{t\mu_{\epsilon_2} + \frac{t^2\sigma_{\epsilon_2}^2}{2}} \\
+&= e^{t (\mu_{\epsilon_1} + \mu_{\epsilon_1}) + \frac{t^2 (\sigma_{\epsilon_1}^2 + \sigma_{\epsilon_2}^2)}{2}}
+\end{align*}
+
+Lo cual nos da la función generadora de momentos de la distribución ya mencionada.
+
+3. $X = \epsilon_1 - \epsilon_2.$
+
+La variable aleatoria X sigue una distribución normal con media $\mu_{\epsilon_1} - \mu_{\epsilon_2}$ y varianza $\sigma_{\epsilon_1}^2 + \sigma_{\epsilon_2}^2$.
+
+***Demostración.***
+
+Usando los hechos anteriormente demostrados podemos usar sus resultados para obtener que la distribución de $Y = -\epsilon_i$ es una distribución normal con media $-\mu_{\epsilon_i}$ (se utiliza $a = - 1 \text{ y } b =0$) y varianza $(-1)^2\sigma_{\epsilon_i}^2 = \sigma_{\epsilon_i}^2$. Usando este resultado intermedio aplicado al resultado demostrado en el inciso anterior se puede concluir que la distribución de la variable aleatoria X es una distribución normal con media $\mu_{\epsilon_1} - \mu_{\epsilon_2}$ y varianza $\sigma_{\epsilon_1} + \sigma_{\epsilon_2}$.
+
+\newpage
+# Ejercicio 3.
+
+La siguiente es una tabla que nos da las estaturas(en centímetros) y pesos(en kilogramos) de una muestra de 10 mujeres adolescentes de 18 años. Se busca intentar predecir el peso de acuerdo a la altura.
+
+```{r}
+#| echo: false
+#| tbl-cap: Datos
+
+library(kableExtra)
+library(knitr)
+
+altura <- c(169.6, 166.8, 157.1, 181.1, 158.4, 165.6, 166.7, 156.5, 168.1, 165.3)
+peso <- c(71.2, 58.2, 56.0, 64.5, 53.0, 52.4, 56.8, 49.2, 55.6, 77.8)
+
+df <- data.frame(Altura = altura,
+                 Peso = peso)
+
+kable(df)
+```
+
+Gráfica la altura contra el peso, ¿dirías que tiene sentido utilizar un modelo de regresión lineal para estos datos? En caso afirmativo, aproxima tal modelo con lo obtenido en el primer ejercicio, y luego dibuja tal aproximación sobre la gráfica previamente obtenida. ¿Consideras que el modelo es bueno? ¿Por qué?
+
+```{r}
+#| echo: false
+#| fig-cap: Gráfico de dispersión de los datos.
+#| warning: false
+library(tidyverse)
+library(tidyplots)
+my_tible <- tibble(Altura = altura,
+                   Peso = peso)
+# Scatter plot
+my_tible %>%
+  ggplot(aes(x = Altura, y = Peso)) +
+  geom_point() +
+  labs(title = "",
+       x = "Altura (cm)",
+       y = "Peso (kg)")
+```
+
+No parece que la relación entre el peso y la altura sea linealmente "fuerte", dado que no se observa una tendencia clara en los datos. De hecho parece que la relación es más bien cuadrática. Por lo tanto, un modelo de regresión lineal no parece adecuado para estos datos.
+
+```{r}
+#| echo: false
+cov_data <- cov(altura, peso)
+var_data <- var(altura)
+
+beta_1 <- cov_data / var_data
+beta_0 <- mean(peso) - beta_1 * mean(altura)
+```
+
+El modelo de regresión lineal ajustado es: Peso = `r round(beta_0, 2)` + `r round(beta_1, 2)` * Altura.
+
+```{r}
+#| echo: false
+#| fig-cap: Ajuste del Modelo de Regresión Lineal Simple.
+#| label: fig:regresion
+#| warning: false
+my_tible <- tibble(Altura = altura,
+                   Peso = peso)
+# Scatter plot
+my_tible %>%
+  ggplot(aes(x = Altura, y = Peso)) +
+  geom_abline(intercept = beta_0, slope = beta_1, color = "red") +
+  geom_point() +
+  labs(title = "",
+       x = "Altura (cm)",
+       y = "Peso (kg)")
+```
+
+El ajuste del modelo es malo ya que se observan muchos puntos alejados de la recta de regresión, lo que se traduce que los errores de predicción son grandes para los datos observados y probablemente para datos no observados, por lo que se concluye que el modelo no es bueno para modelar la relación entre la altura y el peso.
