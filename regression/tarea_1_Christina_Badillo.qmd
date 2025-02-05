@@ -18,6 +18,10 @@ format:
         code-block-bg: true
         code-block-border-left: "#31BAE9"
         pdf-engine: pdflatex
+        bibliography: ref.bib
+        csl: apa
+nocite: |
+  @*
 crossref:
   fig-prefix: figura   # (default is "Figure")
   tbl-prefix: tabla    # (default is "Table")
@@ -124,6 +128,8 @@ Supongamos que la variable aleatoria $\epsilon$ sigue una distribución normal c
 
 * ¿Cómo podemos asociar $\epsilon$ a una variable aleatoria que sigue una distribución normal estándar?
 
+La podemos asociar por medio de una combinación lineal, ya que la combinación lineal de variables aleatorias normales independientes sigue una distribución normal.
+
 * ¿Qué distribución siguen las siguientes variables aleatorias?
 
 1. Para $a, b \in \mathbb{R}$, con $a \neq 0, X = a\epsilon + b$.
@@ -182,6 +188,55 @@ La variable aleatoria X sigue una distribución normal con media $\mu_{\epsilon_
 ***Demostración.***
 
 Usando los hechos anteriormente demostrados podemos usar sus resultados para obtener que la distribución de $Y = -\epsilon_i$ es una distribución normal con media $-\mu_{\epsilon_i}$ (se utiliza $a = - 1 \text{ y } b =0$) y varianza $(-1)^2\sigma_{\epsilon_i}^2 = \sigma_{\epsilon_i}^2$. Usando este resultado intermedio aplicado al resultado demostrado en el inciso anterior se puede concluir que la distribución de la variable aleatoria X es una distribución normal con media $\mu_{\epsilon_1} - \mu_{\epsilon_2}$ y varianza $\sigma_{\epsilon_1} + \sigma_{\epsilon_2}$.
+
+4. $X = \epsilon_1 \epsilon_2$.
+
+En la siguiente entrada de Wikipedia ["Distribution of the product of two random variables"](https://en.wikipedia.org/wiki/Distribution_of_the_product_of_two_random_variables#Independent_central-normal_distributions) en el apartado de "Independent central-normal distributions" se muestra que el resultado que sigue el producto de dos distribuciones normales estándar es una distribución no normal. En particular X sigue la siguiente distribución:
+
+$$
+P_X(x) = \frac{1}{\pi} K_0(|x|), \text{ donde } K_0 \text{ es la función de Bessel modificada de segundo tipo.}
+$$
+
+Y su soporte es $(-\infty, \infty)$. Y cuya obtención va más allá de los conocimientos de este alumno.
+
+5. $X = \frac{\epsilon_1}{\epsilon_2}$.
+
+Usando una generalización del teorema 2.1.5 de Casella y Berger (2002) se puede calcular la distribución de la variable aleatoria X. Dado que $\epsilon_1$ y $\epsilon_2$ son variables aleatorias normales independientes, se puede demostrar que la variable aleatoria X sigue una distribución Cauchy estándar, como lo muestran en su ejemplo 4.3.6.
+
+6. $X = \frac{\epsilon^2}{\sigma^2}$.
+
+Usando el teorema 2.1.5 de Casella y Berger (2002) se puede calcular la distribución de la variable aleatoria X. Dado que $\epsilon^2$ es una distribución $\chi^2$ con un grado de libertad y $\sigma^2$ es una constante, usemos el teorema para calcular la distribución de X.
+
+$$
+f_X(x) = f_{\epsilon^2} \left( x\sigma^2 \right) \left| \frac{d}{dx} x\sigma^2 \right| = \frac{1}{2^{\frac{1}{2}}\Gamma(\frac{1}{2})} (x\sigma^2)^{-\frac{1}{2}} e^{-\frac{x\sigma^2}{2}} \sigma^2
+$$
+
+Simplificando:
+
+$$
+f_X(x) = \frac{\sigma}{2^{\frac{1}{2}}\Gamma(\frac{1}{2})} x^{-\frac{1}{2}} e^{-\frac{x\sigma^2}{2}} = Gamma(\frac{1}{2}, \sigma^2)
+$$
+
+Por lo tanto, la variable aleatoria X sigue una distribución Gamma con parámetros $\frac{1}{2}$ y $\sigma^2$.
+
+1. $X = \sqrt{\epsilon_1^2 + \epsilon_2^2}$.
+
+Usando la definición de la distribución $\chi$:
+
+$$
+Y_k = \sqrt{\sum_{i=1}^k Z_i^2}, \hspace{0.5cm} Z_i \sim N(0,1).
+$$
+
+Se observa que X define a una distribución $\chi$ con dos grados de libertad.
+
+
+8. $X = \sum_{i=1}^n \epsilon_i^2$.
+
+Dado que la distribución $\chi^2$ de un grado de libertad se define como el cuadrado de una variable aleatoria normal estándar, se puede concluir que cada $\epsilon_i^2$ se distribuye como una $\chi^2$ con un grado de libertad. Además una de las propiedades de la distribución $\chi^2$ es que la suma de $n$ variables aleatorias $\chi^2$ con un grado de libertad es una variable aleatoria $\chi^2$ con $n$ grados de libertad. Por lo tanto, la variable aleatoria X se distribuye como una $\chi^2$ con $n$ grados de libertad. 
+
+9.  $X = \frac{\frac{\sum_{i=1}^n \epsilon^2}{n}}{\frac{\sum_{i=1}^m \eta^2}{m}}$
+
+Usando el resultado anterior, se observa que la distribución de las sumatorias es una $\chi^2$ con $n$ y $m$ grados de libertad respectivamente. Y dado que la distribución F Fisher-Snedecor se define como el cociente de dos variables aleatorias $\chi^2$ divididas por sus grados de libertad, se puede concluir que la variable aleatoria X sigue una distribución F con $n$ y $m$ grados de libertad.
 
 \newpage
 # Ejercicio 3.
@@ -254,3 +309,6 @@ my_tible %>%
 ```
 
 El ajuste del modelo es malo ya que se observan muchos puntos alejados de la recta de regresión, lo que se traduce que los errores de predicción son grandes para los datos observados y probablemente para datos no observados, por lo que se concluye que el modelo no es bueno para modelar la relación entre la altura y el peso.
+
+\newpage
+# Referencias
