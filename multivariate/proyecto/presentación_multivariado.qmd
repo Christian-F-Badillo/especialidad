@@ -1,0 +1,72 @@
+---
+title: "Proyecto Multivariado"
+author:
+  - name: "Christian Badillo"
+  - name: "Luis Nuñez"
+  - name: "Luz Santana"
+  - name: "Sealtiel Pichardo"
+    
+date: 11/21/2024
+date-format: long
+
+format: 
+    clean-revealjs:
+        confetti:
+            particleCount: 150
+            angle: 90
+            spread: 360
+            startVelocity: 25
+            gravity: 0.65
+            drift: 0
+            ticks: 400
+            colors: ["#0366fc", "#f54281", "#1fd14f"]
+            scalar: 0.7
+            
+        toc: true
+        toc-title: "Agenda"
+        toc-depth: 2
+
+revealjs-plugins:
+  - confetti
+
+lang: es
+        
+---
+
+# Introducción
+
+## Objetivos.
+
+* Realizar análisis descriptivo multivariado.
+
+* Intentar reproducir las 6 clases del videojuego.
+
+* Predecir la posición de jugadores basado en sus estadísticas.
+
+## Base de Datos.
+
+* La base de datos es de jugadores de fútbol del vudeojuego de la Federación Internacional de Fútbol Asociación (FIFA) de la temporada 2023/2024 y  contiene información sobre diferentes características de jugadores de todo el mundo.
+
+* Contiene 41 variables y 5,657 jugadores.
+
+* Las mediciones las realizan con base en su rendimiento actual de los jugadores y se ajustan para dar equilibrio y jugabilidad al videojuego.
+
+## Variables.
+
+* En el videojuego las variables se agrupan en 7 tipos.
+
+| Ritmo | Tiro | Pase | Regate | Defensa | Físico | Portero |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Aceleración | Posicionamiento | Visión de juego | Agilidad | Intercepciones | Salto | Estiradas |  
+| Velocidad | Finalización  | Centros | Equilibrio | Precisión de cabeza | Resistencia | Paradas |
+|   | Potencia de tiro | Precisión de faltas | Reacción | Entrada normal | Fuerza | Velocidad |
+|   | Tiro lejano | Pases cortos | Control de balón  | Entrada agresiva | Agresividad | Reflejos |
+|   | Voleas | Pases largos | Regate |   |   | Saque |
+|   | Penalties | Efecto | Compostura |   |   |  |
+|   |   |   |   |   |   | Posicionamiento |
+
+
+<!-- Requirements -->
+<!-- install.packages(c("modelsummary", "fixest", "pdftools", "tinytex", "threejs")) -->
+<!-- install template: Correr en la terminal en el directorio que contiene el script: -->
+<!-- quarto install extension grantmcdermott/quarto-revealjs-clean -->
