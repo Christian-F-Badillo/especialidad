@@ -1,0 +1,119 @@
+---
+title: "Análisis de Supervivencia"
+subtitle: "Tarea 1"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        fig-pos: H
+
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+```{r}
+#| echo: false
+#| warning: false
+
+# Librerias
+library(survival)
+library(survminer)
+
+# Datos.
+myData <- read.csv("Tarea1.csv")
+
+# Variables de Importancia.
+survivalTime <- gsub(",", ".", myData$Overall.Survival..Months.)
+survivalTime <- as.numeric(survivalTime)
+
+censoring <- ifelse(myData$Patient.s.Vital.Status == "Died of Disease", 1, 0)
+radioTherapy <- factor(myData$Radio.Therapy, levels=c("Yes", "No"), labels = c("Yes", "No"))
+surgeryType <- factor(myData$Type.of.Breast.Surgery, levels=c("Mastectomy", "Breast Conserving"), labels = c("Mastectomy", "Breast Conserving"))
+
+model <- Surv(survivalTime, censoring)
+
+fit <- survfit(model ~ 1, data = myData)
+fit.rt <- survfit(model ~ radioTherapy, data = myData)
+fit.tbs <- survfit(model ~ surgeryType, data = myData)
+```
+
+# Conceptos
+
+* *Censura:* se refiere a los datos faltantes referentes al tiempo que tomo la ocurrencia de nuestro evento de interés (fallo). La funtes son diversas, entre otras: 
+
+    * Debido a que el estudio llegó a su fin y el evento no se presento en diversos sujetos.
+    * Los sujetos dejaron el estudio.
+    * Los sujetos presentaron otros eventos que llevaron a que son incompatibles con el evento de interés.
+
+
+* *Tiempo de falla:* es el tiempo observado para el sujeto $i$ presentar el evento de interés (falla).
+
+* *Función de riesgo:* es una función que nos indica el riesgo inmediato de sufrir la falla.
+
+* *Función de sobrevivencia:* indica la probabilidad de no sufrir el evento de interés en cualquier intervalo de tiempo [a, b].
+
+\newpage
+# Análisis Exploratorio.
+
+```{r}
+#| echo: false
+#| fig-cap: "Estimador Kaplan-Meier para la curva de sobrevivencia."
+#| label: fig-KM
+
+ggsurvplot(fit)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Comparación de los estimadores Kaplan-Meier para el grupo tratado con radioterapia."
+#| label: fig-KMRadio
+
+ggsurvplot(fit.rt, data = myData, pval.method = TRUE, pval = TRUE, 
+           log.rank.weights = "n", 
+           censor = T,
+           conf.int = T,
+           conf.int.style = "ribbon",
+           conf.int.alpha = 0.18,
+           pval.size = 3,
+           pval.method.size = 4
+)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Comparación de los estimadores Kaplan-Meier para el tipo de cirugía."
+#| label: fig-KMSurgery
+ggsurvplot(fit.tbs, data = myData, pval.method = TRUE, pval = TRUE, 
+           log.rank.weights = "n", 
+           censor = T,
+           conf.int = T,
+           conf.int.style = "ribbon",
+           conf.int.alpha = 0.18,
+           pval.size = 3,
+           pval.method.size = 4
+)
+```
+
+\newpage
+# Ejemplos de Aplicación en Psicología.
+
