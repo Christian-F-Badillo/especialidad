@@ -1,0 +1,197 @@
+---
+title: "Análisis de Sobrevivencia"
+subtitle: "Tarea 2"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        fig-pos: H
+        bibliography: ref.bib
+csl: apa
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto
+---
+\newpage
+# Estimación de Parámetros
+
+## Distribución Exponencial
+
+```{r}
+#| echo: false
+#| warning: false
+library(survival)
+library(ggplot2)
+library(tidyverse)
+library(survminer)
+library(autoReg)
+library(broom)
+library(prodlim)
+
+
+# Datos.
+myData <- read.csv("Tarea1.csv")
+
+# Variables de Importancia.
+myData$Overall.Survival..Months. <- gsub(",", ".", myData$Overall.Survival..Months.)
+myData$Overall.Survival..Months. <- as.numeric(myData$Overall.Survival..Months.)
+
+# Drop na rowns in Overall.Survival..Months.
+#myData <- myData[!is.na(myData$Overall.Survival..Months.),]
+
+censoring <- ifelse(myData$Patient.s.Vital.Status == "Died of Disease", 1, 0)
+survival_time <- myData$Overall.Survival..Months.
+survival_time <- ifelse(survival_time == 0, 0.0001, survival_time)
+#summary(survival_time)
+```
+
+Se estima el modelo exponencial con la función `survreg` de la librería `survival`.
+
+```{r}
+#| echo: true
+
+# Estimación de los parámetros.
+desing <- Surv(time = survival_time, event = censoring)
+exp_fit <- survreg(desing ~ 1, 
+                   dist = "exponential", 
+                   data = myData)
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de sobrevivencia con distribución exponencial"
+#| label: tbl-expEstimation
+
+# Convertir el resumen a data.frame
+modelo_tidy <- tidy(exp_fit)
+
+# Mostrar tabla
+knitr::kable(modelo_tidy)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia estimada."
+
+adjustedPlot(exp_fit, type="plot", se = T, xlim=c(0, 400))
+KaplanMeierEst = prodlim(Surv(time = survival_time, event = censoring)
+ ~ 1, data=myData)
+plot(KaplanMeierEst, xlab="Months",add=TRUE, col = "purple")
+```
+
+## Distribución Weibull.
+
+```{r}
+#| echo: true
+
+# Estimación de los parámetros.
+weibull_fit <- survreg(desing ~ 1, 
+                   dist = "weibull", 
+                   data = myData)
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de sobrevivencia con distribución Weibull"
+#| label: tbl-WeibullEstimation
+
+# Convertir el resumen a data.frame
+modelo_tidy <- tidy(weibull_fit)
+
+# Mostrar tabla
+knitr::kable(modelo_tidy)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia estimada."
+#| label: fig-survivalweibullcurve
+
+adjustedPlot(weibull_fit, type="plot", se = T, xlim=c(0, 400))
+plot(KaplanMeierEst, xlab="Months", add=TRUE, col = "yellowgreen")
+```
+
+# Estimaciones con variable explicatoria
+
+```{r}
+#| echo: false
+
+# Clean NA in type.of.Breast.Surgery
+
+myData$Type.of.Breast.Surgery <- myData$Type.of.Breast.Surgery %>% na_if(., "")
+
+exp_fit2 <- survreg(desing ~  Type.of.Breast.Surgery, 
+                    data = myData,
+                    dist = "exponential")
+
+weibull_fit2 <- survreg(desing ~  Type.of.Breast.Surgery, 
+                    data = myData,
+                    dist = "weibull")
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de sobrevivencia exponencial con variable explicatoria"
+#| label: tbl-ExpEstimationCov
+
+# Convertir el resumen a data.frame
+modelo_tidy <- tidy(exp_fit2)
+
+# Mostrar tabla
+knitr::kable(modelo_tidy)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia estimada."
+#| label: fig-ExpSurvCurvCov
+
+KaplanMeierEst = prodlim(
+    Surv(time = survival_time, event = censoring) ~ Type.of.Breast.Surgery, 
+    data=myData)
+adjustedPlot(exp_fit2, type="plot", se = T, xlim=c(0, 400))
+plot(KaplanMeierEst, xlab="Months", add=TRUE)
+```
+
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de sobrevivencia exponencial con variable explicatoria"
+#| label: tbl-WeibullEstimationCov
+
+# Convertir el resumen a data.frame
+modelo_tidy <- tidy(weibull_fit2)
+
+# Mostrar tabla
+knitr::kable(modelo_tidy)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia estimada."
+#| label: fig-WeibullSurvCurvCov
+
+KaplanMeierEst = prodlim(
+    Surv(time = survival_time, event = censoring) ~ Type.of.Breast.Surgery, 
+    data=myData)
+adjustedPlot(weibull_fit2, type="plot", se = T, xlim=c(0, 400))
+plot(KaplanMeierEst, xlab="Months", add=TRUE)
+```

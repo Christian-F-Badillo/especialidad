@@ -1,5 +1,5 @@
 ---
-title: "Análisis de Supervivencia"
+title: "Análisis de Sobrevivencia"
 subtitle: "Tarea 1"
 author: 
     - name: "Christian Badillo"
@@ -19,7 +19,8 @@ format:
         code-block-border-left: "#31BAE9"
         pdf-engine: pdflatex
         fig-pos: H
-
+        bibliography: ref.bib
+csl: apa
 crossref:
   fig-prefix: figura   # (default is "Figure")
   tbl-prefix: tabla    # (default is "Table")
@@ -75,6 +76,12 @@ fit.tbs <- survfit(model ~ surgeryType, data = myData)
 \newpage
 # Análisis Exploratorio.
 
+Para el análisis exploratorio se tomó como tiempo de falla la variable `Overall Survival Months` y como variable de censura `Patient's Vital Status` y se toma como no censura los pacientes con el estado vital `Died of Disease`, en otro caso se etiqueta como censura. En la @fig-KM se presenta la curva de sobrevivencia estimada con el método Kaplan-Meier, las líneas horizontales representan observaciones censuradas, dado que hay una gran cantidad de ellas la curva no llega a cero.
+
+Se usaron dos variables distintas para crear grupos, dado que son dicotómicas y existe un balance en el número de observaciones en cada grupo. El primer grupo se refiere a sí los pacientes recibieron radioterapia, como se observa en la @fig-KMRadio las curvas se cruzan y son muy similares entre ellas, lo cual da un indicio de que no existe diferencia entre ellas. Para corroborar la hipótesis, se realizó la prueba de hipótesis Gehan (Wilcoxon generalizada) para comparar las curvas de sobrevivencia dando como resultado un *p-value* $=  0.35$, por lo cual no tenemos evidencia de que sean diferentes. Por tanto para esto datos se concluye que la radioterapia no afecta a la curva de sobrevivencia.
+
+La otra variable de interés fue el tipo de cirugía de busto, ya sea una mastectomía completa o parcial. La curva de sobrevivencia para los grupos se presenta en la @fig-KMSurgery, es posible ver una diferencia notoria en las curvas de sobrevivencia, aunque cabe destacar que existe una mayor cantidad de censuras en el grupo de mastectomía parcial a comparación de la completa. Igualmente se aplicó la prueba de Gehan dado que se considera que las curvas se cruzan al final y al inicio, su *p-value < 0.0001* por lo cual existe evidencia fuerte de que las curvas son distintas y se puede concluir que hay evidencia de que la cirugía de mastectomía parcial tiene un efecto en la curva de sobrevivencia en tanto que su pendiente es menos empinada.
+
 ```{r}
 #| echo: false
 #| fig-cap: "Estimador Kaplan-Meier para la curva de sobrevivencia."
@@ -115,5 +122,12 @@ ggsurvplot(fit.tbs, data = myData, pval.method = TRUE, pval = TRUE,
 ```
 
 \newpage
-# Ejemplos de Aplicación en Psicología.
+# Ejemplo de Aplicación en Psicología.
 
+Algunos ejemplos de la aplicación del análisis de sobrevivencia en psicología son el análisis de los tiempos de reacción que se obtienen en muchas tareas cognitivas, en ellas se busca estudiar los procesos detrás de distintas capacidades cognitivas como la atención, memoria, percepción, etc. Distintas teórias pueden ser idéntificadas y ponerse a prueba por sus postulados acerca de la velocidad de procesamiento en memoria, caracterización, etc. Además se puede explorar el efecto de distintos estímulos y contextos sobre los tiempos de reacción. La falla en estos estudios normalmente sería el que las personas tomen una decisión o realicen alguna acción en particular. A excepción de tareas con límite de tiempo, no se tendría que tratar con datos censurados [@Zandt2002-ZANAOR].
+
+\newpage
+# Referencias
+
+:::{refs}
+:::
