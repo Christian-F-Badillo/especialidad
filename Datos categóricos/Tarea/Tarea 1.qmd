@@ -1,0 +1,158 @@
+---
+title: "Tarea 1"
+author: 
+    - name: "Christian Badillo"
+    - name: "Rebeca"
+    - name: "Luz Maria Santana"
+    - name: "Sealtiel Pichardo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+\newpage
+# Datos Leucemia.
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+
+leucemia <- data.frame(
+    radiacion = factor(c("0", "1-9", "10-49", "50-99", "100-199", "200+"), ordered = T),
+    leucemia = c(13, 5, 5, 3, 4, 18),
+    otros.canceres = c(378, 200, 151, 47, 31, 3)
+)
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Datos Leucemia"
+#| label: tbl-leucemia
+
+kable(leucemia, format = "markdown", align = "ccc", col.names = c("Radiación", "Leucemia", "Otros Casos"))
+```
+
+Podemos obtener la tabla de proporción de muertes por leucemia para cada nivel de radiación.
+
+```{r}
+#| echo: false
+#| tbl-cap: "Proporción de muertes por leucemia para cada nivel de radiación"
+
+leucemia.prop <- leucemia %>% 
+    mutate(prop.leucemia = leucemia / (leucemia + otros.canceres)) %>%
+    mutate(total = leucemia + otros.canceres) %>%
+    select(radiacion, prop.leucemia, total)
+
+kable(leucemia.prop, format = "markdown", align = "cccc", col.names = c("Radiación", "Proporción", "Total"))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Proporción de muertes por leucemia para cada nivel de radiación"
+
+plot(NULL, ann = F, axes = F, xlim = c(0, 5), ylim = c(0, 1))
+points(0:5, leucemia.prop$prop.leucemia, pch = 19, col = "yellowgreen")
+axis(1, at = 0:5, labels = leucemia.prop$radiacion)
+axis(2, line = -0.25, padj = 0, las = 1)
+mtext("Proporción de muertes", side = 2, line = 2.5)
+mtext("Niveles de radiación", side = 1, line = 2.5)
+lines(lowess(0:5, leucemia.prop$prop.leucemia), col = 2)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+
+# Variables.
+dosis.numeric <- 0:5
+dosis.cat <- leucemia$radiacion
+props.leucemia <- leucemia.prop$prop.leucemia
+weights <- leucemia$leucemia + leucemia$otros.canceres
+
+# Modelos.
+modelo.logit <- glm(props.leucemia ~ dosis.numeric, family = binomial(link = "logit"), weights = weights)
+modelo.logit2 <- glm(props.leucemia ~ dosis.cat, family = binomial(link = "logit"), weights = weights)
+modelo.probit <- glm(props.leucemia ~ dosis.numeric, family = binomial(link = "probit"), weights = weights)
+modelo.cloglog <- glm(props.leucemia ~ dosis.numeric, family = binomial(link = "cloglog"), weights = weights)
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Ajuste del Modelo Logit"
+#| label: tbl-logit
+
+kable(summary(modelo.logit)$coefficients, format = "markdown", align = "ccc", col.names = c("Estimador", "Error Estándar", "Valor Z", "Valor P"))
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Devianza de los Modelos."
+#| label: tbl-devianza
+
+devianza <- c(
+    modelo.logit$deviance,
+    modelo.logit2$deviance,
+    modelo.probit$deviance,
+    modelo.cloglog$deviance
+)
+
+modelos <- c("Logit", "Logit2", "Probit", "Cloglog")
+
+kable(data.frame(modelos, devianza), format = "markdown", align = "cc", col.names = c("Modelo", "Devianza"))
+```
+
+```{r}
+#| echo: false
+#| warning : false
+#| fig-cap: "Ajuste de los Modelos."
+#| label: tbl-modelcomparation
+
+model.preds.x <- seq(0, 5, length.out = 1000)
+logit.predict <- predict(modelo.logit, newdata = data.frame(dosis.numeric = model.preds.x), type = "response")
+probit.predict <- predict(modelo.probit, newdata = data.frame(dosis.numeric = model.preds.x), type = "response")
+cloglog.predict <- predict(modelo.cloglog, newdata = data.frame(dosis.numeric = model.preds.x), type = "response")
+
+predits.df <- data.frame(
+    dosis = model.preds.x,
+    logit = logit.predict,
+    probit = probit.predict,
+    cloglog = cloglog.predict
+)
+
+predits.df.long <- predits.df %>%
+    pivot_longer(cols = c(logit, probit, cloglog), names_to = "Modelo", values_to = "Probabilidad")
+
+# Graficar
+ggplot(leucemia.prop, aes(x = 0:5, y = prop.leucemia)) +
+    geom_point(color = "yellowgreen") +  # Observaciones
+    geom_line(data = predits.df.long, aes(x = dosis, y = Probabilidad, color = Modelo), linewidth = 1, linetype =2) +
+    scale_color_manual(values = c("logit" = "red", "probit" = "blue", "cloglog" = "green")) +
+    labs(x = "Niveles de radiación", y = "Proporción de muertes", color = "Modelo") +
+    scale_x_discrete(labels = leucemia.prop$radiacion, limits = 0:5) +
+    theme_minimal()
+```
