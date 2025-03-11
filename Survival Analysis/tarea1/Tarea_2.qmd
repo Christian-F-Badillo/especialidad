@@ -75,6 +75,7 @@ exp_fit <- survreg(desing ~ 1,
                    data = myData)
 ```
 
+
 ```{r}
 #| echo: false
 #| tbl-cap: "Modelo de sobrevivencia con distribución exponencial"
@@ -89,13 +90,16 @@ knitr::kable(modelo_tidy)
 
 ```{r}
 #| echo: false
-#| fig-cap: "Curva de sobrevivencia estimada."
+#| fig-cap: "Curva de sobrevivencia estimada para el modelo exponencial."
+#| label: fig-ExpCurveSurvival
 
 adjustedPlot(exp_fit, type="plot", se = T, xlim=c(0, 400))
 KaplanMeierEst = prodlim(Surv(time = survival_time, event = censoring)
  ~ 1, data=myData)
 plot(KaplanMeierEst, xlab="Months",add=TRUE, col = "purple")
 ```
+
+En la @tbl-expEstimation se presentan los resultados de la estimación y en la @fig-ExpCurveSurvival se presenta la función de supervivencia estimada y el estimador Kaplan-Meier, donde se observa que el modelo exponencial se ajusta bastante bien a la curva. El estimador de $\lambda$ es `r coef(exp_fit)` que es estadísticamente significativo con un *p-value* $<2e-16$.
 
 ## Distribución Weibull.
 
@@ -122,12 +126,14 @@ knitr::kable(modelo_tidy)
 
 ```{r}
 #| echo: false
-#| fig-cap: "Curva de sobrevivencia estimada."
+#| fig-cap: "Curva de sobrevivencia estimada para el modelo Weibull."
 #| label: fig-survivalweibullcurve
 
 adjustedPlot(weibull_fit, type="plot", se = T, xlim=c(0, 400))
 plot(KaplanMeierEst, xlab="Months", add=TRUE, col = "yellowgreen")
 ```
+
+El ajuste del modelo Weibull y la curva de sobrevivencia estimada se presentan en la @tbl-WeibullEstimation y @fig-survivalweibullcurve respectivamente. El intercepto estimado es muy similar al del modelo exponencial pero cabe destacar que el parámetro de escala es muy cercano a 1 ($e^{\log \alpha} =$ `r exp(weibull_fit$icoef[2])`) y de hecho no es significativamente distinto a 0 en escala logarítmica, por lo cual podemos decir el modelo Weibull se ajusta bien, pero se reduce a un modelo exponencial.
 
 # Estimaciones con variable explicatoria
 
@@ -161,7 +167,7 @@ knitr::kable(modelo_tidy)
 
 ```{r}
 #| echo: false
-#| fig-cap: "Curva de sobrevivencia estimada."
+#| fig-cap: "Curvas de sobrevivencia estimadas (exponencial)."
 #| label: fig-ExpSurvCurvCov
 
 KaplanMeierEst = prodlim(
@@ -174,7 +180,7 @@ plot(KaplanMeierEst, xlab="Months", add=TRUE)
 
 ```{r}
 #| echo: false
-#| tbl-cap: "Modelo de sobrevivencia exponencial con variable explicatoria"
+#| tbl-cap: "Modelo de sobrevivencia weibull con variable explicatoria"
 #| label: tbl-WeibullEstimationCov
 
 # Convertir el resumen a data.frame
@@ -186,7 +192,7 @@ knitr::kable(modelo_tidy)
 
 ```{r}
 #| echo: false
-#| fig-cap: "Curva de sobrevivencia estimada."
+#| fig-cap: "Curvas de sobrevivencia estimadas (weibull)."
 #| label: fig-WeibullSurvCurvCov
 
 KaplanMeierEst = prodlim(
@@ -195,3 +201,43 @@ KaplanMeierEst = prodlim(
 adjustedPlot(weibull_fit2, type="plot", se = T, xlim=c(0, 400))
 plot(KaplanMeierEst, xlab="Months", add=TRUE)
 ```
+
+Se ajustaron los modelos pero tomando como variable explicatoria el tipo de cirugía (mastectomía total o parcial). Para el caso del modelo exponencial (véase @tbl-ExpEstimationCov) el tiempo de supervivencia medio tomando en cuenta el tipo de cirugia de mastectomía parcial es de `r exp(coef(exp_fit2)[1] )` meses que es mayor al de la mastectomía total de `r exp(coef(exp_fit2)[1] + coef(exp_fit2)[2])` meses, representando un $36.54\%$ menor de tiempo de supervivencia esperado cuando se tiene una cirugía de mastectomía total. En la @fig-ExpSurvCurvCov se presentan las curvas de supervivencia para ambos tipos de cirugía estimadas y su estimador Kaplan-Meier.
+
+Las conclusiones usando el modelo weibull son prácticamente las mismas siendo los tiempos de sobrevivencia medio de `r exp(coef(weibull_fit2)[1] )` y `r exp(coef(weibull_fit2)[1] + coef(weibull_fit2)[2])` para la mastectomía parcial y total respectivamente. El tiempo de sobrevivencia reducido para la cirugía parcial es de $36.02\%$. Además cabe destacar que el parámetro de escala sigue siendo no significativamente distinto de 1, por lo cual se puede concluir que el modelo weibull se reduce a un modelo exponencial. Además en ambos modelos el regresor es significativo, por lo que se concluye que el tipo de cirugía afecta la sobrevivencia de los pacientes.
+
+
+# Comapración de Modelos
+
+Para la elección de modelos se puede utilizar la prueba de razón de verosimilitud (LRT, por sus siglas en inglés), en la cual se ajusta el modelo bajo una restricción en su espacio paramétrico y el modelo sin la restricción.
+
+## Prueba de razón de verosimilitud (LTR)
+
+Dado un es modelo estadístico con un espacio parámetrico $\Theta$. Una hipótesis nula sobre el espacio parámetrico se define como $\Theta_0 \subset \Theta$ igualmente se puede definir una hipótesis alternativa como el complmento del conjunto de la hipótesis nula $\Theta - \Theta_0$. Entonces, la prubea de razón de verosimilitud para la hipótesis nula $H_0  = \theta \in \Theta_0$ se define como:
+
+$$
+\Lambda_{LR} = -2 \ln{\frac{\sup_{\theta \in \Theta_0} \mathcal{L}(x_1, \dots, x_n|\theta)}{\sup_{\theta \in \Theta} \mathcal{L}(x_1, \dots, x_n|\theta)}} 
+$$
+
+Usando propiedades del logaritmo, podemos expresar el cociente como una resta.
+
+$$
+\Lambda_{LR} = -2 \left[\ell \left(\theta_0 \right) - \ell ( \hat{\theta} ) \right]
+$$
+
+El estadístico obtenido sigue asíntoticamente una distribución $\chi^2_{p_1 - p_0}$ donde $p_1$ es el número de parámetros en el modelo sin restricciones y $p_0$ el número de parámetros en el modelo restringido.
+
+En nuestro caso para probar si una distribución Weibull es mejor que la exponencial, podemos usar el hecho de que la exponencial es un caso especial de la Weibull cuando su parámetro de forma ($\alpha$) es 1. La función de densidad para esta distribución es: 
+
+$$
+pdf(t; \alpha, \lambda) = \lambda \alpha (\lambda t)^{\alpha -1} e^{-(\lambda t)^{\alpha}}
+$$
+
+Usando la función de log-verosimilitud de la distribución Weibull y como hipótesis nula $H_0 :  \alpha =  1$ e hipótesis alternativa $H_1: \alpha \neq 1$, podemos escribir la prueba LR como:
+
+$$
+\Lambda_{LR} = -2 \left[ (- n\ln \hat{\lambda} + \sum \hat{\lambda} t_i) - (n\ln \hat{\alpha} - n\ln \hat{\lambda} + (\hat{\alpha} -1) \sum \ln t_i  + \sum \hat{\lambda} t_i)  \right]
+$$
+
+Y la distribución asintótica de nuestro estadístico es $\Lambda_{LR} \sim \chi^2_1$.
+

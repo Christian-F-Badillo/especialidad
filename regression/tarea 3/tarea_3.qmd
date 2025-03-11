@@ -1,0 +1,268 @@
+---
+title: "Regresión"
+subtitle: "Tarea 3"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        fig-pos: H
+        csl: apa
+nocite: |
+  @*
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+\newpage
+
+# Conceptos.
+
+1. ¿Qué son los residuales, cómo se construyen?
+
+Los residuales se definen como el error entre el valor observado ($y_i$) y el valor predicho por el modelo ($\hat{y}_i$): 
+
+$$
+e_i = y_i - \hat{y}_i
+$$
+
+2. ¿Cuál es la utilidad de los residuales respecto al modelo de regresión lineal?
+
+Los residuales son útiles para evaluar la calidad del modelo de regresión lineal, ya que nos permiten identificar si el modelo es adecuado o no. Si los residuales son pequeños y no presentan patrones (aleatorios), entonces el modelo es adecuado, en otro caso puede que la relación entre las variables no sea lineal o que no se cumplan los supuestos del modelo.
+
+3. Da algunos ejemplos gráficos para representar las afirmaciones del inciso anterior.
+
+Para esto se simularon dos conjuntos de datos, uno que cumple con los supuestos del modelo de regresión lineal y otro que no. En la @fig-simulacion se muestra el gráfico de dispersión de los datos y en la @fig-residuales se muestra el gráfico de los residuales. Cómo se puede observar los residuales de los datos que cumplen con los supuestos del modelo son aleatorios y no presentan patrones, mientras que los residuales de los datos que no cumplen con los supuestos del modelo presentan un patrón muy claro, el cual indica que la relación entre las variables no es lineal.
+
+```{r}
+#| echo: false
+library(ggplot2)
+set.seed(14082001)
+
+# Datos que cumplen con los supuestos del modelo
+x1 <- rnorm(200, 0, 1)
+
+y1 <- 0.2 + 3*x1 + rnorm(200, 0, 1)
+
+# Datos que no cumplen con los supuestos del modelo
+
+x2 <- rnorm(200, 0, 1)
+
+y2 <- 2 + cos(x2) + runif(200, -1, 1)
+
+# Modelo de regresión lineal
+mod1 <- lm(y1 ~ x1)
+mod2 <- lm(y2 ~ x2)
+
+# Residuales
+res1 <- residuals(mod1)
+res2 <- residuals(mod2)
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| layout-ncol: 2
+#| fig-cap: "Datos Simulados."
+#| fig-subcap: 
+#|  - "Datos que cumplen con los supuestos del modelo"
+#|  - "Datos que no cumplen con los supuestos del modelo"
+#| label: fig-simulacion
+
+# Scatter plot
+ggplot() +
+  geom_point(aes(x = x1, y = y1)) +
+  geom_smooth(aes(x = x1, y = y1), method = "lm", se = FALSE) +
+  ggtitle("") +
+  labs(x = "x", y = "y")
+
+ggplot() +
+  geom_point(aes(x = x2, y = y2)) +
+  geom_smooth(aes(x = x2, y = y2), method = "lm", se = FALSE) +
+  ggtitle("") + 
+  labs(x = "x", y = "y")
+```
+
+
+```{r}
+#| echo: false
+#| fig-cap: "Gráficos de los residuales del modelo lineal."
+#| fig-subcap:
+#|    - "Residuales datos lineales"
+#|    - "Residuales datos no lineales"
+#| label: fig-residuales
+#| layout-ncol: 2
+ggplot() +
+  geom_point(aes(x = x1, y = res1)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("") +
+  labs(x = "x", y = "Residuales")
+
+ggplot() +
+  geom_point(aes(x = x2, y = res2)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("") +
+  labs(x = "x", y = "Residuales")
+```
+
+# Algebra Lineal.
+
+1. Define el rango de una matriz, y da dos enunciados equivalentes, una con el rango y otra
+con su determinante. Explica a grandes rasgos por qué son equivalentes a que la matriz sea
+invertible.
+
+El rango de una matriz es el número de columnas linealmente independientes que tiene. Tiene relación con el determinante de la matriz, ya que una matriz es invertible si y solo si su determinante es distinto de cero. Si el rango de una matriz es igual al número de columnas (o filas) de la matriz, entonces la matriz es invertible, ya que esto implica que las columnas (o filas) son linealmente independientes y por lo tanto el determinante es distinto de cero.
+
+2. Describe(sin demostración) como interactúa el determinante con las operaciones de producto,
+transposición e inversión de matrices.
+
+El determinante se relaciona con el producto de matrices mediante la siguiente propiedad:
+
+$$
+\text{det}(AB) = \text{det}(A) \text{det}(B)
+$$
+En cuanto a la transposición de matrices, el determinante de una matriz es igual al determinante de su transpuesta:
+$$
+\text{det}(A) = \text{det}(A^T)
+$$
+
+Finalmente, en cuanto a la inversión de matrices, el determinante de una matriz invertida es igual al inverso del determinante de la matriz original:
+
+$$
+\text{det}(A^{-1}) = \frac{1}{\text{det}(A)}
+$$
+
+
+3. ¿Se puede afirmar algo respecto al determinante de la suma de matrices y la suma de los
+determinantes? ¿Hay alguna relación de igualdad o desigualdad que se satisfaga en general?
+
+4. Define los siguientes conceptos, y da ejemplos de los mismos:
+    - Descomposición espectral de una matriz:
+
+La descomposición espectral de una matriz es una factorización de una matriz cuadrada en términos de sus vectores y valores propios. La descomposición espectral de una matriz $A$ se define como:
+
+$$
+A = Q \Lambda Q^{-1}
+$$
+
+    - Matriz definida positiva:
+
+Una matriz $A$ es definida positiva si para todo vector no nulo $x$ se cumple que $x^T A x > 0$.
+
+    - Pseudoinversa de una matriz:
+
+La pseudoinversa de una matriz $A$ se define como la matriz $A^+$ que cumple con las siguientes propiedades:
+\begin{align*}
+AA^+A &= A \\
+A^+AA^+ &= A^+ \\
+(AA^+)^* &= AA^+ \\
+(A^+A)^* &= A^+A
+\end{align*}
+
+    - Descomposición polar de una matriz:
+
+La descomposición polar de una matriz $A$ se define como:
+$$
+A = U \Sigma V^T
+$$
+donde $U$ y $V$ son matrices ortogonales y $\Sigma$ es una matriz diagonal con los valores singulares de $A$. 
+
+    - Matriz ortogonal:
+    
+Una matriz $A$ es ortogonal si cumple con la siguiente propiedad:
+$$
+A^T A = I
+$$
+\newpage
+
+# Regresión Lineal.
+
+Haz un análisis exploratorio de los datos , ¿qué variable tomarías como explicativa para intentar un modelo de regresión lineal?
+
+Se exploró la relación entre las variables `density` y `residual sugar`, en la @fig-corr se muestra la correlación entre estas dos variables. La correlación entre estas dos variables es de $0.36$, lo cual indica que existe una relación lineal aunque débil entre estas dos variables. En la @fig-scatter se muestra el gráfico de dispersión de los datos, en el cual se puede observar que la relación entre las variables no es perfectamente lineal, dado que ciertos datos parecen seguir una relación cuadrática pero es probable que sean datos atípicos. Se decidio usar la variable `density` como variable explicativa para ajustar un modelo de regresión lineal, dado que es lógico pensar que a mayor densidad, mayor cantidad de azúcar residual.
+
+![Matrix de correlación.](corr_plot.png){#fig-corr width=45%}
+
+![Gráfico de dispersión.](scatter_raw_data.png){#fig-scatter width=45%}
+
+2/3. Ajusta un modelo de regresión lineal de acuerdo a lo que hayas respondido en el inciso anterior. En el primer inciso seguramente notaste la presencia de outliers ¿Cómo afectan los mismos al modelo construido en el inciso anterior? Utiliza los residuales para apoyar tus afirmaciones.
+
+Se ajustó un modelo de regresión lineal con la variable `density` como variable explicativa y `residual sugar` como variable respuesta. En la @fig-residuals se muestra el gráfico de los residuales del modelo de regresión lineal. En el gráfico de los residuales se puede observar que existen ciertos residuales que son muy grandes, lo cual indica que existen datos atípicos en el modelo, además de una patrón muy claro de los errores, lo cual da indicios que el modelo lineal no es un buen modelo para estos datos. 
+
+En la @tbl-fitraw se resumen los coeficientes del modelo de regresión lineal, donde se observa que tanto el intercepto como el coeficiente de la densidad son significativos. El coeficiente de determinación del modelo es de $0.1262$, lo cual indica que el modelo no explica mucho de la variabilidad de los datos y que no sería un buen modelo para predicciones. Igualmente se uso un gráfico cuantil cuantil para evaluar la normalidad de los residuales, en la @fig-qqplot se muestra el gráfico, en el cual se puede observar que los residuales no siguen una distribución normal, lo cual es otro indicio de que el modelo no es adecuado. Además se analizó la autocorrelación de los residuales, pero no se encontró evidencia de autocorrelación en los residuales más allá del lag 3, por lo cual no se considera un problema en el modelo y podemos suponer que hay cierta independencia entre los residuales.
+
+![Residuales del modelo de regresión lineal.](residual_raw_datamodel.png){#fig-residuals width=45%}
+
+```{r}
+#| echo: false
+#| label: tbl-fitraw
+#| tbl-cap: "Ajuste del modelo de regresión lineal." 
+
+library(knitr)
+library(kableExtra)
+
+# Tabla del ajuste del modelo
+data = read.csv("vino_blanco.csv")
+mod <- lm(`residual.sugar` ~ density, data = data)
+
+# kable de la tabla para pdf
+kable(summary(mod)$coefficients, format = "latex")
+```
+
+![Gráfico QQ para los residuales del modelo de regresión.](qqplot_rawregression.png){#fig-qqplot width=45%}
+
+4. Ajusta un nuevo modelo a los datos, pero eliminando los datos atíıpicos, ¿cómo cambia esto al modelo? ¿qué puedes concluir al respecto?
+
+Se idéntificaron y eliminaron los valores atípicos usando el método del rango intercuartílico. En la @fig-scatterclean se muestra el gráfico de dispersión de los datos limpios, en el cual se puede observar que la relación entre las variables es más lineal que en los datos crudos. Se volvio a estimar la correlación en los datos, la cual aumento a 0.40 (véase @fig-corr-clean). 
+
+Se ajustó un nuevo modelo de regresión lineal con los datos limpios, en la @tbl-fitclean se muestran los coeficientes del modelo de regresión lineal donde se ve el cambio grande que hubo en la estimación del intercepto y la pendiente de la recta, por lo cual se puede concluir que los valores atípicos influyeron mucho en el modelo. El coeficiente de determinación del modelo de regresión lineal con los datos limpios es de $0.1564$, lo cual indica que el modelo explica un poco más de la variabilidad de los datos, pero sigue siendo un modelo no adecuado para predicciones. 
+
+En la @fig-residualsclean se muestra el gráfico de los residuales del modelo de regresión lineal con los datos limpios, en el cual se puede observar que los residuales se comportan de una forma más aleatoria que cuando había datos atípicos pero se sigue notando un patrón en los residuales. 
+
+En el @fig-qqplotclean se muestra el gráfico cuantil cuantil de los residuales donde se nota un mejor ajuste a una distribución normal que en el modelo anterior, pero aún se observan ciertos residuales que no siguen la distribución normal, especialmente en las colas de la distribución.
+
+![Gráfico de dispersión sin datos atípicos.](scatter_clean_data.png){#fig-scatterclean width=45%}
+
+![Matrix de Correlación.](corr_clean_data.png){#fig-corr-clean width=45%}
+
+```{r}
+#| echo: false
+#| label: tbl-fitclean
+#| tbl-cap: "Ajuste del modelo de regresión lineal con datos limpios."
+removeOutliers <- function(data, column_name) {
+    Q1 <- quantile(data[[column_name]], 0.25)
+    Q3 <- quantile(data[[column_name]], 0.75)
+    IQR <- Q3 - Q1
+    lower_bound <- Q1 - 1.5 * IQR
+    upper_bound <- Q3 + 1.5 * IQR
+    return(data[data[[column_name]] >= lower_bound & data[[column_name]] <= upper_bound, ])
+}
+
+data_clean <- removeOutliers(data, "density")
+data_clean <- removeOutliers(data_clean, "residual.sugar")
+
+model_clean <- lm(residual.sugar ~ density, data = data_clean)
+
+kable(summary(model_clean)$coefficients, format = "latex")
+```
+
+![Residuales del modelo de regresión lineal con datos limpios.](residuals_clean_data.png){#fig-residualsclean width=45%}
+
+![Gráfico QQ para los residuales con datos limpios.](qqplot_clean_data.png){#fig-qqplotclean width=45%}

@@ -22,10 +22,10 @@ ggplot(data.wine, aes(x = "", y = density)) +
 # Correlation matrix
 correlation_matrix <- cor(data.wine)
 correlation_matrix_log <- cor(log(data.wine))
-corrplot(correlation_matrix_log, method = "number")
+corrplot(correlation_matrix, method = "number")
 
 # Scatter plot
-ggplot(data.wine, aes(y = residual.sugar, x = density)) +
+ggplot(data.wine, aes(y= residual.sugar, x = density)) +
   geom_point() +
   labs(title = "Scatter plot of Residual Sugar vs Density",
        y = "Residual Sugar",
