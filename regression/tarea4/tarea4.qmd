@@ -1,0 +1,162 @@
+---
+title: "Regresión"
+subtitle: "Tarea 4"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        fig-pos: H
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto 
+---
+
+# Conceptos
+
+1. Describe los componentes del modelo de regresión lineal múltiple.
+
+2. ¿Cuáles son las ecuaciones normales del modelo? ¿Cómo podemos obtenerlas?
+
+3. ¿Qué es la matriz sombrero o matriz Hat? ¿Cómo se construye y cuál es su utilidad?
+
+4. ¿Cómo se pueden realizar pruebas de hipótesis individuales para los coeficientes de cada variable?
+
+5. Menciona algunos métodos que pueden utilizarse para hacer un diagnóstico de los datos, con el fin de comprobar que se satisfacen las hipótesis del modelo.
+
+\newpage
+# Análisis
+
+## Análisis Exploratorio.
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(corrplot)
+
+### Datos.
+
+data <- read.csv("car data.csv")
+
+data.m <- data %>% select(-Car_Name)
+
+### Análisis Exploratorio.
+
+#apply(data, 2, function(x) sum(is.na(x)))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Relación de las covariables con el precio de venta."
+#| fig-subcap:
+#|  - "Año vs Precio de Venta"
+#|  - "Kilometraje vs Precio de Venta"
+#|  - "Precio Actual vs Precio de Venta"
+#|  - "Dueños vs Precio de Venta"
+#|  - "Tipo de Combustible vs Precio de Venta"
+#|  - "Tipo de Vendedor vs Precio de Venta"
+#|  - "Tipo de Transmisión vs Precio de Venta"
+#| label: fig-pariplots
+#| layout: [[40,-10, 40], [40,-10, 40], [40,-10, 40], [-30, 40, -30]]
+
+ggplot(data.m, aes(x = as.factor(Year), y = Selling_Price, color = as.factor(Year))) + 
+    geom_point() + 
+    geom_jitter(width = 0.2) +
+    theme_minimal() + 
+    labs(title = "",
+         x = "Año",
+         y = "Precio de Venta",
+         color = "",
+         fill = "") +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(x = Kms_Driven, y = Selling_Price, colour = Selling_Price)) + 
+    geom_point(size = 3.5, alpha = 0.45) + 
+    theme_minimal() + 
+    labs(title = "",
+         x = "Kilometraje",
+         y = "Precio de Venta",
+         color = "",
+         fill = "") +
+    scale_x_continuous(labels = scales::comma) +
+    scale_colour_gradient( low = "yellowgreen", high = "red") +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(x = Present_Price, y = Selling_Price, colour = Selling_Price)) + 
+    geom_point(size = 4, alpha = 0.8) +
+    theme_minimal() + 
+    labs(title = "",
+         x = "Precio Actual",
+         y = "Precio de Venta",
+         color = "",
+         fill = "") +
+    scale_x_continuous(labels = scales::comma) +
+    scale_colour_gradient( low = "lightblue", high = "orange") +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(y = Selling_Price, x = as.factor(Owner))) +
+    geom_violin(fill = "lightblue", color = "blue") +
+    geom_boxplot( fill = "white", color = "blue", width = 0.1, outlier.colour = "red") +
+    theme_minimal() +
+    labs(title = "",
+         x = "Dueños",
+         y = "Precio de Venta"
+         ) +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(x = Fuel_Type, y = Selling_Price)) + 
+    geom_boxplot(fill = "yellowgreen", color = "black", 
+                 outlier.colour = "red", alpha = 0.5) +
+    theme_minimal() + 
+    labs(title = "",
+        x = "Tipo de Combustible",
+        y = "Precio de Venta"
+        ) +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(x = Seller_Type, y = Selling_Price)) +
+    geom_boxplot(fill = "lightblue", color = "blue", 
+                 outlier.colour = "red", alpha = 0.5) +
+    theme_minimal() +
+    labs(title = "",
+         x = "Tipo de Vendedor",
+         y = "Precio de Venta"
+         ) +
+    theme(legend.position = "none")
+
+ggplot(data.m, aes(x = Transmission, y = Selling_Price)) +
+    geom_violin(fill = "lightblue", color = "blue") +
+    geom_boxplot( fill = "white", color = "blue", 
+                  width = 0.06, outlier.colour = "red") +
+    theme_minimal() +
+    labs(title = "",
+         x = "Tipo de Transmisión",
+         y = "Precio de Venta"
+         ) +
+    theme(legend.position = "none")
+```
+
+

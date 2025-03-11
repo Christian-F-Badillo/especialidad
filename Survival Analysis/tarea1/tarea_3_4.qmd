@@ -1,0 +1,245 @@
+---
+title: "Análisis de Sobrevivencia"
+subtitle: "Tarea 3/4"
+author: 
+    - name: "Christian Badillo"
+format:
+    pdf:
+        toc: true
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 12pt
+        geometry: "left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm"
+        lof: false
+        lot: false
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        fig-pos: H
+        bibliography: ref.bib
+csl: apa
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+execute:
+    cache: true
+    freeze: auto
+---
+\newpage
+
+# Ajuste del Modelo de Cox
+
+```{r}
+#| echo: false
+#| warning: false
+
+# Cargamos las librerías necesarias
+library(survival)
+library(survminer)
+library(kableExtra)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(autoReg)
+library(broom)
+library(ranger)
+library(ggfortify)
+```
+
+```{r}
+#| echo: false
+
+# Datos.
+data <- read.csv("Tarea1(Breast Cancer METABRIC).csv")
+
+# Variables de Importancia.
+data$Overall.Survival..Months. <- as.numeric(data$Overall.Survival..Months.)
+data$Age.at.Diagnosis <- as.numeric(data$Age.at.Diagnosis)
+data$Tumor.Size <- as.numeric(data$Tumor.Size)
+
+data <- data %>%
+    select(-c(Patient.ID))
+
+# Eliminamos NAS en chemoteraphy
+data <- data %>% mutate(across(where(is.character), ~ na_if(.x, "")))
+
+censoring <- ifelse(data$Overall.Survival.Status == "Living", 1, 0)
+survival_time <- data$Overall.Survival..Months.
+survival_time <- ifelse(survival_time == 0, 0.0001, survival_time)
+```
+
+## Modelo de Cox sin estratificación
+
+```{r}
+#| echo: false
+#| warning: false
+
+# Ajuste del Modelo de Cox
+cox_model <- coxph(
+    Surv(survival_time, censoring) ~ Type.of.Breast.Surgery + Chemotherapy, 
+    data = data)
+
+
+cox_model_strata <- coxph(
+    Surv(survival_time, censoring) ~ Type.of.Breast.Surgery + strata(Chemotherapy),
+    data = data)
+```
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de Cox sin estratificación"
+#| label: tbl-cox_model_no_strata
+# Resumen del Modelo
+tidy_summary <- tidy(cox_model)
+kable(tidy_summary, format = "markdown") %>%
+  kable_styling("striped", full_width = F)
+```
+
+El modelo utilizado es:
+
+$$
+\text{Tiempo} \sim \text{Tipo de Cirugía} + \text{Quimioterapia}
+$$
+
+Que añade la información de la cirugía y la quimioterapia como variables explicativas para el tiempo de sobrevivencia Cómo se observa en la @tbl-cox_model_no_strata las estimaciones son estadísticamente significativas, por lo cual en este modelo ambas sirven para dar cuenta de la sobrevivencia. El estimado para la cirugía de mastectomía es de `r exp(-0.2936907)` y para la quimioterapia es de `r exp(0.5765362)`, lo cual indica que la cirugía de mastectomía disminuye el riesgo de muerte en un `r round(1 - exp(-0.2936907), 4) * 100`% y la quimioterapia lo aumenta en un `r round(exp(0.5765362) - 1, 4) * 100`%. Una posible explicación del aumento de riesgo en la quimioterapia es su agresividad en el cuerpo de los pacientes en comparación con la cirugía de mastectomía y de mayores efectos adversos. En la @fig-cox_model_no_strata se muestra la curva de sobrevivencia estimada.
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia para el modelo de Cox"
+#| label: fig-cox_model_no_strata
+
+library(prodlim)
+
+survival_plot <- survfit(cox_model)
+
+ggsurvplot(survival_plot, data = data, 
+           conf.int = TRUE, # Intervalos de confianza
+           pval = F, # Muestra p-valor
+           risk.table = F, # Agrega tabla de riesgo
+           ggtheme = theme_minimal(), legend = "none",
+           xlab = "Tiempo (Meses)", ylab = "Probabilidad de Sobrevivencia")
+```
+\newpage
+### Residuos
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Prueba de proporcionalidad de riesgos de Schoenfeld"
+#| label: fig-hazard_proportionality_no_strata
+#| layout: [[1]]
+
+cox_model_residuals_Schoenfeld <- cox.zph(cox_model)
+
+# Residuos de Schoenfeld`
+ggcoxzph(cox_model_residuals_Schoenfeld, 
+         data = data, 
+         pval = TRUE, 
+         ggtheme = theme_minimal(), font.main = 10, font.y = 6, font.x = 8)
+```
+
+En la figura @fig-hazard_proportionality_no_strata se muestra los residuos de Schoenfield para nuestro modelo al igual que el p-value de la prueba de proporcionalidad de riesgos. En este caso, el p-value de la prueba global es de 0.5315, lo cual indica que no hay evidencia suficiente para rechazar la hipótesis nula de proporcionalidad de riesgos. Por lo tanto, se puede asumir que el modelo de Cox es adecuado para los datos. De manera individual, ambos de nuestros regresores cumplen con la proporcionalidad de riesgos. 
+
+En @fig-residuals_no_strata se muestran los residuos de martingala, dfbetas y deviance. En el caso de @fig-residuals_no_strata-1 tenemos los de martingala donde se observa que no hay un patrón claro en los residuos, lo cual indica que no hay una relación lineal entre las variables explicativas y el tiempo de sobrevivencia. En @fig-residuals_no_strata-2 se muestran los residuos de dfbetas, podemos ver que hay una observación cercana al ID 1000 que sobresale en ambas covariables, lo cual indica que esta observación tiene un efecto importante en el modelo y puede corresponder a una observación atípica de un paciente que vivio mucho más tiempo de lo esperado o menos tiempo del esperado. En @fig-residuals_no_strata-3 se muestran los residuos de deviance, a diferencia de los residuos de dfbetas no parece indicar que existan observaciones aticas claras en el modelo.
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Residuos del Modelo de Cox"
+#| fig-subcap:
+#|     - "Residuos de Martingala"
+#|     - "Residuos de Dfbetas"
+#|     - "Residuos de Deviance"
+#| label: fig-residuals_no_strata
+#| layout-nrow: 3
+
+# Residuos de Schoenfeld`
+
+ggcoxdiagnostics(cox_model, type = "martingale", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+
+ggcoxdiagnostics(cox_model, type = "dfbetas", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+
+ggcoxdiagnostics(cox_model, type = "deviance", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+```
+
+
+## Modelo de Cox con estratos.
+
+```{r}
+#| echo: false
+#| tbl-cap: "Modelo de Cox con estratificación"
+#| label: tbl-cox_model_strata
+
+# Resumen del Modelo
+tidy_summary_strata <- tidy(cox_model_strata)
+kable(tidy_summary_strata, format = "markdown") %>%
+  kable_styling("striped", full_width = F)
+```
+
+En este modelo estamos estratificando por la variable quimioterapia, lo cual nos permite tener riesgos base $\exp(\beta_0)$ diferentes para cada uno de los niveles de nuestra covariable. En la @tbl-cox_model_strata se observa que las estimaciones son estadísticamente significativas, por lo cual en este modelo ambas sirven para dar cuenta de la sobrevivencia. El estimado para la cirugía de mastectomía es de `r exp(-0.2979684)`, lo cual indica que la cirugía de mastectomía disminuye el riesgo de muerte en un `r round(1 - exp(-0.2979684), 4) * 100`%. En la @fig-cox_model_strata se muestra la curva de sobrevivencia estimada para cada uno de los estratos, donde claramente se observa que la quimioterapia aumenta el riesgo de muerte.
+
+```{r}
+#| echo: false
+#| fig-cap: "Curva de sobrevivencia para el modelo de Cox con estratificación"
+#| label: fig-cox_model_strata
+#| layout: [[1]]
+
+survival_plot_strata <- survfit(cox_model_strata)
+
+ggsurvplot(survival_plot_strata, data = data, 
+           conf.int = TRUE, # Intervalos de confianza
+           pval = F, # Muestra p-valor
+           risk.table = F, # Agrega tabla de riesgo
+           ggtheme = theme_minimal(), legend.title = "Quimioterapia",
+           xlab = "Tiempo (Meses)", ylab = "Probabilidad de Sobrevivencia", legend.labs = c("No", "Sí"))
+```
+
+\newpage
+### Residuos
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Prueba de proporcionalidad de riesgos de Schoenfeld con estratificación"
+#| label: fig-hazard_proportionality
+#| layout: [[1]]
+
+cox_model_residuals_Schoenfeld <- cox.zph(cox_model_strata)
+
+# Residuos de Schoenfeld`
+ggcoxzph(cox_model_residuals_Schoenfeld, 
+         data = data, 
+         pval = TRUE, 
+         ggtheme = theme_minimal(), font.main = 10, font.y = 6, font.x = 8)
+```
+
+Podemos ver en @fig-hazard_proportionality que la prueba de proporcionalidad de riesgos de Schoenfeld no se rechaza, por lo que podemos suponer riesgos proporcionales en nuestra covariable. En @fig-residuals_strata se muestran nuevamente los residuos de martingala, dfbetas y deviance. En @fig-residuals_strata-1 tenemos los de martingala donde se observa que en general el ajuste del modelo es bueno y no hay un patrón claro en los residuos, lo cual indica que no hay una relación lineal entre las variables explicativas y el tiempo de sobrevivencia.
+
+En @fig-residuals_strata-2 volvemos a notar que existe una observación que influye bastante en el modelo siendo la misma que se localizó en el modelo anterior. En @fig-residuals_strata-3 se muestran los residuos de deviance, donde parece haber más observaciones atípicas en los extremos de las observaciones ordenadas por su ID.
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Residuos del Modelo de Cox con estratificación"
+#| fig-subcap:
+#|     - "Residuos de Martingala"
+#|     - "Residuos de Dfbetas"
+#|     - "Residuos de Deviance"
+#| label: fig-residuals_strata
+#| layout-nrow: 3
+
+ggcoxdiagnostics(cox_model_strata, type = "martingale", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+
+ggcoxdiagnostics(cox_model_strata, type = "dfbetas", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+
+ggcoxdiagnostics(cox_model_strata, type = "deviance", data = data, ggtheme = theme_minimal(), font.main = 10, font.y = 8, font.x = 8, linear.predictions = F) + labs(y = "Residuos", x = "Obs. ID", title = "", subtitle = "", caption = "")
+```
+
+# Conclusión
+
+Parece que la principal influencia de ajustar una variable como estrato y como covariable es que se pueden tener riesgos base diferentes para cada uno de los niveles de nuestra covariable, permitiendo usar el modelo de Cox con algunas variables que no cumplan el supuesto de riesgo proporcional. Además parece que no afecta en gran manera en la estimación de los parámetros de las otras covariables o al menos no en los modelos que se usaron en este trabajo. Tampoco parece influir mucho su uso en cuanto a la bondad de ajuste del modelo, ya que en ambos casos los distintos residuos aquí presentados no varían de manera significativa a simple vista, aunque si se observan algunas observaciones atípicas en los residuos de dfbetas y deviance en el modelo con estratificación.
