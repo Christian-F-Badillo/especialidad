@@ -26,10 +26,11 @@ crossref:
 editor: source
 lang: es-ES
 execute:
-    cache: true
-    freeze: auto 
+    cache: false
+    freeze: false 
 ---
 
+\newpage
 # Conceptos
 
 1. Describe los componentes del modelo de regresión lineal múltiple.
@@ -55,6 +56,9 @@ library(tidyverse)
 library(ggplot2)
 library(GGally)
 library(corrplot)
+library(knitr)
+library(kableExtra)
+library(gtsummary)
 
 ### Datos.
 
@@ -66,6 +70,29 @@ data.m <- data %>% select(-Car_Name)
 
 #apply(data, 2, function(x) sum(is.na(x)))
 ```
+
+### Resumen de los datos.
+
+```{r}
+#| echo: false
+#| tbl-cap: "Estadísticos Resumen de los Datos"
+#| label: tbl-resumen
+
+table1 <- data.m %>%
+  tbl_summary(
+    statistic = list(all_continuous() ~ "{mean} ({sd}), {median} ({p25}, {p75})", all_categorical() ~
+    "{n} ({p}%)")
+  ) %>%
+  add_n() %>%
+  add_ci() %>%
+  modify_header(label = "**Variable**") %>%
+  bold_labels()
+
+table1
+```
+
+\newpage
+### Realción con variable respuesta
 
 ```{r}
 #| echo: false
@@ -159,4 +186,107 @@ ggplot(data.m, aes(x = Transmission, y = Selling_Price)) +
     theme(legend.position = "none")
 ```
 
+\newpage
+### Relación entre Covariables.
 
+```{r}
+#| echo: false
+#| warning: false
+#| output: false
+visualizar_relacion <- function(df, var1, var2) {
+  
+  # Convertir nombres de variables a símbolos para dplyr
+  var1 <- rlang::sym(var1)
+  var2 <- rlang::sym(var2)
+  
+  # Detectar si las variables son continuas o categóricas
+  es_continua <- function(var) is.numeric(df[[as.character(var)]]) 
+  
+  tipo1 <- es_continua(var1)
+  tipo2 <- es_continua(var2)
+  
+  # 1. Ambas continuas → Scatterplot
+  if (tipo1 & tipo2) {
+    p <- ggplot(df, aes(x = !!var1, y = !!var2)) +
+      geom_point(alpha = 0.6, color = "blue") +
+      theme_minimal() +
+      labs(title = paste(as.character(var1), "vs", as.character(var2)),
+           x = as.character(var1), y = as.character(var2))
+    
+  # 2. Una categórica y una continua → Boxplot
+  } else if (!tipo1 & tipo2) {
+    p <- ggplot(df, aes(x = factor(!!var1), y = !!var2)) +
+      geom_boxplot(fill = "lightblue", color = "black") +
+      theme_minimal() +
+      labs(
+        x = as.character(var1), y = as.character(var2))
+    
+  } else if (tipo1 & !tipo2) {
+    p <- ggplot(df, aes(x = factor(!!var2), y = !!var1)) +
+      geom_boxplot(fill = "lightblue", color = "black") +
+      theme_minimal() +
+      labs(
+           x = as.character(var2), y = as.character(var1))
+    
+  # 3. Ambas categóricas → Gráfico de mosaico
+  } else {
+    p <- ggplot(df) +
+      geom_bar(aes(x = !!var1, fill = !!var2), position = "fill") +
+      theme_minimal() +
+      labs(x = as.character(var1), y = "Proporción", fill = as.character(var2))
+  }
+  
+  return(p)
+}
+
+covariables <- data.m %>%
+  select(-c(Selling_Price))
+cov.names <- names(covariables)
+
+plots.cova <- numeric()
+count <- 1
+
+covariables <- data.m %>%
+  select(-c(Selling_Price))  # Eliminamos la variable de salida
+cov.names <- names(covariables)  # Extraemos los nombres de las covariables
+
+plots.cova <- list()  # Usamos una lista para almacenar gráficos
+count <- 1  # Contador para indexar la lista
+
+for(i in 1:(length(cov.names) - 1)) {  # Iteramos sobre las covariables excepto la última
+  
+  for (j in (i + 1):length(cov.names)) {  # Comenzamos desde i + 1 para evitar repetición
+    
+    # Aseguramos que se pasen los nombres correctamente como strings
+    plots.cova[[count]] <- visualizar_relacion(df = covariables, var1 = cov.names[i], var2 = cov.names[j])
+    
+    count <- count + 1  # Incrementamos el contador
+  }
+}
+
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Relación entre covariables parte 1"
+#| fig-subcap:
+#|  - "Año vs Precio"
+#|  - "Año vs Kilometraje"
+#|  - "Año vs Tipo de Combustible"
+#|  - "Año vs Tipo de Vendedor"
+#|  - "Año vs Tipo de Transmición"
+#|  - "Año vs Número de Propietarios"
+#| layout: [[40, -20, 40], [40, -20, 40], [40, -20, 40], [40, -20, 40]]
+#| label: fig-covariables1
+
+plots.cova[[1]]
+plots.cova[[2]]
+plots.cova[[3]]
+plots.cova[[4]]
+plots.cova[[5]]
+plots.cova[[6]]
+plots.cova[[7]]
+plots.cova[[8]]
+
+```
