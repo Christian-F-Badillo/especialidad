@@ -1,0 +1,524 @@
+---
+title: "Examen 1"
+subtitle: "Regresión"
+author: "Christian Badillo"
+format: 
+    html:
+        code-fold: true
+        code-summary: "Click para ver el código"
+        toc: true
+        toc-location: left
+        toc-depth: 3
+        number-sections: true
+        fig-width: 6
+        fig-height: 4
+        fig-cap: "Figure {#fig-1} Caption"
+        grid:
+            margin-width: 0px
+            body-width: 1250px
+date: today
+date-format: long
+lang: es
+cache: true
+freeze: auto
+---
+
+# Teórico
+
+# Análisis de Datos.
+
+## Variables
+
+```{r}
+#| echo: false
+#| warning: false
+# Librerias
+library(tidyverse)
+library(ggplot2)
+library(tidyplots)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(plotly)
+library(modelsummary)
+
+
+datos <- read.csv("Lifexpectancy.csv")
+```
+
+Tenemos un conjunto de datos que contiene información sobre la esperanza de vida en diferentes países y años. El conjunto de datos incluye las siguientes variables:
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+    }
+        tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+    tr:hover {
+        background-color: #ddd;
+    }
+</style>
+
+<table>
+    <thead>
+        <tr>
+            <th>Variable</th>
+            <th>Descripción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Country</td>
+            <td>Categórica ($193$). Nombre del País.</td>
+        </tr>
+        <tr>
+            <td>Year</td>
+            <td>Númerica Discreta ($2000-2015$). Año.</td>
+        </tr>
+        <tr>
+            <td>Status</td>
+            <td>Categórica ($2$). Estado de Desarrollo del País.</td>
+        </tr>
+        <tr>
+            <td>Life_expectancy</td>
+            <td>Numérica Continua ($6.30-89$). Esperanza de Vida.</td>
+        </tr>
+        <tr>
+            <td>Adult_Mortality</td>
+            <td>Numérica Discreta ($1-723$). Tasa de Mortalidad en personas de 15 a 60 años por cada 1000 habitantes (ambos sexos).</td>
+        </tr>
+        <tr>
+            <td>infant_deaths</td>
+            <td>Numérica Discreta ($1-1800$). Tasa de Mortalidad infantil por cada 1000 habitantes.</td>
+        </tr>
+        <tr>
+            <td>Alcohol</td>
+            <td>Numérica Continua ($0.01-17.87$). Consumo de alcohol puro en litros per capita en mayores de 15 años.</td>
+        </tr>
+        <tr>
+            <td>percentage_expenditure</td>
+            <td>Numérica Continua ($0-19479.912$). Proporción del Producto Interno Bruto (PIB) per cápita de un país que se destina al gasto en salud.</td>
+        </tr>
+        <tr>
+            <td>Hepatitis.B</td>
+            <td>Numérica Continua ($1-99$). Porcentaje de Inmunización a Hepatitis B en infantes de $\leq1$ año.</td>
+        </tr>
+        <tr>
+            <td>Measles</td>
+            <td>Numérica Continua ($0-360.2$). Número de casos reportados de Rubeola por cada 1000 habitantes.</td>
+        </tr>
+        <tr>
+            <td>BMI</td>
+            <td>Númerica Continua ($1-87.30$). Promedio poblacional del Índice de Masa Corporal.</td>
+        </tr>
+        <tr>
+            <td>U05_deaths</td>
+            <td>Numérica Discreta ($0-2500$). Número de Muertes de Menores de 5 años por cada 1000 habitantes</td>
+        </tr>
+        <tr>
+            <td>Polio</td>
+            <td>Numérica Continua ($3-99$). Porcentaje de Inmunización a Polio en infantes de $\leq1$ año.</td>
+        </tr>
+        <tr>
+            <td>Total_expenditure</td>
+            <td> Numérica Continua ($0.370-17.600$). Proporción del gasto total del gobierno que se destina a la salud.</td>
+        </tr>
+        <tr>
+            <td>Diphtheria</td>
+            <td>Numérica Continua ($2-99$). Porcentaje de Inmunización a Difteria, Tétanos y Tosferina en infantes de $\leq1$ año.</td>
+        </tr>
+        <tr>
+            <td>HIV.AIDS</td>
+            <td>Númerica Continua ($0.1-50.6$). Tasa de mortalidad de niños menores de 1 año debido a VIH/SIDA</td>
+        </tr>
+        <tr>
+            <td>GDP</td>
+            <td>Númerica Continua ($1.68-119172.74$). Producto Interno Bruto per cápita en USD.</td>
+        </tr>
+        <tr>
+            <td>Population</td>
+            <td>Númerica Discreta ($3.400(10)^1 -1.294(10)^9$). Población del País.</td>
+        </tr>
+        <tr>
+            <td>thinness._1to19years</td>
+            <td>Numérica Continua ($0.1-27.7$). Proporción de delgadez entre niños y adolescentes de 10 a 19 años.</td>
+        </tr>
+        <tr>
+            <td>thinness_5to.years</td>
+            <td>Numérica Continua ($0.1-28.6$). Proporción de delgadez entre niños de 5 a 9 años.</td>
+        </tr>
+        <tr>
+            <td>Income_composition_of_resources</td>
+            <td>Numérica Continua ($0.1-0.948$). Índice de Desarrollo Humano en términos de la composición del ingreso de los recursos. </td>
+        </tr>
+        <tr>
+            <td>Schooling</td>
+            <td>Numérica Continua ($0-20.7$). Número de Años de Escolaridad.</td>
+        </tr>
+    </tbody>
+</table>
+
+    Nota: Las variables categóricas tienen entre paréntesis el número de categorías que tienen. Las variables numéricas discretas tienen entre paréntesis el rango de su valor en los datos.
+
+## Análisis Exploratorio
+
+Tenemos un total de `r ncol(datos)` variables y `r nrow(datos)` observaciones. De estas tenemos `r length(unique(datos$Country))` países distintos y `r length(unique(datos$Year))` años de datos.
+
+### Resumen de los datos.
+
+```{r}
+#| tbl-cap: "Resumen de los datos"
+#| label: tbl-resumen
+#| warning: false
+
+datasummary_skim(datos,
+                 title = "",
+                 fmt = 2,
+                 output_options = list(kable_styling = list(full_width = F, position = "left")))
+
+```
+
+### Correlación entre variables.
+
+```{r}
+#| fig-cap: "Correlación entre variables numéricas."
+#| label: fig-correlacion
+
+# Solo numericas
+corr_datos <- datos %>%
+    select(-Country, -Status) %>%
+    drop_na() %>%
+    cor() %>%
+    round(2) %>%
+    as.data.frame() %>%
+    rownames_to_column("Variable") %>%
+    pivot_longer(cols = -Variable, names_to = "Variable2", values_to = "Correlacion")
+
+p <- ggplot(corr_datos, aes(x = Variable, y = Variable2, fill = Correlacion)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), name = "Correlación") +
+    theme_minimal() +
+    labs(title = "",
+         x = "",
+         y = "") +
+    theme(axis.text.x = element_text(angle = 65, hjust = 1))
+
+ggplotly(p)
+```
+
+
+### Visualización de Datos.
+
+Veremos la relación de las variables con la esperanza de vida. Para esto, graficaremos la esperanza de vida contra cada una de las variables numéricas y categóricas.
+
+```{r}
+#| warning: false
+#| label: fig-vida1
+#| fig-cap: "Relación de la Esperanza de Vida con otras variables (parte 1)."
+#| fig-subcap:
+#|   - "Esperanza de Vida vs Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Año."
+#|   - "Esperanza de Vida vs Tasa de Mortalidad en Adultos y  Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Tasa de Mortalidad Infantil y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Consumo de Alcohol y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs PIB per cápita destinado a la salud (log) y Estado de Desarrollo."
+#| layout: [[50, 50], [50, 50], [50, 50]]
+
+datos %>%
+    ggplot(aes(x = Status, y = Life_expectancy)) +
+    geom_violin( aes(fill = Status), alpha = 0.45) +
+    geom_boxplot(alpha = 0.25, width = 0.1, outlier.color = "red") +
+    labs(title = "",
+         x = "Estado de Desarrollo",
+         y = "Esperanza de Vida",
+         fill = "Estado de Desarrollo"
+         ) +
+    guides(fill = F) +
+    theme_minimal() 
+
+datos %>%
+    ggplot(aes(x = as.factor(Year), y = Life_expectancy)) +
+    geom_violin( aes(fill = as.factor(Year)), alpha = 0.45) +
+    geom_boxplot(alpha = 0.25, width = 0.1, outlier.color = "red") +
+    labs(title = "",
+         x = "Año",
+         y = "Esperanza de Vida",
+         fill = "Año"
+         ) +
+    guides(fill = F) +
+    theme_minimal()
+
+datos %>%
+    ggplot(aes(x = Adult_Mortality, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Tasa de Mortalidad en Adultos",
+         y = "Esperanza de Vida") +
+    theme_minimal() + 
+    theme(legend.position = c(0.8, 0.95))
+
+datos %>%
+    ggplot(aes(x = infant_deaths, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Tasa de Mortalidad Infantil",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.8, 0.95))
+
+
+datos %>%
+    ggplot(aes(x = Alcohol, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Consumo de Alcohol",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.25))
+
+datos %>%
+    ggplot(aes(x = log(percentage_expenditure), y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = " PIB per cápita destinado a la salud (log)",
+         y = " Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.25))
+```
+
+
+```{r}
+#| warning: false
+#| label: fig-vida2
+#| fig-cap: "Relación de la Esperanza de Vida con otras variables (parte 2)."
+#| fig-subcap:
+#|   - "Esperanza de Vida vs Immunización a Hepatitis B y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Número de casos reportados de Rubeola (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Índice de Masa Corporal y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Número de Muertes de Menores de 5 años (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Inmunización a Polio y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Proporción del gasto total del gobierno que se destina a la salud y Estado de Desarrollo."
+#| layout: [[50, 50], [50, 50], [50, 50]]
+
+datos %>%
+    ggplot(aes(x = Hepatitis.B, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Porcentaje de Inmunización a Hepatitis B",
+         y = "Esperanza de Vida") +
+    theme_minimal()
+
+datos %>%
+    ggplot(aes(x = log(Measles), y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Número de casos reportados de Rubeola (log)",
+         y = "Esperanza de Vida") +
+    theme_minimal()
+
+datos %>%
+    ggplot(aes(x = BMI, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Índice de Masa Corporal", y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.25))
+
+datos %>%
+    ggplot(aes(x = log(U05_deaths), y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Número de Muertes de Menores de 5 años (log)",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.93))
+
+datos %>%
+    ggplot(aes(x = Polio, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Porcentaje de Inmunización a Polio",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.3, 0.95))
+
+datos %>%
+    ggplot(aes(x = Total_expenditure, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Proporción del gasto total del gobierno que se destina a la salud",
+         y = "Esperanza de Vida") +
+    theme_minimal()
+```
+
+
+```{r}
+#| warning: false
+#| label: fig-vida3
+#| fig-cap: "Relación de la Esperanza de Vida con otras variables (parte 3)."
+#| fig-subcap:
+#|   - "Esperanza de Vida vs Inmunización a Difteria, Tétanos y Tosferina y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Tasa de mortalidad de niños menores de 1 año debido a VIH/SIDA y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs PIB per cápita (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Población del País (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Proporción de delgadez entre niños y adolescentes de 10 a 19 años y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Proporción de delgadez entre niños de 5 a 9 años y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Índice de Desarrollo Humano y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Número de Años de Escolaridad y Estado de Desarrollo."
+#| layout: [[50, 50], [50, 50], [50, 50], [50, 50]]
+
+datos %>%
+    ggplot(aes(x = Diphtheria, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Porcentaje de Inmunización a Difteria, Tétanos y Tosferina",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.35, 0.95))
+
+
+datos %>%
+    ggplot(aes(x = HIV.AIDS, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Tasa de mortalidad de niños menores de 1 año debido a VIH/SIDA",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.95))
+
+datos %>%
+    ggplot(aes(x = log10(GDP), y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Producto Interno Bruto per cápita en USD (log10)",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.15))
+
+datos %>%
+    ggplot(aes(x = log10(Population), y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Población del País (log10)",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.1, 0.15))
+
+datos %>%
+    ggplot(aes(x = thinness._1to19years, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Proporción de delgadez entre niños y adolescentes de 10 a 19 años",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.9))
+
+datos %>%
+    ggplot(aes(x = thinness_5to.years, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Proporción de delgadez entre niños de 5 a 9 años",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.9))
+
+datos %>%
+    ggplot(aes(x = Income_composition_of_resources, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Índice de Desarrollo Humano",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.2))
+
+datos %>%
+    ggplot(aes(x = Schooling, y = Life_expectancy, colour = Status)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
+    labs(title = "",
+         x = "Número de Años de Escolaridad",
+         y = "Esperanza de Vida") +
+    theme_minimal() +
+    theme(legend.position = c(0.85, 0.2))
+```
+
+
+
+### Datos Faltantes.
+
+```{r}
+#| fig-cap: "Datos Faltantes por Variable"
+#| label: fig-faltantes
+
+faltantes_df <- datos %>%
+    summarise(across(everything(), ~ sum(is.na(.)))) %>%
+    pivot_longer(cols = everything(), names_to = "Variable", values_to = "Faltantes") %>%
+    mutate(Variable = factor(Variable, levels = names(datos)))
+
+
+p <- ggplot(faltantes_df, aes(x = Variable, y = Faltantes)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "Número de Datos Faltantes") +
+    theme_minimal()
+
+ggplotly(p)
+```
+
+```{r}
+#| fig-cap: "Porcentaje de Datos Faltantes por Variable"
+#| label: fig-faltantes_propo
+
+# Porcentaje de datos faltantes
+faltantes_df <- datos %>%
+    summarise(across(everything(), ~ sum(is.na(.)))) %>%
+    pivot_longer(cols = everything(), names_to = "Variable", values_to = "Faltantes") %>%
+    mutate(Variable = factor(Variable, levels = names(datos)),
+           Porcentaje = (Faltantes / nrow(datos)) * 100)
+
+
+p <- ggplot(faltantes_df, aes(x = Variable, y = Porcentaje)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_hline(yintercept = 15, color = "red", linetype = "dashed") +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "Porcentaje de Datos Faltantes") +
+    theme_minimal()
+
+ggplotly(p)
+```
