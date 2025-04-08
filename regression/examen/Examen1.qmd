@@ -16,6 +16,10 @@ format:
         grid:
             margin-width: 0px
             body-width: 1250px
+        crossref: 
+            fig-prefix: "figura"
+            tbl-prefix: "tabla"
+
 date: today
 date-format: long
 lang: es
@@ -41,7 +45,10 @@ library(knitr)
 library(kableExtra)
 library(plotly)
 library(modelsummary)
-
+library(mice)
+library(ggmice)
+library(MASS)
+library(car)
 
 datos <- read.csv("Lifexpectancy.csv")
 ```
@@ -193,6 +200,11 @@ datasummary_skim(datos,
 
 ```
 
+Como se observa en la @tbl-resumen, la mayoría de las variables tienen datos faltantes con un total de `r sum(is.na(datos))` datos faltantes. La variable con el mayor número de datos faltantes es "`r names(datos)[which.max(colSums(is.na(datos)))]`" con `r max(colSums(is.na(datos)))`, sus patrones y tratamiento se verá más adelante (véase @sec-missingdata). Hay variables que son continuas pero que no cubren un rango muy amplio y repiten muchos de sus valores. En general la mayoría de variables tienen una distribución sesgada como se observa en la última columna de la tabla.
+
+Algo a notar es que hay variables con escalas extremadamente altas como son las que se relacionan con el PIB y la población. Esto puede afectar el análisis de regresión, por lo que se pueden estandarizar o utilizar alguna transformación que preserve su orden cómo lo es el logaritmo. Dado que algunas o casi todas de estas variables tienen valores $0$, es más factible normalizar las variables que aplicarles el logaritmo, por lo que para el análisis de regresión se normalizarán las variables que tengan un rango muy amplio.
+
+
 ### Correlación entre variables.
 
 ```{r}
@@ -221,6 +233,37 @@ p <- ggplot(corr_datos, aes(x = Variable, y = Variable2, fill = Correlacion)) +
 ggplotly(p)
 ```
 
+En la @fig-correlacion se presenta la correlación entre las variables numéricas. La mayoría de las variables presentan correlación entre ellas baja, sin embargo existen algunas con una alta correlación (definida como $|\rho| \geq 0.5$) como son:
+
+- `Percentage_expenditure` y `GDP` ($0.96$).
+- `Population` y `infant_deaths` ($0.67$).
+- `U05_deaths` y `infant_deaths` ($1$).
+- `BMI` y `thinness._1to19years` ($-0.55$).
+- `Hepatitis.B` y `Diphtheria` ($0.59$).
+- `Adult.Mortality` y `HIV.AIDS` ($0.55$).
+- `Alcohol` y `Income_composition_of_resources` ($-0.56$).
+- `BMI` y `Income_composition_of_resources` ($0.51$).
+- `Measles` y `Infant_deaths` ($0.53$).
+- `Polio` y `Diphtheria` ($0.61$).
+- `Alcohol` y `Schooling` ($0.62$).
+- `Income_composition_of_resources` y `Schooling` ($0.78$).
+- `BMI` y `Schooling` ($0.55$).
+- `thinness._1to19years` y `thinness_5to.years` ($0.93$).
+- `BMI` y `thinness_5to.years` ($-0.55$).
+- `Measles` y `U05_deaths` ($0.52$).
+- `Population` y `U05_deaths` ($0.66$)
+
+Esta alta correlación genera un problema de colinealidad, lo que puede afectar el análisis de regresión. Para evitar esto, se procederá a seleccionar a una de dos variables donde la correlación sea mayor a $0.9$, dado que visualmente estás parecen si tener una relación lineal entre ellas. De hecho en el caso de `U05_deaths` y `infant_deaths` la correlación es de $1$ y es posible explicarlo dada que su definición es similar, por lo que se eliminará `infant_deaths` dado que tiene menor variabilidad (veáse  @tbl-resumen). Para `Percentage_expenditure` y `GDP` se seleccionará `Percentage_expenditure` dado que no tiene valores faltantes y su definición hace que sea más viable como predictor de la esperanza de vida que el `GDP`, además que es función de este último. 
+
+Para `thinness._1to19years` y `thinness_5to.years`, se eligirá `thinness._1to19years` dado que su definición nos habla de un sector de la población no considerado en las otras variables (ya tenemos la mortalidad en adultos y la mortalidad infantil) y ambas tienen una estructura de correlación prácticamente igual con el resto de variables.
+
+En resumen, se eliminarán las siguientes variables para el análisis de regresión:
+
+- `infant_deaths`
+- `GDP`
+- `thinness_5to.years`
+
+Las demás variables se dejarán y se evaluará su efecto usando el factor de inflación de variancia (VIF) para ver si afectan el modelo de regresión.
 
 ### Visualización de Datos.
 
@@ -236,7 +279,7 @@ Veremos la relación de las variables con la esperanza de vida. Para esto, grafi
 #|   - "Esperanza de Vida vs Tasa de Mortalidad en Adultos y  Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Tasa de Mortalidad Infantil y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Consumo de Alcohol y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs PIB per cápita destinado a la salud (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs PIB per cápita destinado a la salud (log10) y Estado de Desarrollo."
 #| layout: [[50, 50], [50, 50], [50, 50]]
 
 datos %>%
@@ -295,16 +338,21 @@ datos %>%
     theme(legend.position = c(0.85, 0.25))
 
 datos %>%
-    ggplot(aes(x = log(percentage_expenditure), y = Life_expectancy, colour = Status)) +
+    ggplot(aes(x = log10(percentage_expenditure), y = Life_expectancy, colour = Status)) +
     geom_point(alpha = 0.5) +
     geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
     labs(title = "",
-         x = " PIB per cápita destinado a la salud (log)",
+         x = " PIB per cápita destinado a la salud (log10)",
          y = " Esperanza de Vida") +
     theme_minimal() +
     theme(legend.position = c(0.85, 0.25))
 ```
 
+En esta primera parte podemos ver que la clasificación de un país como desarrollado o en vías de desarrollo parece tener un gran efecto en la distribución de la esperanza de vida. Los países desarrollados tienen una esperanza de vida mucho mayor que los países en vías de desarrollo. Esto se puede ver en la @fig-vida1-1, donde la esperanza de vida es significativamente mayor en los países desarrollados. El año también parece influir positivamente en la esperanza de vida, dado que se denota una clara tendencia a aumentar la esperanza de vida a lo largo del tiempo (@fig-vida1-2). 
+
+Hay variables que no parecen tener una relación lineal con la esperanza de vida, como lo son la mortalidad en adultos, la mortalidad infantil y el consumo de alcohol (@fig-vida1-3, @fig-vida1-4 y @fig-vida1-5). Sin embargo, la mortalidad infantil y en adultos parece tener una relación negativa con la esperanza de vida, lo que es lógico dado que a mayor mortalidad, menor esperanza de vida. El consumo de alcohol parece tener una relación positiva muy débil con la esperanza de vida. La proporción del PIB per cápita destinado a la salud también parece tener una relación positiva con la esperanza de vida (@fig-vida1-6).
+
+Dado que los países desarrollados tiene un fuerte efecto a simple vista, se estratificaron los gráficos por estado de desarrollo y como se ve en la @fig-vida1, los países desarrollados tienen un valor más alto en las variables "buenas" y bajo en las "malas" como la mortalidad infantil y en adultos. Esto sugiere que los países desarrollados tienen un mejor sistema de salud y una mejor calidad de vida en general. Sin embargo, hay algunos países en vías de desarrollo que tienen valores similares o mejores en ciertas variables.
 
 ```{r}
 #| warning: false
@@ -312,9 +360,9 @@ datos %>%
 #| fig-cap: "Relación de la Esperanza de Vida con otras variables (parte 2)."
 #| fig-subcap:
 #|   - "Esperanza de Vida vs Immunización a Hepatitis B y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs Número de casos reportados de Rubeola (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Número de casos reportados de Rubeola (log10) y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Índice de Masa Corporal y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs Número de Muertes de Menores de 5 años (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Número de Muertes de Menores de 5 años (log10) y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Inmunización a Polio y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Proporción del gasto total del gobierno que se destina a la salud y Estado de Desarrollo."
 #| layout: [[50, 50], [50, 50], [50, 50]]
@@ -329,11 +377,11 @@ datos %>%
     theme_minimal()
 
 datos %>%
-    ggplot(aes(x = log(Measles), y = Life_expectancy, colour = Status)) +
+    ggplot(aes(x = log10(Measles), y = Life_expectancy, colour = Status)) +
     geom_point(alpha = 0.5) +
     geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
     labs(title = "",
-         x = "Número de casos reportados de Rubeola (log)",
+         x = "Número de casos reportados de Rubeola (log10)",
          y = "Esperanza de Vida") +
     theme_minimal()
 
@@ -347,11 +395,11 @@ datos %>%
     theme(legend.position = c(0.85, 0.25))
 
 datos %>%
-    ggplot(aes(x = log(U05_deaths), y = Life_expectancy, colour = Status)) +
+    ggplot(aes(x = log10(U05_deaths), y = Life_expectancy, colour = Status)) +
     geom_point(alpha = 0.5) +
     geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
     labs(title = "",
-         x = "Número de Muertes de Menores de 5 años (log)",
+         x = "Número de Muertes de Menores de 5 años (log10)",
          y = "Esperanza de Vida") +
     theme_minimal() +
     theme(legend.position = c(0.85, 0.93))
@@ -376,6 +424,9 @@ datos %>%
     theme_minimal()
 ```
 
+En la @fig-vida2 se observa que la inmunización a Hepatitis B y Rubeola no parecen tener una relación con la esperanza de vida, dado que no se observa una tendencia clara en los gráficos (@fig-vida2-1 y @fig-vida2-2). En cambio el índice de masa corporal parece tener una relación positiva con la esperanza de vida y tiene una relación más lineal que las variables pasadas (@fig-vida2-3). Cómo ya se había observado la mortalidad infantil esta muy correlacionada con el número de muertes de menores de 5 años, por lo que no se espera que la relación con la esperanza de vida sea diferente y esto mismo se observa en la @fig-vida2-4.  
+
+La inmunización a Polio y el porcentaje del gasto total del gobierno que se destina a la salud parecen tener una relación positiva con la esperanza de vida (@fig-vida2-5 y @fig-vida2-6). Sin embargo, la inmunización a Polio parece tener una relación más lineal que el gasto en salud, lo que sugiere que la inmunización a Polio puede ser un mejor predictor de la esperanza de vida que el gasto en salud. Aunque en ambos casos la relación linal es algo pobre.
 
 ```{r}
 #| warning: false
@@ -384,11 +435,11 @@ datos %>%
 #| fig-subcap:
 #|   - "Esperanza de Vida vs Inmunización a Difteria, Tétanos y Tosferina y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Tasa de mortalidad de niños menores de 1 año debido a VIH/SIDA y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs PIB per cápita (log) y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs Población del País (log) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs PIB per cápita (log10) y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Población del País (log10) y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Proporción de delgadez entre niños y adolescentes de 10 a 19 años y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Proporción de delgadez entre niños de 5 a 9 años y Estado de Desarrollo."
-#|   - "Esperanza de Vida vs Índice de Desarrollo Humano y Estado de Desarrollo."
+#|   - "Esperanza de Vida vs Índice de Ingreso del IDH y Estado de Desarrollo."
 #|   - "Esperanza de Vida vs Número de Años de Escolaridad y Estado de Desarrollo."
 #| layout: [[50, 50], [50, 50], [50, 50], [50, 50]]
 
@@ -458,7 +509,7 @@ datos %>%
     geom_point(alpha = 0.5) +
     geom_smooth(method = "lm", color = "black", se = T, linewidth = 0.75) +
     labs(title = "",
-         x = "Índice de Desarrollo Humano",
+         x = "Índice de Ingreso del Índice de Desarrollo Humano",
          y = "Esperanza de Vida") +
     theme_minimal() +
     theme(legend.position = c(0.85, 0.2))
@@ -475,12 +526,19 @@ datos %>%
 ```
 
 
+La inmunización a Difteria, Tétanos y Tosferina tiene una relación muy similar a la de la Polio con la esperanza de vida (@fig-vida3-1). La mortalidad por VIH/SIDA parece tener una relación no lineal y del tipo exponencial con la esperanza de vida (@fig-vida3-2). Esto sugiere que a medida que aumenta la mortalidad por VIH/SIDA, la esperanza de vida disminuye de manera exponencial. El PIB per cápita parece tener una relación positiva con la esperanza de vida (@fig-vida3-3) y la población parece no tener ninguna relación con la esperanza de vida (@fig-vida3-4). Como igual ya se había mencionado, la delgadez en niños y adolescentes tienen una distribución prácticamente idéntica y esto se ve claro al ver como se relacionan con la esperanza de vida que es la misma entre ambas (@fig-vida3-5 y @fig-vida3-6). 
 
-### Datos Faltantes.
+El índice de ingreso del Índice de Desarrollo Humano y el número de años de escolaridad parecen tener una relación positiva con la esperanza de vida (@fig-vida3-7 y @fig-vida3-8) y mucho más lineal que todas las variables pasadas. Esto sugiere que a medida que aumenta el índice de ingreso del Índice de Desarrollo Humano y el número de años de escolaridad, la esperanza de vida también aumenta. Esto es lógico dado que a mayor educación y mayores ingresos, se espera que la calidad de vida y el acceso a servicios de salud sean mejores.
+
+
+### Datos Faltantes. {#sec-missingdata}
 
 ```{r}
 #| fig-cap: "Datos Faltantes por Variable"
 #| label: fig-faltantes
+
+datos <- datos %>%
+    select(-c(infant_deaths, GDP, thinness_5to.years))
 
 faltantes_df <- datos %>%
     summarise(across(everything(), ~ sum(is.na(.)))) %>%
@@ -490,13 +548,15 @@ faltantes_df <- datos %>%
 
 p <- ggplot(faltantes_df, aes(x = Variable, y = Faltantes)) +
     geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = Faltantes), vjust = 0.25, size = 3, hjust = -0.5) +
+    ylim(0, 700) +
     coord_flip() +
     labs(title = "",
          x = "",
          y = "Número de Datos Faltantes") +
     theme_minimal()
 
-ggplotly(p)
+p
 ```
 
 ```{r}
@@ -513,12 +573,416 @@ faltantes_df <- datos %>%
 
 p <- ggplot(faltantes_df, aes(x = Variable, y = Porcentaje)) +
     geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = round(Porcentaje, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
     geom_hline(yintercept = 15, color = "red", linetype = "dashed") +
+    ylim(0, 25) +
     coord_flip() +
     labs(title = "",
          x = "",
          y = "Porcentaje de Datos Faltantes") +
     theme_minimal()
-
-ggplotly(p)
+p
 ```
+
+En las @fig-faltantes y @fig-faltantes_propo se muestran el número y el procentaje de datos faltantes respectivamente por variable. `Population`, `Hepatitis.B`, `Total_expenditure`, `Alcohol`, `Schooling` y `Income_composition_of_resources` son las variables que tienen mayor cantidad de datos faltantes sumando un total de `r 163 + 167 + 652 + 226 + 553 + 194` datos faltantes que correspnden al `r round(1955/2563, 4) * 100`% de los datos faltantes totales (2563). Sin emabargo, aún se puede considerar un porcentaje bajo de datos faltantes, en casi todas las variables. Por ello se procederá a imputar los valores faltantes usando la libreria `mice` de `R` que utiliza el método de imputación por regresión múltiple. Este método es uno de los más utilizados y recomendados para la imputación de datos faltantes, ya que utiliza la información de las otras variables para predecir los valores faltantes y parece ser la mejor opción para este caso.
+
+Los valores faltantes de nuestra variable dependiente (esperanza de vida) no se imputarán y mas bien sus valores se predecirán usando el modelo de regresión lineal que se ajuste a los datos.
+
+#### Patrón de Datos Faltantes.
+
+Antes de proceder a la imputación de los datos faltantes, es importante visualizar el patrón de los datos faltantes. Esto nos ayudará a entender si los datos faltantes son aleatorios o si hay algún patrón en ellos. Para esto se usará la función `rm.pattern` de la librería `mice` con ayuda de una paqueteria auxiliar para mejorar su presentación gráfica (`ggmice`).
+
+```{r}
+#| fig-cap: "Patrón de Datos Faltantes"
+#| label: fig-patron_faltantes
+#| fig-width: 10
+#| fig-height: 10
+
+# Seleccionamos las variables con datos faltantes
+datos_missing <- datos[, colSums(is.na(datos)) > 0]
+
+p <- plot_pattern(datos_missing,
+             rotate = T,
+             square = F)
+p 
+```
+
+Se puede observar que si parecieran existir patrones en los datos faltantes. En la @fig-patron_faltantes se observa que hay un patrón de datos faltantes en prácticamente todas las variables en pequeños subconjuntos, pero igual hay algunos patrones que parecen más aleatorios. Esto sugiere que los datos faltantes no son completamente aleatorios y que puede haber algún patrón en ellos. Sin embargo, dado que la mayoría de los datos faltantes son pocos, se procederá a imputar los datos faltantes usando el método de regresión múltiple. Y además es muy probable que estos patrones surgan de países donde no tenemos los datos de varías variable en todos los años. Si esto es cierto, la imputación de los datos faltantes no debería ser tan eficaz dado que serían MNAR (Missing not at random). Sin embargo, el algoritmo de la librería se ha mostrado robusto a datos MNAR y se espera que la imputación sea buena.
+
+#### Imputación de Datos Faltantes.
+
+Dados algunos problemas computacionales, la matriz de predictores se construyó manualmente. Esto se hizo utilizando la matriz de correlación entre las variables y se uso un umbral ($|\rho| \geq 0.26$) a base de error y acierto para seleccionar las variables que se usarían como predictores. Este umbral se eligió para evitar la multicolinealidad entre las variables y se usó un umbral bajo para evitar perder información.
+
+```{r}    
+#| warning: false
+
+y <- datos %>%
+    select(Life_expectancy) %>%
+    as.vector() %>%
+    unlist() %>%
+    unname()
+
+covariables <- datos %>%
+    select(-c(Life_expectancy, Country, Status)) %>%
+    mutate(across(everything(), ~ as.numeric(.))) 
+
+cor_mat <- cor(covariables, use = "pairwise.complete.obs")
+
+threshold <- 0.26
+
+# Matriz booleana: TRUE si abs(correlación) > threshold y no es la diagonal
+pred_matrix <- abs(cor_mat) > threshold
+diag(pred_matrix) <- FALSE  # evitar que una variable se prediga a sí misma
+
+# Convertir a enteros (0/1)
+predictorMatrix <- pred_matrix * 1
+
+
+# Imputación de datos faltantes
+imp <- mice(covariables,
+            method = "pmm",
+            predictorMatrix = predictorMatrix,
+            m = 5,
+            maxit = 50,
+            seed = 1234,
+            print=F
+            )
+```
+
+##### Evaluación de la imputación.
+
+```{r}
+#| fig-cap: "Convergencia de la imputación."
+#| fig-subcap:
+#|    - "Convergencia de la imputación para Adult_Mortality, Alcohol y Hepatitis.B."
+#|    - "Convergencia de la imputación para BMI, Polio y Total Expenditure."
+#|    - "Convergencia de la imputación para Diphtheria, Population, Thinnes._1to19years."
+#|    - "Convergencia de la imputación para Schooling e Income_compositon_of_resources."
+#| label: fig-eval_imputacion
+#| layout: [[50, 50], [50, 50], [50, 50]]
+
+# Evaluación de la imputación
+plot(imp, main = "")
+```
+
+En @fig-eval_imputacion se observa la convergencia de la imputación para las variables `Adult_Mortality`, `Alcohol`, `Hepatitis.B`, `BMI`, `Polio`, `Total_expenditure`, `Diphtheria`, `Population`, `thinness._1to19years`, `Schooling` e `Income_composition_of_resources`. Se observa que la imputación converge y que los valores imputados son razonables. Esto sugiere que la imputación fue exitosa y que los datos faltantes fueron imputados de manera adecuada.
+
+Otra manera de verificar la consistencia de los datos imputados es ver la distribución de los datos imputados. Esto se puede hacer graficando la distribución de los datos imputados para cada variable. Esto nos ayudará a ver si los datos imputados son razonables y si siguen la misma distribución que los datos originales. En la @fig-distribucion_imputacion se observa esto y se puede ver que la mayoría de los datos imputados siguen la misma distribución que los datos originales, por lo cual se puede concluir que la imputación fue exitosa y podemos usar cualquier de los 5 conjuntos de datos imputados para el análisis posterior.
+
+```{r}
+#| fig-cap: "Distribución de los datos imputados."
+#| fig-subcap:
+#|   - "Distribución de datos imputados para Adult_Mortality."
+#|   - "Distribución de datos imputados para Alcohol."
+#|   - "Distribución de datos imputados para Hepatitis.B."
+#|   - "Distribución de datos imputados para BMI."
+#|   - "Distribución de datos imputados para Polio."
+#|   - "Distribución de datos imputados para Total_expenditure."
+#|   - "Distribución de datos imputados para Diphtheria."
+#|   - "Distribución de datos imputados para Population."
+#|   - "Distribución de datos imputados para thinness._1to19years."
+#|   - "Distribución de datos imputados para Schooling."
+#|   - "Distribución de datos imputados para Income_composition_of_resources."
+#| label: fig-distribucion_imputacion
+#| layout: [[50, 50], [50, 50], [50, 50], [50, 50], [50, 50], [-25, 50, -25]]
+
+# Distribución de los datos imputados
+ggmice(imp, aes(.imp, Adult_Mortality)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Alcohol)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Hepatitis.B)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, BMI)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputaciónr")
+
+ggmice(imp, aes(.imp, Polio)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Total_expenditure)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Diphtheria)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Population)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, thinness._1to19years)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Schooling)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+
+ggmice(imp, aes(.imp, Income_composition_of_resources)) +
+  geom_jitter(height = 0, width = 0.25) +
+    geom_boxplot(width = 0.5, size = 1, alpha = 0.75, outlier.shape = NA) +
+  labs(x = "Número de Imputación")
+```
+
+## Modelo de Regresión Lineal.
+
+Como se vio en el análisis exploratorio, todas las variables parecen tener una relación con la esperanza de vida de mayor o menor medida y con maoyr o menor linealidad. Por lo que se procederá a ajustar un modelo de regresión lineal múltiple con todas las variables y se evaluará su desempeño. Se usarán los métodos de *forward*, *backward* y *stepwise* para seleccionar el mejor modelo. Se usará el criterio de Akaike (AIC) para evaluar el desempeño de los modelos y se seleccionará el modelo con el menor AIC, dado que penaliza la complejidad del modelo. 
+
+### Modelo Completo.
+```{r}
+#| warning: false
+
+imp_data <- complete(imp, 2)
+
+imp_data <- imp_data %>%
+    add_column(Status = datos$Status) %>%
+    add_column(Life_expectancy = datos$Life_expectancy)
+
+rows_to_predict <- which(is.na(imp_data$Life_expectancy))
+
+models_data <- imp_data[-rows_to_predict, ]
+
+data <- models_data %>%
+    mutate(Status = as.factor(Status)) %>%
+    mutate(Status = recode(Status, "Developed" = 1, "Developing" = 0))
+```
+
+```{r}
+#| code-fold: show
+# Ajustar el modelo completo
+modelo_completo <- lm(Life_expectancy ~ .,
+                       data = data)
+```
+
+```{r}
+#| tbl-cap: "Modelo Completo."
+#| label: tbl-modelo_completo
+
+modelsummary(list( "Modelo Completo" = modelo_completo), 
+             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+                           "std.error", 
+                           "statistic",
+                           "p.value"),
+             stars = T,
+             shape = term ~ model + statistic
+             )
+
+```
+
+
+### Modelo Forward.
+
+```{r}
+#| warning: false
+#| code-fold: show
+
+# Usamos el criterio AIC
+modelo_forward <- stepAIC(modelo_completo,
+                        direction = "forward",
+                        scope = list(lower = lm(Life_expectancy ~ 1, data = data),
+                                     upper = modelo_completo),
+                        trace = 0)
+```
+
+```{r}
+#| tbl-cap: "Modelo Forward."
+#| label: tbl-modelo_forw
+
+modelsummary(list( "Modelo Forward" = modelo_forward), 
+             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+                           "std.error", 
+                           "statistic",
+                           "p.value"),
+             stars = T,
+             shape = term ~ model + statistic
+             )
+
+```
+
+### Modelo Backward.
+
+```{r}
+#| warning: false
+#| code-fold: show
+
+
+# Usamos el criterio AIC
+modelo_backward <- stepAIC(modelo_completo,
+                        direction = "backward",
+                        scope = list(lower = lm(Life_expectancy ~ 1, data = data),
+                                     upper = modelo_completo),
+                        trace = 0)
+```
+
+```{r}
+#| tbl-cap: "Modelo Backward."
+#| label: tbl-modelo_back
+
+modelsummary(list( "Modelo Backward" = modelo_backward), 
+             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+                           "std.error", 
+                           "statistic",
+                           "p.value"),
+             stars = T,
+             shape = term ~ model + statistic
+             )
+```
+
+
+### Modelo Stepwise.
+
+```{r}
+#| warning: false
+#| code-fold: show
+
+# Usamos el criterio AIC
+modelo_stepwise <- stepAIC(modelo_completo,
+                        direction = "both",
+                        scope = list(lower = lm(Life_expectancy ~ 1, data = data),
+                                     upper = modelo_completo),
+                        trace = 0)
+```
+
+```{r}
+#| tbl-cap: "Modelo Stepwise."
+#| label: tbl-modelo_step
+
+modelsummary(list( "Modelo Stepwise" = modelo_stepwise), 
+             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+                           "std.error", 
+                           "statistic",
+                           "p.value"),
+             stars = T,
+             shape = term ~ model + statistic
+             )
+```
+
+### Comparación de Modelos.
+
+```{r}
+
+modelos <- list(
+    "Modelo Completo" = modelo_completo,
+    "Modelo Forward" = modelo_forward,
+    "Modelo Backward" = modelo_backward,
+    "Modelo Stepwise" = modelo_stepwise
+)
+
+# Comparar los modelos
+modelsummary(
+    modelos,
+    fmt = fmt_decimal(9, 4),
+    statistic = c("conf.int",
+                  "s.e. = {std.error}", 
+                  "p = {p.value}"),
+    stars = T)
+```
+
+### Factor de Inflación de Varianza (VIF).
+
+```{r}
+#| warning: false
+#| fig-cap: "Factor de Inflación de Varianza (VIF)."
+#| label: fig-vif
+#| fig-subcap:
+#|    - "Modelo Completo."    
+#|    - "Modelo Stepwise."
+#|    - "Modelo Forward."
+#|    - "Modelo Backward."
+#| layout: [[40,-10, 40], [40,-10, 40]]
+
+# Estimamos el VIF para el modelo completo
+vif_completo <- vif(modelo_completo)
+# Estimamos el VIF para el modelo stepwise
+vif_stepwise <- vif(modelo_stepwise)
+# Estimamos el VIF para el modelo forward
+vif_forward <- vif(modelo_forward)
+# Estimamos el VIF para el modelo backward
+vif_backward <- vif(modelo_backward)
+
+# Convertimos los resultados a un data frame
+Vifs_mat <- matrix(nrow = length(vif_completo), ncol = 4)
+for (i in 1:length(names(vif_completo))) {
+    
+    name_vif <- names(vif_completo)[i]
+    
+    if (name_vif %in% names(vif_stepwise)) {
+        Vifs_mat[i, 1] <- vif_completo[name_vif]
+        Vifs_mat[i, 2] <- vif_stepwise[name_vif]
+        Vifs_mat[i, 3] <- vif_forward[name_vif]
+        Vifs_mat[i, 4] <- vif_backward[name_vif]
+    }
+    else {
+        Vifs_mat[i, 1] <- vif_completo[name_vif]
+        Vifs_mat[i, 2] <- NA
+        Vifs_mat[i, 3] <- NA
+        Vifs_mat[i, 4] <- NA
+    }
+}
+
+row.names(Vifs_mat) <- names(vif_completo)
+colnames(Vifs_mat) <- c("Modelo.Completo", "Modelo.Stepwise", "Modelo.Forward", "Modelo.Backward")
+
+Vifs_mat <- as.data.frame(Vifs_mat)
+
+# Barplots
+ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Completo)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = round(Modelo.Completo, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
+    ylim(0, 10) +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "VIF") +
+    theme_minimal()
+
+ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Stepwise)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = round(Modelo.Stepwise, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
+    ylim(0, 10) +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "VIF") +
+    theme_minimal()
+
+ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Forward)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = round(Modelo.Forward, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
+    ylim(0, 10) +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "VIF") +
+    theme_minimal()
+
+ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Backward)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_text(aes(label = round(Modelo.Backward, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
+    ylim(0, 10) +
+    coord_flip() +
+    labs(title = "",
+         x = "",
+         y = "VIF") +
+    theme_minimal()
+```
+
