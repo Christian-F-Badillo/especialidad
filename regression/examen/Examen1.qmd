@@ -15,7 +15,8 @@ format:
         fig-cap: "Figure {#fig-1} Caption"
         grid:
             margin-width: 0px
-            body-width: 1250px
+            body-width: 1400px
+            sidebar-width: 200px
         crossref: 
             fig-prefix: "figura"
             tbl-prefix: "tabla"
@@ -49,6 +50,11 @@ library(mice)
 library(ggmice)
 library(MASS)
 library(car)
+library(nortest)
+library(FactoMineR)
+library(factoextra)
+library(ggbiplot)
+library(forecast)
 
 datos <- read.csv("Lifexpectancy.csv")
 ```
@@ -213,7 +219,7 @@ Algo a notar es que hay variables con escalas extremadamente altas como son las 
 
 # Solo numericas
 corr_datos <- datos %>%
-    select(-Country, -Status) %>%
+    dplyr::select(-c(Country, Status)) %>%
     drop_na() %>%
     cor() %>%
     round(2) %>%
@@ -538,7 +544,7 @@ El índice de ingreso del Índice de Desarrollo Humano y el número de años de 
 #| label: fig-faltantes
 
 datos <- datos %>%
-    select(-c(infant_deaths, GDP, thinness_5to.years))
+    dplyr::select(-c(infant_deaths, GDP, thinness_5to.years))
 
 faltantes_df <- datos %>%
     summarise(across(everything(), ~ sum(is.na(.)))) %>%
@@ -615,15 +621,16 @@ Dados algunos problemas computacionales, la matriz de predictores se construyó 
 
 ```{r}    
 #| warning: false
+#| code-fold: show
 
 y <- datos %>%
-    select(Life_expectancy) %>%
+    dplyr::select(Life_expectancy) %>%
     as.vector() %>%
     unlist() %>%
     unname()
 
 covariables <- datos %>%
-    select(-c(Life_expectancy, Country, Status)) %>%
+    dplyr::select(-c(Life_expectancy, Country, Status)) %>%
     mutate(across(everything(), ~ as.numeric(.))) 
 
 cor_mat <- cor(covariables, use = "pairwise.complete.obs")
@@ -745,7 +752,7 @@ ggmice(imp, aes(.imp, Income_composition_of_resources)) +
 
 ## Modelo de Regresión Lineal.
 
-Como se vio en el análisis exploratorio, todas las variables parecen tener una relación con la esperanza de vida de mayor o menor medida y con maoyr o menor linealidad. Por lo que se procederá a ajustar un modelo de regresión lineal múltiple con todas las variables y se evaluará su desempeño. Se usarán los métodos de *forward*, *backward* y *stepwise* para seleccionar el mejor modelo. Se usará el criterio de Akaike (AIC) para evaluar el desempeño de los modelos y se seleccionará el modelo con el menor AIC, dado que penaliza la complejidad del modelo. 
+Como se vio en el análisis exploratorio, todas las variables parecen tener una relación con la esperanza de vida de mayor o menor medida y con maoyr o menor linealidad. Por lo que se procederá a ajustar un modelo de regresión lineal múltiple con todas las variables y se evaluará su desempeño. Se usarán los métodos de *forward*, *backward* y *stepwise* para seleccionar el mejor modelo usando el criterio de información bayesinao (BIC) y se seleccionará el modelo con el menor BIC y/o complejidad cuando se comparen los modelos estimados.
 
 ### Modelo Completo.
 ```{r}
@@ -763,7 +770,7 @@ models_data <- imp_data[-rows_to_predict, ]
 
 data <- models_data %>%
     mutate(Status = as.factor(Status)) %>%
-    mutate(Status = recode(Status, "Developed" = 1, "Developing" = 0))
+    mutate(Status = dplyr::recode(Status, "Developed" = 1, "Developing" = 0))
 ```
 
 ```{r}
@@ -777,16 +784,27 @@ modelo_completo <- lm(Life_expectancy ~ .,
 #| tbl-cap: "Modelo Completo."
 #| label: tbl-modelo_completo
 
-modelsummary(list( "Modelo Completo" = modelo_completo), 
-             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+f_row = tribble(
+    ~term, ~model, ~statistic,
+    
+)
+
+modelsummary(list( "Modelo Completo" = modelo_completo),
+             fmt = fmt_decimal(9, 4),             
+             statistic = c("conf.int",
                            "std.error", 
                            "statistic",
                            "p.value"),
              stars = T,
-             shape = term ~ model + statistic
+             shape = term ~ model + statistic             
              )
 
 ```
+
+En la @tbl-modelo_completo se muestran algunos estadísticos importantes de nuestros parámetos estimados. Las variables con un efecto no significativo a un nivel de $\alpha = 0.05$ en la esperanza de vida para este modelo son: `Year`, `Alcohol`, `Hepatitis.B`, `Measles` y `Total_expenditure` dada la presencia de las demás variables.
+
+El modelo es significativo con un $F =$ `r round(summary(modelo_completo)$fstatistic[1], 2)` con `r summary(modelo_completo)$fstatistic[2]` y `r summary(modelo_completo)$fstatistic[3]` grados de libertad y un $p$-valor de $< 2.2e-16$. El $R^2$ ajustado es de `r round(summary(modelo_completo)$adj.r.squared, 4)` lo que sugiere que el modelo es bueno. La interpretación del modelo se prosponda hasta la selección del mejor modelo.
+
 
 
 ### Modelo Forward.
@@ -795,11 +813,14 @@ modelsummary(list( "Modelo Completo" = modelo_completo),
 #| warning: false
 #| code-fold: show
 
-# Usamos el criterio AIC
+n = nrow(data)
+
+# Usamos el criterio BIC
 modelo_forward <- stepAIC(modelo_completo,
                         direction = "forward",
                         scope = list(lower = lm(Life_expectancy ~ 1, data = data),
                                      upper = modelo_completo),
+                        k = log(n),
                         trace = 0)
 ```
 
@@ -818,6 +839,8 @@ modelsummary(list( "Modelo Forward" = modelo_forward),
 
 ```
 
+El modelo forward es significativo con un $F =$ `r round(summary(modelo_forward)$fstatistic[1], 2)` con `r summary(modelo_forward)$fstatistic[2]` y `r summary(modelo_forward)$fstatistic[3]` grados de libertad y un $p$-valor de $< 2.2e-16$. El $R^2$ ajustado es de `r round(summary(modelo_forward)$adj.r.squared, 4)` lo que sugiere que el modelo es bueno. Y resulto ser el mismo modelo que el modelo completo.
+
 ### Modelo Backward.
 
 ```{r}
@@ -825,11 +848,12 @@ modelsummary(list( "Modelo Forward" = modelo_forward),
 #| code-fold: show
 
 
-# Usamos el criterio AIC
+# Usamos el criterio BIC
 modelo_backward <- stepAIC(modelo_completo,
                         direction = "backward",
                         scope = list(lower = lm(Life_expectancy ~ 1, data = data),
                                      upper = modelo_completo),
+                        k = log(n),
                         trace = 0)
 ```
 
@@ -847,6 +871,9 @@ modelsummary(list( "Modelo Backward" = modelo_backward),
              )
 ```
 
+El modelo backward es estadísticamente significativo con un $F =$ `r round(summary(modelo_backward)$fstatistic[1], 2)` y con `r summary(modelo_backward)$fstatistic[2]` y `r summary(modelo_backward)$fstatistic[3]` grados de libertad, su $p$-valor es $< 2.2e-16$. El $R^2$ ajustado es `r round(summary(modelo_backward)$adj.r.squared, 4)`. 
+
+Es un modelo menos complejo que el modelo completo y el modelo forward y con valor de $R^2$ muy similar al de los otros y por tanto es un mejor modelo.
 
 ### Modelo Stepwise.
 
@@ -854,11 +881,12 @@ modelsummary(list( "Modelo Backward" = modelo_backward),
 #| warning: false
 #| code-fold: show
 
-# Usamos el criterio AIC
+# Usamos el criterio BIC
 modelo_stepwise <- stepAIC(modelo_completo,
                         direction = "both",
                         scope = list(lower = lm(Life_expectancy ~ 1, data = data),
                                      upper = modelo_completo),
+                        k = log(n),
                         trace = 0)
 ```
 
@@ -876,9 +904,16 @@ modelsummary(list( "Modelo Stepwise" = modelo_stepwise),
              )
 ```
 
+Este último modelo es idéntico al anterior y con el mismo ajuste.
+
+
 ### Comparación de Modelos.
 
 ```{r}
+#| warning: false
+#| tbl-cap: "Comparación de Modelos."
+#| label: tbl-modelos
+
 
 modelos <- list(
     "Modelo Completo" = modelo_completo,
@@ -897,87 +932,60 @@ modelsummary(
     stars = T)
 ```
 
-### Factor de Inflación de Varianza (VIF).
+En la @tbl-modelos se muestran los estadísticos de los modelos ajustados. Se observa que el modelo backward es el mejor modelo con un BIC de `r round(BIC(modelo_backward), 2)` y un $R^2$ ajustado de `r round(summary(modelo_backward)$adj.r.squared, 4)`. El modelo stepwise es el segundo mejor modelo con un BIC de `r round(BIC(modelo_stepwise), 2)` y un $R^2$ ajustado de `r round(summary(modelo_stepwise)$adj.r.squared, 4)`. El modelo forward es el tercer mejor modelo con un BIC de `r round(BIC(modelo_forward), 2)` y un $R^2$ ajustado de `r round(summary(modelo_forward)$adj.r.squared, 4)`. Y el modelo completo es el peor modelo con un BIC de `r round(BIC(modelo_completo), 2)` y un $R^2$ ajustado de `r round(summary(modelo_completo)$adj.r.squared, 4)`. Por lo que se puede concluir que el mejor modelo es el modelo backward.
+
+Por lo que se puede apreciar que el modelo backward es el mejor modelo dado que es el más parsimonioso (10 parámetros), tiene un BIC/AIC más bajo que los demás modelos y con un valor de $R^2$ prácticamente idéntico al de los modelos más complejos.
+
+## Modelo Ajustado.
+
+El **modelo selccionado** es el siguiente:
+
+`r paste0("Esperanza de Vida = ", round(coef(modelo_backward)[1], 4), " + ",  paste0( "(", round(coef(modelo_backward)[-1], 4), ") * ", names(coef(modelo_backward)[-1]), collapse = " + "))`
+
+Este modelo nos indica que existen variables que aumentan el promedio de la esperanza de vida de la población en los países de nuestros datos. En particular `Income_composition_of_resources` nos indica que el factor de ingresos del índice de desarrollo humano tiene un efecto positivo en la esperanza de vida. Lo que es lógico pues a mayor ingreso, se espera que la calidad de vida y el acceso a servicios de salud sean mejores. 
+
+`Schooling` tiene un efecto positivo en la esperanza de vida, lo que sugiere que a mayor educación, la esperanza de vida también aumenta. Esto es lógico dado que a mayor educación, se espera que la calidad de vida y el concimiento sobre salud sean mejores. 
+
+`Diphtheria` tiene igualmente un efecto positivo en la esperanza de vida, lo que sugiere que a mayor inmunización a difteria, tétanos y tosferina, la esperanza de vida también aumenta. Esto es lógico dado que a mayor inmunización, se espera que la aparición de estas enfermedades sean menor en la población y aumente su esperanza de vida dado que pueden ser enfermedades altamente mortales sin los cuidados pertinentes. 
+
+`Polio` también tiene un efecto positivo en la esperanza de vida, lo que es esperable dado que igualmente habla de la inmunización a una enfermedad que puede tener tasas de mortalidad alta.
+
+`percentage_expenditure` es otra variable con un efecto positivo e indica que la inversión en salud tiene un efecto positivo en la esperanza de vida. Lo cual tiene toda la lógica del mundo pues esto beneficia a la población en general y a su calidad de vida.
+
+`BMI` también tiene un efecto positvo aunque algo pequeño, Esto sugiere que un buen nivel de BMI aumenta la esperanza de vida, aunque no es tan claro si esto es así dado que el BMI es una variable que no distingue a personas con un BMI alto por sobrepeso u obesidad de aquellas que tienen un BMI alto por musculatura.
+
+`Status` es la segunda variable con mayor efecto positivo en la esperanza de vida. Esto sugiere que los países desarrollados tienen una esperanza de vida mayor que los países en desarrollo. Lo cual es lo que se observa en general, dado que los países desarrollados tienen un mejor acceso a servicios de salud, más modernos y con personal mucho más capacitado.
+
+Las variables con un efecto negativo se relacionan con tasas de mortalidad de distinto tipo como la mortalidad en adultos (`Adult_Mortality`), la mortalidad por VIH/SIDA en infantes (`HIV/AIDS`) y la muerte de menores de 5 años (`U05_deaths `).
+
+### Evaluación del Modelo.
+
+#### Factor de Inflación de Varianza (VIF).
+
+Esta medida nos permite evaluar la multicolinealidad entre las variables independientes. Un VIF mayor a 5 indica que la variable tiene una alta colinealidad con las demás variables y por lo tanto no es recomendable incluirla en el modelo. Un VIF mayor a 10 indica que la variable tiene una colinealidad muy alta y es recomendable eliminarla del modelo.
 
 ```{r}
 #| warning: false
 #| fig-cap: "Factor de Inflación de Varianza (VIF)."
 #| label: fig-vif
-#| fig-subcap:
-#|    - "Modelo Completo."    
-#|    - "Modelo Stepwise."
-#|    - "Modelo Forward."
-#|    - "Modelo Backward."
-#| layout: [[40,-10, 40], [40,-10, 40]]
+#| layout: [[-20, 60, -20]]
 
-# Estimamos el VIF para el modelo completo
-vif_completo <- vif(modelo_completo)
-# Estimamos el VIF para el modelo stepwise
-vif_stepwise <- vif(modelo_stepwise)
-# Estimamos el VIF para el modelo forward
-vif_forward <- vif(modelo_forward)
 # Estimamos el VIF para el modelo backward
 vif_backward <- vif(modelo_backward)
+vif_backward <- as.data.frame(vif_backward)
+vif_df <- vif_backward %>%
+    rename(VIF = vif_backward) %>%
+    arrange(desc(VIF))
 
-# Convertimos los resultados a un data frame
-Vifs_mat <- matrix(nrow = length(vif_completo), ncol = 4)
-for (i in 1:length(names(vif_completo))) {
-    
-    name_vif <- names(vif_completo)[i]
-    
-    if (name_vif %in% names(vif_stepwise)) {
-        Vifs_mat[i, 1] <- vif_completo[name_vif]
-        Vifs_mat[i, 2] <- vif_stepwise[name_vif]
-        Vifs_mat[i, 3] <- vif_forward[name_vif]
-        Vifs_mat[i, 4] <- vif_backward[name_vif]
-    }
-    else {
-        Vifs_mat[i, 1] <- vif_completo[name_vif]
-        Vifs_mat[i, 2] <- NA
-        Vifs_mat[i, 3] <- NA
-        Vifs_mat[i, 4] <- NA
-    }
-}
 
-row.names(Vifs_mat) <- names(vif_completo)
-colnames(Vifs_mat) <- c("Modelo.Completo", "Modelo.Stepwise", "Modelo.Forward", "Modelo.Backward")
-
-Vifs_mat <- as.data.frame(Vifs_mat)
+vif_df <- vif_df %>%
+    mutate(Variable =  row.names(vif_backward)) %>%
+    mutate(VIF = round(VIF, 4))
 
 # Barplots
-ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Completo)) +
+ggplot(vif_df, aes(x = Variable, y = VIF)) +
     geom_bar(stat = "identity", fill = "steelblue") +
-    geom_text(aes(label = round(Modelo.Completo, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
-    ylim(0, 10) +
-    coord_flip() +
-    labs(title = "",
-         x = "",
-         y = "VIF") +
-    theme_minimal()
-
-ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Stepwise)) +
-    geom_bar(stat = "identity", fill = "steelblue") +
-    geom_text(aes(label = round(Modelo.Stepwise, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
-    ylim(0, 10) +
-    coord_flip() +
-    labs(title = "",
-         x = "",
-         y = "VIF") +
-    theme_minimal()
-
-ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Forward)) +
-    geom_bar(stat = "identity", fill = "steelblue") +
-    geom_text(aes(label = round(Modelo.Forward, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
-    ylim(0, 10) +
-    coord_flip() +
-    labs(title = "",
-         x = "",
-         y = "VIF") +
-    theme_minimal()
-
-ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Backward)) +
-    geom_bar(stat = "identity", fill = "steelblue") +
-    geom_text(aes(label = round(Modelo.Backward, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
+    geom_text(aes(label = round(VIF, 2)), vjust = 0.25, size = 3, hjust = -0.5) +
     ylim(0, 10) +
     coord_flip() +
     labs(title = "",
@@ -986,3 +994,152 @@ ggplot(Vifs_mat, aes(x = row.names(Vifs_mat), y = Modelo.Backward)) +
     theme_minimal()
 ```
 
+Como podemos observar, nuestro modelo no parece presentar problemas de multicolinealidad dado que el VIF de todas las variables es menor a 5. Sin embargo, `percentage_expenditure` y `Adult_Mortality` tienen un VIF de 3.03 y 3.43 respectivamente, lo que sugiere que podrían tener una colinealidad leve o moderada con las demás variables, pero no es un problema grave. Por lo que se puede concluir que el modelo no presenta problemas de multicolinealidad y por lo tanto no es necesario eliminar ninguna variable del modelo.
+
+#### Normalidad de los Residuos.
+
+```{r}
+#| warning: false
+#| fig-cap: "Evaluación de la Normalidad de los Residuos."
+#| fig-subcap:
+#|    - "QQ-plot de los residuos del modelo."
+#|    - "Histograma de los residuos del modelo."
+#| label: fig-residuos
+#| layout: [[50, 50]]
+# Residuos del modelo
+resdiduos <- modelo_backward$residuals
+
+anderson <- ad.test(resdiduos)
+kolmo <- ks.test(resdiduos, "pnorm", mean = mean(resdiduos), sd = sd(resdiduos))
+
+# QQ-plot
+ggplot(modelo_backward, aes(sample = .resid)) +
+    geom_qq() +
+    geom_qq_line() +
+    labs(title = "",
+         x = "Cuantiles Teóricos",
+         y = "Cuantiles de los Residuos") +
+    theme_minimal()
+
+# Histograma
+ggplot(modelo_backward, aes(x = .resid)) +
+    geom_histogram(aes(y = ..density..), bins = 50, fill = "steelblue", alpha = 0.5) +
+    geom_density(color = "red", size = 1) +
+    labs(title = "",
+         x = "Residuos",
+         y = "Densidad") +
+    theme_minimal()
+```
+
+Vemos el QQ-plot de los residuos en @fig-residuos-1 donde vemos claramente que las colas se alejan bastante de la distribución de quantiles de una normal. Esto se ve más claramente en el histograma de los residuos en @fig-residuos-2 donde se observa que la distribución de los residuos no tiene una forma de una distribución normal, dado que tienen colas más ligeras, algo que asemeja más a una distribución log-normal.
+
+Por lo cual al menos visualmente no parece que se cumpla el supuesto de normalidad de los residuos. Para comprobar esta idea, se realizaron dos pruebas de normalidad: la prueba de Anderson-Darling y la prueba de Kolmogorov-Smirnov. 
+
+La prueba de Anderson-Darling tiene un estadístico de `r round(anderson$statistic, 4)` y un $p$-valor de `r round(anderson$p.value, 4)`. La prueba de Kolmogorov-Smirnov tiene un estadístico de `r round(kolmo$statistic, 4)` y un $p$-valor de `r round(kolmo$p.value, 4)`. Ambas pruebas tienen un $p$-valor menor a 0.05 lo que sugiere que los residuos no siguen una distribución normal. Por lo que se puede concluir que el modelo no cumple con el supuesto de normalidad de los residuos.
+
+#### Independencia de los Residuos.
+
+Para la independencia de los residuos podemos usar la prueba de Durbin-Watson. Esta prueba nos permite evaluar si los residuos del modelo están correlacionados entre sí. Un valor de Durbin-Watson cercano a 2 indica que los residuos son independientes, mientras que un valor menor a 2 indica que los residuos están correlacionados positivamente y un valor mayor a 2 indica que los residuos están correlacionados negativamente.
+
+```{r}
+#| warning: false
+
+durbin <- durbinWatsonTest(modelo_backward)
+```
+
+La prueba de Durbin-Watson nos da un estadístico de `r round(durbin$dw, 4)` ($\rho$ = `r durbin$r`) y el $p$-valor es de `r round(durbin$p, 4)`. Esto sugiere que los residuos están correlacionados entre sí. Esto se puede ver en la @fig-autocorrelacion donde se observa que desde el primer lag hay una correlación muy alta entre los residuos. Esto sugiere que los residuos no son independientes y por lo tanto el modelo no cumple con el supuesto de independencia de los residuos. 
+
+```{r}
+#| fig-cap: "Autocorrelación de los Residuos."
+#| label: fig-autocorrelacion
+
+ggAcf(modelo_backward$residuals, lag.max = 20) +
+    labs(title = "",
+         x = "Lags",
+         y = "Autocorrelación") +
+    theme_minimal()
+```
+
+### Predicción de la Esperanza de Vida.
+
+Dado que teniamos 10 observaciones donde no teníamos la esperanza de vida, se procederá a predecir la esperanza de vida usando el modelo ajustado. Esto se hará usando la función `predict` de `R` y se usará el modelo backward dado que es el mejor modelo.
+
+En la @tbl-prediccion_cov se muestran los datos de las variables que se usarán para predecir la esperanza de vida. En la @tbl-predicciones se muestran las predicciones de la esperanza de vida y sus intervalos de predicción al 95% de confianza.
+
+```{r}
+#| warning: false
+#| tbl-cap: "Covariables para la predicción."
+#| label: tbl-prediccion_cov
+
+pred_data <- imp_data[rows_to_predict, -18]
+
+pred_data <- pred_data %>%
+    mutate(Status = as.factor(Status)) %>%
+    mutate(Status = dplyr::recode(Status, "Developed" = 1, "Developing" = 0))
+
+# Predecir la esperanza de vida
+predicciones <- predict(modelo_backward, newdata = pred_data, 
+                        interval = "prediction") %>%
+  as.data.frame() 
+
+# Mostramos los datos
+
+predicciones_df <- data.frame(Country = datos$Country[rows_to_predict],
+                               Year = datos$Year[rows_to_predict],
+                               Prediccion = predicciones["fit"],
+                               Inferior = predicciones["lwr"],
+                               Superior = predicciones["upr"]) %>%
+                    rename(Prediccion = fit,
+                           Inferior = lwr,
+                           Superior = upr)
+
+predicciones_df <- predicciones_df %>%
+    mutate(Prediccion = round(Prediccion, 4)) %>%
+    arrange(desc(Prediccion))
+
+pred_data %>%
+  kable() %>%
+  kable_styling("striped", full_width = F) %>%
+  column_spec(1, bold = T) 
+```
+
+```{r}
+#| tbl-cap: "Predicciones de la Esperanza de Vida."
+#| label: tbl-predicciones
+
+predicciones_df %>%
+  kable() %>%
+  kable_styling("striped", full_width = F) %>%
+  column_spec(1, bold = T)
+```
+
+## Componentes Principales.
+
+Se ajustará un modelo usando componentes principales sobre las variables predictorías numéricas.
+
+```{r}
+#| warning: false
+#| fig-cap: "Componentes Principales."
+#| label: fig-componentes_codo
+#| fig-width: 10
+
+componentes <- princomp(imp_data[, c(-17, -18)], 
+                        cor = TRUE)
+
+variance <- componentes$sdev^2 / sum(componentes$sdev^2)
+
+qplot(c(1:length(variance)),
+      variance) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_line() +
+    geom_point() +
+    geom_text(aes(label = paste(cumsum(round(variance, 3))* 100, "%")), vjust = -0.5, size = 3) +
+    labs(title = "",
+         x = "Componentes",
+         y = "Varianza Explicada") +
+    theme_minimal()
+```
+
+En la @fig-componentes_codo se observa el gráfico de codo de los componentes principales. Se observa que los primeros 3 componentes explican el 55.1% de la varianza total y es donde se observa la curvatura del gráfico, sin embargo la varianza explicada es muy poca, por lo cual se debe escoger un número mayor de componentes para explicar la varianza. 
+
+Dado a partir del componente 8 el aumento de la varianza explicada es muy pequeño, se procederá a usar 8 componentes principales.
