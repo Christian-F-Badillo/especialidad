@@ -5,7 +5,78 @@ library(tidyverse)
 library(rstan)
 library(bayesplot)
 
+# ------------------------------------------------------------------------------
+# Fuciones.
+### Funciones
+plot_posterior_hdi <- function(samples, param_matrix, param_name, param_label = NULL, prob = 0.95) {
+    hdi_vals <- quantile(param_matrix, probs = c((1 - prob) / 2, 1 - (1 - prob) / 2))
+    media <- mean(param_matrix)
+    
+    if (is.null(param_label)) {
+        param_label <- parse(text = param_name)
+    }
+    
+    hdi_df <- data.frame(
+        x = hdi_vals,
+        y = 0.5,
+        label = sprintf("%.5f", hdi_vals)
+    )
+    
+    media_df <- data.frame(
+        x = media,
+        y = 0.8,
+        label = paste0("Media: ", sprintf("%.5f", media))
+    )
+    
+    bayesplot::mcmc_areas(
+        samples,
+        pars = param_name,
+        facet = "chain",
+        fill = "lightblue",
+        alpha = 0.5,
+        prob_outer = 1,
+        prob = prob
+    ) +
+        geom_vline(
+            xintercept = hdi_vals,
+            linetype = "dashed",
+            color = "red",
+            linewidth = 1
+        ) +
+        geom_text(
+            data = hdi_df,
+            aes(x = x, y = y, label = label),
+            color = "red",
+            vjust = -1,
+            inherit.aes = FALSE
+        ) +
+        geom_text(
+            data = media_df,
+            aes(x = x, y = y, label = label),
+            color = "blue",
+            vjust = -0.5,
+            inherit.aes = FALSE
+        ) +
+        labs(
+            title = "Distribución Posterior",
+            subtitle = paste0("con ", prob * 100, "% HDI"),
+            x = param_label,
+            y = "Densidad"
+        ) +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(hjust = 0.5),
+            plot.subtitle = element_text(hjust = 0.5),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size = 10),
+            axis.title.x = element_text(size = 18),
+        )
+}
+
+# -----------------------------------------------------------------------------
 # Setup para rstan
+
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
 
@@ -58,41 +129,30 @@ fit <- stan(
     open_progress = F,
     )
 
+# ------------------------------------------------------------------------------
+# Guardamos los muestreos
+
 samples <- extract(fit, pars = "theta")
 
 # Guardar los samples en un archivo RDS
 saveRDS(samples, file = "samples_theta.rds")
 
-# Resumen de los resultados
-print(fit)
+# -------------------------------------------------------------------------------
+# Resultados
 
-# Graficar los resultados
-plot(fit)
+print(fit, pars = "theta", probs = c(0.025, 0.5, 0.975), digits_summary = 4)
 
+
+# Trace plot
 traceplot(fit, inc_warmup = F, nrow = 2)
+# ggsave("img/modelo1/cadenas.png", width = 15, height = 6, dpi = 300)
 
-# Graficar los resultados
-mcmc_dens(
-    fit,
-    regex_pars  = "theta",
-    facet_args = list(ncol = 2),
-    facet = "chain",
-    ncol = 2,
-    nrow = 2,
-    fill = "lightblue",
-    alpha = 0.5
+
+# Posterior Plot
+plot_posterior_hdi(
+    samples = fit,              
+    param_matrix = samples$theta[, 6],  
+    param_name = "theta[6]"
 )
 
-# Graficar los resultados
-mcmc_areas(
-    fit,
-    pars  = "theta[1]",
-    facet_args = list(ncol = 2),
-    facet = "chain",
-    ncol = 2,
-    nrow = 2,
-    fill = "lightblue",
-    alpha = 0.5,
-    prob_outer = 0.99,
-    prob = 0.95,
-)
+# ggsave("img/modelo1/posterior_theta6.png", width = 8, height = 6, dpi = 300)
