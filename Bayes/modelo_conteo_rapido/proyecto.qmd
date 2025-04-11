@@ -1,0 +1,155 @@
+---
+title: "Modelo Bayesiano para el Conteo Rápido en Elecciones Presidenciales y Consulta Pública"
+subtitle: "Proyecto Final"
+subject: "Estadística Bayesiana"
+author: 
+    - name: "Christian Francisco Badillo Hernández"
+format: 
+      pdf:
+        toc: true
+        toc-title: "Contenido"
+        documentclass:  article
+        number-sections: true
+        colorlinks: true
+        highlight-style: github
+        fontfamily: times
+        fontsize: 11pt
+        geometry: "left=2.54cm, right=2.54cm, top=2.54cm, bottom=2.54cm"
+        lof: true
+        lot: true
+        code-block-bg: true
+        code-block-border-left: "#31BAE9"
+        pdf-engine: pdflatex
+        date: today
+        fig-cap-location: top
+        fig-pos: H
+        tbl-cap-location: top
+        toc-depth: 4
+        bibliography: refs.bib
+        csl: apa.csl
+        crossref:
+          fig-prefix: figura   # (default is "Figure")
+          tbl-prefix: tabla    # (default is "Table")
+          ref-hyperlink: true # 
+
+
+nocite: |
+  @*
+
+crossref:
+  fig-prefix: figura   # (default is "Figure")
+  tbl-prefix: tabla    # (default is "Table")
+editor: source
+lang: es-ES
+
+execute:
+    cache: true
+    freeze: auto
+---
+
+\newpage
+# Introducción
+
+```{r}
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(sf)
+
+mex.dist <- read_sf("DISTRITO_FEDERAL/DISTRITO_FEDERAL.shp")
+mex.states <- read_sf("conjunto_de_datos/areas_geoestadisticas_estatales.shp")
+
+mex.states <- mex.states %>%
+    arrange(CVE_ENT)
+
+data.conteo <- read.delim("MUESTRA_ELECCIONES_FEDERALES_2018.txt", sep ="|", skip = "1")
+
+data <- data.conteo %>%
+    select(-c(MODIFICADO, ORIGEN_CAPTURA, SEGUNDOS, MINUTOS, HORA, DIA, MES, ANIO,
+              ID_AREA_RESPONSABILIDAD, ESTRATO_F, ESTRATO_L, ID_ESTRATO_F, ID_ESTRATO_L,
+              ID_DIST_LOC, SECCION, TIPO_SECCION, ID_CASILLA, TIPO_CASILLA, EXT_CONTIGUA,
+              ID_MUNICIPIO))
+
+# Creamos los datos en proporciones.
+data.votos <- data %>%
+    # Verificamos que la lista nominal sea distinta de 0, si lo es excluimos la fila.
+    filter(LISTA_NOMINAL != 0) %>%
+    mutate(NO_PART_CIUD = 1 - (TOTAL / LISTA_NOMINAL)) %>%
+    select(-c(TOTAL)) 
+
+rm(data.conteo)
+
+# Ganador por estado
+data.ganador <- data.votos %>%
+    select(c(iD_ESTADO,RAC, JAMK, AMLO, JHRC)) %>%
+    group_by(iD_ESTADO) %>%
+        summarise(
+            AMLO = sum(AMLO),
+            JAMK = sum(JAMK),
+            JHRC = sum(JHRC),
+            RAC = sum(RAC)
+        ) %>%
+    mutate(winner = case_when(
+        AMLO > JAMK & AMLO > JHRC & AMLO > RAC ~ "AMLO",
+        JAMK > AMLO & JAMK > JHRC & JAMK > RAC ~ "JAMK",
+        JHRC > AMLO & JHRC > JAMK & JHRC > RAC ~ "JHRC",
+        RAC > AMLO & RAC > JAMK & RAC > JHRC ~ "RAC",
+        TRUE ~ "Nadie"
+        )) %>%
+    select(iD_ESTADO, winner)
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Distritos Federales Electorales en México."
+#| label: fig-map_dist
+
+ggplot(mex.dist) +
+  geom_sf(fill = "white", color = "black") +
+  theme_minimal() +
+  labs(title = "",
+       caption = "Datos obtenidos de: https://pautas.ine.mx/transparencia/mapas/index.html",
+       x = "",
+        y = ""
+       ) +
+    theme_minimal() + 
+    theme(axis.text.x = element_blank(), 
+          axis.text.y = element_blank())
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Ganador por Estado en el conteo rápido."
+#| label: fig-map_ganador_conteo
+
+ggplot(mex.states) +
+  geom_sf(aes(fill = data.ganador$winner), color = "black") +
+  scale_fill_manual( name = "Ganador",
+                     labels = c("AMLO", "JAMK", "JHRC", "RAC"),
+                     values = c("AMLO" = "#AE123A", "JAMK" = "yellowgreen", 
+                                "JHRC" = "#D04544", "RAC" = "#76A7CC")) +    
+  theme_minimal() +
+  labs(title = "",
+       caption = "*AMLO = Andrés Manuel López Obrador, JAMK = José Antonio Meade Kuribreña",
+        x = "",
+        y = ""
+       ) + 
+    theme_minimal() + 
+    theme(axis.text.x = element_blank(), 
+          axis.text.y = element_blank())
+
+```
+
+
+\newpage
+# Análisis
+
+\newpage
+# Referencias.
+
+::: {#refs}
+:::
+
