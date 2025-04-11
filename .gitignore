@@ -10,3 +10,9 @@
 env/
 **/.env
 **/.Rhistory
+
+**/*.stan
+**/*.rds
+**/*.xml
+**/presidencia.csv
+**/20210802-2130_COMPUTOS-INE-CP2021.csv
