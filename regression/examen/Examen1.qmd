@@ -27,13 +27,6 @@ lang: es
 cache: true
 freeze: auto
 ---
-
-# Teórico
-
-# Análisis de Datos.
-
-## Variables
-
 ```{r}
 #| echo: false
 #| warning: false
@@ -58,6 +51,351 @@ library(forecast)
 
 datos <- read.csv("Lifexpectancy.csv")
 ```
+
+# Teórico
+
+## Ejercicio 1.
+
+**Prueba de dos muestras**. Sean $\bar{y_i}$ con $i = 0, 1$ las medias de dos muestras con tamaños $m_0$ y $m_1$ y desviaciones estándar $SD_0$ y $SD_1$ respectivamente. Si la muestra $j$ se distribuye $N(\mu_j, \sigma^2)$, entonces el estadístico:
+
+$$
+T = \frac{\bar{y_0} - \bar{y_i}}{\hat{\sigma} \sqrt{\frac{1}{m_0} + \frac{1}{m_1}}}
+$$
+
+donde $\hat{\sigma} = \frac{(m_0-1)SD_0^2 + (m_1 - 1)SD_1^2}{m_0 + m_1 - 2}$ se usa para la prueba de hipótesis $\mu_0 = \mu_1$, con distribución nula $T \sim t_{(m_0 + m_1 - 2)}$.
+
+Supongamos primero que el tamaño muestral es el mismo para ambas muestras. Definiendo $X$ como la variable explicativa de tal forma que tiene $0$ en sus primeras $m$ entradas y $1$ en las restantes $m$, y un vector respuesta $Y$ como variable respuesta con las $2m$ observaciones concatenadas. Muestra que el modelo de regresión lineal simple es equivalente al problema de dos muestras de la siguiente manera.
+
+* Calcula las medias y sumas de cuadrados para este modelo, con ésto, calcula los estimadores por mínimos cuadrados e interprétalos.
+
+Para el método de mínimos cuadrados, se tiene que minimizar la suma de cuadrados de los residuos:
+$$
+\sum_{i=1}^{2m} (y_i - \hat{y_i})^2
+$$
+
+donde $\hat{y_i} = \beta_0 + \beta_1 x_i$ y $\beta_0$ y $\beta_1$ son los parámetros a estimar. Para ello, tomamos las derivadas parciales respecto a $\beta_0$ y $\beta_1$ y las igualamos a cero. Esto nos da un sistema de ecuaciones que podemos resolver para encontrar los estimadores de mínimos cuadrados.
+
+\begin{align*}
+\frac{\partial}{\partial \beta_0} \sum_{i=1}^{2m} (y_i - \hat{y_i})^2 &= 0 \\
+\frac{\partial}{\partial \beta_1} \sum_{i=1}^{2m} (y_i - \hat{y_i})^2 &= 0
+\end{align*}
+
+Procedamos primeramente con $\beta_0$:
+
+\begin{align*}
+\frac{\partial}{\partial \beta_0} \sum_{i=1}^{2m} (y_i - \hat{y_i})^2 &= \frac{\partial}{\partial \beta_0} \sum_{i=1}^{2m} (y_i - (\beta_0 + \beta_1 x_i))^2 \\
+&= \sum_{i=1}^{2m} -2(y_i - (\beta_0 + \beta_1 x_i)) = 0 \\
+&= -2 \sum_{i=1}^{2m} (y_i - (\beta_0 + \beta_1 x_i)) = 0 \\
+&= \sum_{i=1}^{2m} y_i - 2m \beta_0 - \beta_1 \sum_{i=1}^{2m} x_i = 0 \\
+\end{align*}
+
+Dado que $x_i$ es $0$ para los primeros $m$ y $1$ para los segundos $m$, tenemos que $\sum_{i=1}^{2m} x_i = m$. Por lo tanto, la ecuación se convierte en:
+\begin{align*}
+\sum_{i=1}^{2m} y_i - 2m \beta_0 - m \beta_1 = 0 \\
+\sum_{i=1}^{2m} y_i = 2m \beta_0 + m \beta_1 \\
+\beta_0 = \frac{1}{2m} \sum_{i=1}^{2m} y_i - \frac{1}{2} \beta_1
+\end{align*}
+
+Dado que la media de $y_i$ es $\bar{y} = \frac{1}{2m} \sum_{i=1}^{2m} y_i$, podemos reescribir la ecuación como:
+$$
+\beta_0 = \bar{y} - \frac{1}{2} \beta_1
+$$
+
+Procedemos ahora con $\beta_1$:
+\begin{align*}
+\frac{\partial}{\partial \beta_1} \sum_{i=1}^{2m} (y_i - \hat{y_i})^2 &= \frac{\partial}{\partial \beta_1} \sum_{i=1}^{2m} (y_i - (\beta_0 + \beta_1 x_i))^2 \\
+&= \sum_{i=1}^{2m} -2(y_i - (\beta_0 + \beta_1 x_i)) x_i = 0 \\
+&= -2 \sum_{i=1}^{2m} (y_i - (\beta_0 + \beta_1 x_i)) x_i = 0 \\
+&= \sum_{i=1}^{2m} y_i x_i - \beta_0 \sum_{i=1}^{2m} x_i - \beta_1 \sum_{i=1}^{2m} x_i^2 = 0 \\
+&= \sum_{i=1}^{m} y_i^1 - \beta_0 m - \beta_1 m = 0 \\
+\end{align*}
+
+donde $\sum_{i=1}^{m} y_i^1$ representa la suma de los valores para la muestra $1$, dado que el producto de $x_i$ por $y_i$ es $0$ para los primeros $m$ y $y_i$ para los segundos $m$. Por lo tanto, la ecuación se convierte en:
+\begin{align*}
+\sum_{i=1}^{m} y_i^1 - \beta_0 m - \beta_1 m = 0 \\
+\sum_{i=1}^{m} y_i^1 = \beta_0 m + \beta_1 m \\
+\beta_0 = \frac{1}{m} \sum_{i=1}^{m} y_i^1 - \beta_1
+\end{align*}
+
+En esta última igualdad podemos ver que $\frac{1}{m} \sum_{i=1}^{m} y_i^1 = \bar{y_1}$, por lo que podemos reescribir la ecuación como:
+$$
+\beta_1 = \bar{y_1} - \beta_0
+$$
+
+Reemplazamos $\beta_0$ en la ecuación de $\beta_1$, usando la propiedad de que $\bar{y} = \frac{1}{2}(\bar{y_0} + \bar{y_1})$:
+\begin{align*}
+\beta_1 &= \bar{y_1} - \left(\bar{y} - \frac{1}{2} \beta_1\right) \\
+\beta_1 &= \frac{2\bar{y_1} - \bar{y_0} - \bar{y_1} + \beta_1}{2} \\
+\frac{1}{2} \beta_1 &= \frac{\bar{y_1} - \bar{y_0}}{2} \\
+\beta_1 &= \bar{y_1} - \bar{y_0}
+\end{align*}
+
+Resolviendo para $\beta_0$:
+\begin{align*}
+\beta_0 &= \bar{y} - \frac{1}{2} \beta_1 \\
+&= \bar{y} - \frac{1}{2} (\bar{y_1} - \bar{y_0}) \\
+&= \frac{1}{2} (\bar{y_0} + \bar{y_1}) - \frac{1}{2} (\bar{y_1} - \bar{y_0}) \\
+&= \frac{1}{2} (\bar{y_0} + \bar{y_1}) - \frac{1}{2} \bar{y_1} + \frac{1}{2} \bar{y_0} \\
+&= \frac{1}{2} \bar{y_0} + \frac{1}{2} \bar{y_0} \\
+&= \bar{y_0}
+\end{align*}
+ 
+ Por lo tanto, los estimadores de mínimos cuadrados son:
+\begin{align*}
+\hat{\beta_0} &= \bar{y_0} \\
+\hat{\beta_1} &= \bar{y_1} - \bar{y_0}
+\end{align*}
+
+Podemos interpretar a $\beta_0$ como el valor esperado en el grupo $0$ o de referencia y a $\beta_1$ como la diferencia de medias entre los grupos $0$ y $1$. Esto es, $\beta_1$ representa el cambio en la variable dependiente al cambiar de grupo $0$ a grupo $1$.
+
+* Encuentra los valores ajustados y los residuales. Con ello, calcula $\sigma^2$.
+
+Para calcular los valores ajustados, usamos la ecuación de regresión:
+\begin{align*}
+\hat{y_i} &= \hat{\beta_0} + \hat{\beta_1} x_i \\
+&= \bar{y_0} + (\bar{y_1} - \bar{y_0}) x_i
+\end{align*}
+
+Los residuales son la diferencia entre los valores observados y los valores ajustados:
+\begin{align*}
+e_i &= y_i - \hat{y_i} \\
+&= y_i - \left(\bar{y_0} + (\bar{y_1} - \bar{y_0}) x_i\right) \\
+&= y_i - \bar{y_0} - (\bar{y_1} - \bar{y_0}) x_i
+\end{align*}
+
+Para calcular $\sigma^2$, usamos la suma de cuadrados de los residuales:
+\begin{align*}
+SSE &= \sum_{i=1}^{2m} e_i^2 \\
+&= \sum_{i=1}^{2m} (y_i - \hat{y_i})^2 \\
+&= \sum_{i=1}^{2m} (y_i - \left(\bar{y_0} + (\bar{y_1} - \bar{y_0}) x_i\right))^2
+\end{align*}
+
+Esta suma de cuadrados se puede dividir en dos partes, una para el grupo $0$ y otra para el grupo $1$:
+\begin{align*}
+SSE &= \sum_{i=1}^{m} (y_i^0 - \bar{y_0})^2 + \sum_{i=1}^{m} (y_i^1 - \bar{y_1})^2 \\
+&= \sum_{i=1}^{m} (y_i^0 - \bar{y_0})^2 + \sum_{i=1}^{m} (y_i^1 - \bar{y_1})^2
+\end{align*}
+
+Donde $y_i^0$ y $y_i^1$ son los valores de la variable dependiente para el grupo $0$ y $1$, respectivamente. Usando la varianza muestral, podemos escribir:
+$$
+SSE = (m - 1)SD_0^2 + (m - 1)SD_1^2
+$$
+
+Dado el estimador de $\sigma^2$ como:
+\begin{align*}
+\hat{\sigma}^2 &= \frac{SSE}{2m - 2} \\
+&= \frac{(m - 1)SD_0^2 + (m - 1)SD_1^2}{2m - 2} \\
+&= \frac{(m - 1)(SD_0^2 + SD_1^2)}{2(m - 1)} \\
+&= \frac{SD_0^2 + SD_1^2}{2}
+\end{align*}
+
+Por lo tanto, el estimador de $\sigma^2$ es la media de las varianzas muestrales de los dos grupos.
+
+* Muestra que el estadístico T para la prueba $\beta_1 = 0$ es el mismo que para la prueba de
+dos muestras.
+
+La prueba de hipótesis para la regresión lineal simple para cualquiera parámetro $\beta_i$ es:
+$$
+t = \frac{\hat{\beta_i} - \beta_i}{\sqrt{Var(\hat{\beta_i})}}
+$$
+
+Para ello devemos calcular la varianza de $\hat{\beta_1}$ y suponiendo que la varianza de los errores es $\sigma^2$ para ambos grupos, tenemos que:
+\begin{align*}
+Var(\hat{\beta_1}) &= Var(\bar{y_1} - \bar{y_0}) \\
+&= Var(\bar{y_1}) + Var(\bar{y_0}) \\
+&= \frac{\sigma^2}{m} + \frac{\sigma^2}{m} \\
+&= \frac{2\sigma^2}{m}
+\end{align*}
+
+Por lo tanto, la varianza de $\hat{\beta_1}$ es:
+$$
+Var(\hat{\beta_1}) = \frac{2\sigma^2}{m}
+$$
+
+Por ende, al reemplazar en la ecuación del estadístico T, tenemos que:
+\begin{align*}
+t &= \frac{\hat{\beta_1} - 0}{\sqrt{Var(\hat{\beta_1})}} \\
+&= \frac{\hat{\beta_1}}{\sqrt{\frac{2\sigma^2}{m}}} \\
+&= \frac{\hat{\beta_1}}{\hat{\sigma} \sqrt{\frac{2}{m}}} \\
+&= \frac{\hat{\beta_1}}{\hat{\sigma} \sqrt{\frac{1}{m} + \frac{1}{m}}} \\
+&= \frac{\bar{y_1} - \bar{y_0}}{\hat{\sigma} \sqrt{\frac{1}{m} + \frac{1}{m}}}
+\end{align*}
+
+Por lo tanto, el estadístico T para la prueba de hipótesis $\beta_1 = 0$ es el mismo que para la prueba de dos muestras, dado que ambos tienen la misma forma y distribución.
+
+* ¿Qué ocurre si el tamaño muestral no coincide? Comenta sin demostración.
+
+Para el caso los estimadores por mínimos cuadrados son idénticos para $\beta_1$ pero para el parámetro $\beta_0$ no es la media de la muestra del grupo $0$ sino que es una combinación lineal de las medias de ambos grupos. En este caso, el estadístico T para la prueba de hipótesis $\beta_1 = 0$ se convierte en su versión generalizada, que es:
+$$
+t = \frac{\hat{\beta_1}}{\hat{\sigma} \sqrt{\frac{1}{m_0} + \frac{1}{m_1}}}
+$$
+
+Y se realiza correción en $\sigma^2$ por los tamaños muestrales diferentes. En este caso, el estadístico T sigue una distribución t con $m_0 + m_1 - 2$ grados de libertad.
+
+## Ejercicio 2.
+
+Describe los componentes del modelo de regresión lineal múltiple.
+
+El modelo de regresión lineal múltiple se puede escribir como:
+$$
+Y = X\beta + \epsilon, \hspace{2cm} \text{donde: } \epsilon \sim N(0, \sigma^2 I).
+$$
+Los componentes del modelo son:
+
+- $Y$: Variable de respuesta, que es la variable que queremos predecir o explicar.
+- $X$: Matriz de diseño, que contiene las variables explicativas o predictoras. Cada columna de la matriz representa una variable explicativa y cada fila representa una observación.
+- $\beta$: Vector de coeficientes, que contiene los parámetros del modelo que queremos estimar. Cada elemento de este vector representa el efecto de una variable explicativa sobre la variable de respuesta.
+- $\epsilon$: Término de error, que representa la variabilidad en la variable de respuesta que no se puede explicar por las variables explicativas. Se asume que este término sigue una distribución normal con media cero y varianza $\sigma^2$ y es la parte que da aleatoriedad al modelo.
+
+
+## Ejercicio 3.
+¿Cuáles son las ecuaciones normales del modelo? ¿Cómo podemos obtenerlas?
+
+Las ecuaciones normales del modelo de regresión lineal múltiple se obtienen al minimizar la suma de cuadrados de los residuos. La suma de cuadrados de los residuos se puede escribir como:
+$$
+E = ||Y - X\beta||^2 = (Y - X\beta)^T (Y - X\beta)
+$$
+Minimizando $E$ respecto a $\beta$, obtenemos las ecuaciones normales:
+$$
+\beta = (X^T X)^{-1} X^T Y
+$$
+Suponiendo que $X^T X$ es invertible, esta ecuación nos da los estimadores de mínimos cuadrados para los coeficientes del modelo de regresión lineal múltiple. La matriz $(X^T X)^{-1} X^T$ se conoce como la matriz de proyección o *Hat Matrix* y se utiliza para proyectar los valores observados $Y$ en el espacio de las variables explicativas $X$.
+
+4. ¿Qué es el factor de agrandamiento de varianza? ¿Y el criterio de AIC? Da ejemplos donde
+muestres tus afirmaciones. Recuerda incluir gráficos que lo respalden.
+
+El factor de agrandamiento de varianza (VIF) es una medida que se utiliza para detectar la multicolinealidad en un modelo de regresión lineal. La multicolinealidad ocurre cuando dos o más variables independientes están altamente correlacionadas entre sí, lo que puede dificultar la estimación precisa de los coeficientes del modelo. El VIF se calcula para cada variable independiente y se define como:
+$$
+VIF_i = \frac{1}{1 - R^2_{-i}}.
+$$
+
+Donde $R^2_{-i}$ es el coeficiente de determinación del modelo de regresión lineal que se ajusta a la variable $i$ como función de todas las demás variables independientes. Un VIF mayor a $10$ indica una alta multicolinealidad y sugiere que la variable $i$ puede ser redundante en el modelo. Lo recomendable es tener un VIF menor a $5$.
+
+El críterio AIC (Akaike Information Criterion) es una medida que se utiliza para comparar modelos estadísticos. Se basa en la verosimilitud del modelo y penaliza la complejidad del modelo (número de parámetros). El AIC se define como:
+$$
+AIC = -2 \log(L) + 2k.
+$$
+Donde $L$ es la verosimilitud del modelo y $k$ es el número de parámetros en el modelo. Un AIC más bajo indica un mejor ajuste del modelo a los datos, teniendo en cuenta la complejidad del modelo. Al comparar varios modelos, se selecciona el que tiene el AIC más bajo. Un críterio simi;ar es el BIC (Bayesian Information Criterion), que penaliza más fuertemente la complejidad del modelo, se define como:
+$$
+BIC = -2 \log(L) + k \log(n).
+$$
+
+Donde igualmente $L$ es la verosimilitud del modelo, $k$ es el número de parámetros en el modelo y $n$ es el número de observaciones. Un BIC más bajo también indica un mejor ajuste del modelo a los datos, dada la complejidad del modelo y el número de observaciones.
+
+Para ilustar estos ejemplos, se simularan 200 datos y 3 variables relacionadas con nuestra variable dependiente, 2 sin ninguna relación y 2 más con relación pero altamente correlacionadas entre sí. Se ajustarán modelos de regresión lineal múltiple y se calcularán los VIF y AIC para cada modelo.
+
+```{r}
+#| echo: false
+#| warning: false
+#| tbl-cap: "Ajuste de los Modelos"
+#| label: tbl-modelos_ejemplos
+
+library(MASS)
+
+# Simulación de datos
+set.seed(123)
+n <- 200
+x1 <- rnorm(n, -5, 23)
+x2 <- rnorm(n, 3, 2)
+x3 <- rnorm(n, 10, 24)
+
+x4 <- rnorm(n, 5, 2)
+x5 <- rnorm(n, 3, 2)
+
+corr.x6.x7 <- 0.95
+x.6.7 <- mvrnorm(n, mu = c(0, 0), Sigma = matrix(c(4, corr.x6.x7 * 2*4, corr.x6.x7* 2*4, 16), nrow = 2))
+
+x6 <- x.6.7[, 1]
+x7 <- x.6.7[, 2]
+
+epsilon = rnorm(n, 0, 1)
+
+betas.ejem = c(6, 2.456, -3, -5, 0.23, 0.45)
+
+y <- betas.ejem[1] + betas.ejem[2]*x1 + betas.ejem[3]*x2 + betas.ejem[4]*x3 + betas.ejem[5]*x6 + betas.ejem[6]*x7 + epsilon
+
+datos.ejemplo = data.frame(y, x1, x2, x3, x4, x5, x6, x7)
+
+# Ajuste de modelos
+mod_completo <- lm(y ~ ., data = datos.ejemplo)
+mod_relevantes <- lm(y ~ x1 + x2 + x3 + x6 + x7, data = datos.ejemplo)
+mod_no_corr_falses <- lm(y ~ x1 + x2 + x3 + x4 + x5, data = datos.ejemplo)
+mod_no_corr_no_falses <- lm(y ~ x1 + x2 + x3, data = datos.ejemplo)
+mod_corr_falsas_no_rele <- lm(y ~ x4 + x5 + x6 + x7, data = datos.ejemplo)
+
+modelos <- list(
+    "Modelo Completo" = mod_completo,
+    "Modelo Efectos" = mod_relevantes,
+    "Modelo No Correlacionados No Efectos" = mod_no_corr_falses,
+    "Modelo No Correlacionados Efectos" = mod_no_corr_no_falses,
+    "Modelo Correlacionados No Efectos No Relevantes" = mod_corr_falsas_no_rele
+)
+
+modelos_vif <- lapply(modelos, function(modelo) {
+    vif(modelo)
+})
+
+modelsummary(
+  modelos,
+  statistic = c("conf.int",
+                  "s.e. = {std.error}", 
+                  "p = {p.value}"),
+    stars = T
+)
+```
+
+```{r}
+#| fig-cap: "VIF para los modelos ajustados."
+#| fig-subcap:
+#|   -  "Modelo Completo"
+#|   -  "Modelo Efectos"
+#|   -  "Modelo No Correlacionados No Efectos"
+#|   -  "Modelo No Correlacionados Efectos"
+#|   -  "Modelo Correlacionados No Efectos No Relevantes"
+#| label: fig-vif-ejemplo
+#| layout: [[50, 50], [50, 50], [-25, 50, -25]]
+
+# Crear un gráfico por cada modelo
+vif_plot <- function(modelo, modelo_name) {
+    data.frame(
+        Variable = names(vif(modelo)),
+        VIF = vif(modelo)
+    ) %>%
+    ggplot(aes(x = reorder(Variable, -VIF), y = VIF)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    coord_flip() +
+    labs(title = paste("VIF para el modelo:", modelo_name),
+         x = "Variable",
+         y = "VIF") +
+    theme_minimal()
+}
+
+
+# Graficos
+for (i in 1:length(modelos)) {
+    modelo_name <- names(modelos)[i]
+    modelo <- modelos[[i]]
+    
+    print(vif_plot(modelo, modelo_name))
+}
+```
+La codificación para los modelos es la siguiente:
+
+* **Efectos**: Contiene las variables que se relacionan con nuestro regresor pero no están correlacionadas entre sí (variables `x1`, `x2` y `x3`)
+
+* **Correlacionados**: Contiene las variables que se relacionan con nuestro regresor y están correlacionadas entre sí (variables `x6` y `x7`)
+
+* **No Relevantes**: Contiene las variables que no tienen relación con nuestro regresor y no están correlacionadas entre sí (variables `x4` y `x5`).
+
+Su negación es lo opuesto. Como se ve en la tabla @tbl-modelos_ejemplos, el modelo Completo tiene un AIC de $551.5$, el modelo Efectos tiene un AIC de $547.7$ y contiene las variables relevantes que son menos, por lo cual su AIC es menor y dado que no tiene variables inecesarias eso se refleja en la verosimilitud del modelo. Los demás modelos tienen un AIC y BIC mucho mayor.
+
+En la @fig-vif-ejemplo se puede ver que los modelos que contienen a las variables correlacionadas entre sí (modelos Correlacionados y Completo) tienen un VIF mayor a $10$, lo que indica que hay multicolinealidad en el modelo. En cambio, los modelos que no las contienen su VIF es de 1, dado que se simulaton variables que no están correlacionadas entre sí.
+
+De esta manera podemos ver que la utilidad del VIF es detectar la multicolinealidad entre las variables y el AIC nos ayuda a seleccionar el mejor modelo entre varios modelos candidatos, teniendo en cuenta tanto el ajuste del modelo como su complejidad.
+
+# Análisis de Datos.
+
+## Variables
 
 Tenemos un conjunto de datos que contiene información sobre la esperanza de vida en diferentes países y años. El conjunto de datos incluye las siguientes variables:
 
@@ -1120,6 +1458,9 @@ Se ajustará un modelo usando componentes principales sobre las variables predic
 ```{r}
 #| warning: false
 #| fig-cap: "Componentes Principales."
+#| fig-subcap:
+#|    - "Gráfico de codo de los componentes principales."
+#|    - "Biplot de los dos primeros componentes principales."
 #| label: fig-componentes_codo
 #| fig-width: 10
 
@@ -1138,8 +1479,50 @@ qplot(c(1:length(variance)),
          x = "Componentes",
          y = "Varianza Explicada") +
     theme_minimal()
+
+ggbiplot(componentes, 
+         var.scale = 1,
+         scale = 1,
+         var.axes = T,
+         ellipse = T,
+         obs.scale = 5,
+         varname.adjust = 2,
+         varname.abbrev = F,
+         alpha = 0.15,
+         varname.size = 2.5,
+         circle = T) +
+    labs(title = "",
+         x = "Componente 1",
+         y = "Componente 2") +
+    xlim(-250, 200) +
+    ylim(-50, 80) +
+    theme_minimal()
 ```
 
-En la @fig-componentes_codo se observa el gráfico de codo de los componentes principales. Se observa que los primeros 3 componentes explican el 55.1% de la varianza total y es donde se observa la curvatura del gráfico, sin embargo la varianza explicada es muy poca, por lo cual se debe escoger un número mayor de componentes para explicar la varianza. 
+En la @fig-componentes_codo-1 se observa el gráfico de codo de los componentes principales. Usaremos 11 componentes principales dado que explican el 90% de la varianza. En @fig-componentes_codo-2 se observa el biplot de los dos primeros componentes principales. Se observa que los componentes principales son lineales y que los datos parecen estar bien distribuidos en el espacio de los componentes principales. Vemos igualmente la correlación entre las variables en su representación en el espacio de los componentes principales.
 
-Dado a partir del componente 8 el aumento de la varianza explicada es muy pequeño, se procederá a usar 8 componentes principales.
+```{r}
+#| warning: false
+#| tbl-cap: "Modelo de Regresión Lineal con Componentes Principales."
+#| label: tbl-modelo_pca
+
+# LM con componentes principales
+# Ajustar el modelo de componentes principales
+Life_expectancy <-  imp_data[,c(-17)]$Life_expectancy
+
+modelo_pca <- lm(Life_expectancy ~ ., 
+                 data = data.frame(componentes$scores[, 1:11]))
+
+modelsummary(list( "Modelo PCA" = modelo_pca), 
+             fmt = fmt_decimal(9, 4), statistic = c("conf.int",
+                           "std.error", 
+                           "statistic",
+                           "p.value"),
+             stars = T,
+             shape = term ~ model + statistic
+             )
+```
+
+En nuestro resumen de la @tbl-modelo_pca se observa que el modelo PCA es significativo con un $F =$ `r round(summary(modelo_pca)$fstatistic[1], 2)` y con `r summary(modelo_pca)$fstatistic[2]` y `r summary(modelo_pca)$fstatistic[3]` grados de libertad, su $p$-valor es $< 2.2e-16$. El $R^2$ ajustado es `r round(summary(modelo_pca)$adj.r.squared, 4)`, siendo ligeramente menor al del mejor modelo de regresión que se obtuvo con la selección de variables. Dado que no podemos comparar directamente los modelos dado que sus variables son distintas el críterio para su comparación será el BIC. En el cuál el modelo usando 11 componentes principales es el peor con un BIC de `r round(BIC(modelo_pca), 2)` y el modelo de regresión lineal backward es el mejor con un BIC de `r round(BIC(modelo_backward), 2)`. Por lo que se puede concluir que el modelo PCA no es mejor que el modelo de regresión lineal con selección de variables.
+
+A pesar de que el análisis de Componentes Principales es una gran herramienta para la reducción de variables almente correlacionadas, poco o nulo efecto tiene cuando este proceso de eliminación de variables se hace desde el análisis exploratorio. Esto se debe a que el PCA no es capaz de eliminar variables que no aportan información al modelo, sino que simplemente las transforma en componentes ortogonales. Por lo que el PCA no es una buena herramienta para la selección de variables en este caso. Sin embargo, para analisis donde el número de variables aumenta considerablemente su uso es más eficaz y recomendable.
