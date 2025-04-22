@@ -1,0 +1,4 @@
+- source: Examen1.qmd
+  quarto-pub:
+    - id: d8190b0a-cbe7-42d6-b4fc-460ada1ee75a
+      url: https://christian-badillo.quarto.pub/examen-1
